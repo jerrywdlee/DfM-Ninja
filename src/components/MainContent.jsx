@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import TemplateModal from './TemplateModal'
 import DfmCase from '../models/DfmCase'
+import { calculateNcDate } from '../utils/dateUtils'
 
 const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle }) => {
     const containerRef = useRef(null);
@@ -64,13 +65,26 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                         onClick={(e) => e.stopPropagation()}
                     />
                     <span className="text-slate-400 font-bold">NC</span>
-                    <input
-                        type="date"
-                        className="bg-slate-100 rounded px-2 py-0.5 text-xs w-32 text-center border-none focus:ring-1 focus:ring-orange-500"
-                        value={stage.nc}
-                        onChange={(e) => onUpdate({ ...stage, nc: e.target.value })}
-                        onClick={(e) => e.stopPropagation()}
-                    />
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <input
+                            type="date"
+                            className="bg-slate-100 rounded-l px-2 py-0.5 text-xs w-32 text-center border-none focus:ring-1 focus:ring-orange-500"
+                            value={stage.nc}
+                            onChange={(e) => onUpdate({ ...stage, nc: e.target.value })}
+                        />
+                        <button
+                            title="Next NC (3 business days later)"
+                            className="bg-slate-200 hover:bg-slate-300 px-2 py-0.5 text-[10px] font-bold rounded-r transition-colors border-l border-white text-slate-600"
+                            onClick={() => {
+                                const current = stage.nc ? new Date(stage.nc) : new Date();
+                                const next = calculateNcDate(current, 3);
+                                const nextStr = next.toISOString().split('T')[0];
+                                onUpdate({ ...stage, nc: nextStr });
+                            }}
+                        >
+                            Next NC
+                        </button>
+                    </div>
                 </div>
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <button onClick={onMoveUp} className="p-1 hover:bg-slate-200 rounded">↑</button>
@@ -151,7 +165,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
     )
 }
 
-const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, onDeleteTemplate }) => {
+const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate }) => {
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
     if (!activeCase) {
@@ -189,7 +203,7 @@ const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, on
             }))
         }
 
-        const updatedCase = new DfmCase(activeCase)
+        const updatedCase = new DfmCase(activeCase, settings)
         updatedCase.stages = [...activeCase.stages, newStage]
         updatedCase.activeStageId = newStage.id
         updatedCase.activeStepId = 'step-0' // Default to first step for new template
@@ -228,7 +242,7 @@ const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, on
                             stage={stage}
                             isActive={activeCase.activeStageId === stage.id}
                             onToggle={() => {
-                                const updated = new DfmCase(activeCase)
+                                const updated = new DfmCase(activeCase, settings)
                                 updated.activeStageId = activeCase.activeStageId === stage.id ? null : stage.id
                                 onUpdateCase(updated)
                             }}
@@ -238,7 +252,7 @@ const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, on
                             onMoveDown={() => handleMoveStage(index, 1)}
                             activeStepId={activeCase.activeStageId === stage.id ? activeCase.activeStepId : null}
                             onStepToggle={(stepId) => {
-                                const updated = new DfmCase(activeCase)
+                                const updated = new DfmCase(activeCase, settings)
                                 updated.activeStepId = stepId
                                 onUpdateCase(updated)
                             }}

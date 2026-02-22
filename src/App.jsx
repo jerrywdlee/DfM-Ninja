@@ -55,12 +55,12 @@ const App = () => {
     if (activeCaseId) {
       const saved = localStorage.getItem(`dfm_ninja_case_${activeCaseId}`)
       if (saved) {
-        setActiveCaseData(new DfmCase(JSON.parse(saved)))
+        setActiveCaseData(new DfmCase(JSON.parse(saved), settings))
       }
     } else {
       setActiveCaseData(null)
     }
-  }, [activeCaseId])
+  }, [activeCaseId, settings])
 
   useEffect(() => {
     localStorage.setItem('dfm_ninja_settings', JSON.stringify(settings))
@@ -75,7 +75,7 @@ const App = () => {
       id,
       title: 'New Case',
       stages: []
-    })
+    }, settings)
     // Update Index
     setCases([...cases, { id: newCase.id, title: newCase.title }])
     // Save full data
@@ -105,7 +105,7 @@ const App = () => {
     localStorage.setItem(`dfm_ninja_case_${rawData.id}`, JSON.stringify(rawData))
 
     // Update state with instance to keep methods
-    setActiveCaseData(updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase))
+    setActiveCaseData(updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase, settings))
 
     // Update index if title changed
     const currentCaseInIndex = cases.find(c => c.id === rawData.id)
@@ -128,7 +128,7 @@ const App = () => {
         const mergedCase = new DfmCase({
           ...existingData,
           ...data
-        });
+        }, settings);
 
         setCases(prev => {
           if (prev.find(c => c.id === id)) return prev
