@@ -18,6 +18,11 @@ const App = () => {
   const [rawYaml, setRawYaml] = useState(() => {
     return localStorage.getItem('dfm_ninja_raw_yaml') || ''
   })
+  const [templates, setTemplates] = useState(() => {
+    const saved = localStorage.getItem('dfm_ninja_templates')
+    const defaults = []
+    return saved ? JSON.parse(saved) : defaults
+  })
 
   useEffect(() => {
     localStorage.setItem('dfm_ninja_cases', JSON.stringify(cases))
@@ -26,7 +31,8 @@ const App = () => {
   useEffect(() => {
     localStorage.setItem('dfm_ninja_settings', JSON.stringify(settings))
     localStorage.setItem('dfm_ninja_raw_yaml', rawYaml)
-  }, [settings, rawYaml])
+    localStorage.setItem('dfm_ninja_templates', JSON.stringify(templates))
+  }, [settings, rawYaml, templates])
 
   const activeCase = cases.find(c => c.id === activeCaseId)
 
@@ -100,6 +106,21 @@ const App = () => {
         activeCase={activeCase}
         onUpdateCase={handleUpdateCase}
         settings={settings}
+        templates={templates}
+        onUploadTemplate={(newTemp) => {
+          setTemplates(prev => {
+            const index = prev.findIndex(t => t.id === newTemp.id)
+            if (index !== -1) {
+              const updated = [...prev]
+              updated[index] = newTemp
+              return updated
+            }
+            return [...prev, newTemp]
+          })
+        }}
+        onDeleteTemplate={(id) => {
+          setTemplates(prev => prev.filter(t => t.id !== id))
+        }}
       />
       <SettingsModal
         isOpen={isSettingsOpen}

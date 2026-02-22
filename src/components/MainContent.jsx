@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import TemplateModal from './TemplateModal'
 
 const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown }) => {
-    const [activeTab, setActiveTab] = useState('llm') // llm, confirm, reply
+    const [activeTab, setActiveTab] = useState(Array.isArray(stage.steps) ? 'step-0' : 'llm')
 
     return (
         <div className="mb-4 border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
@@ -35,36 +36,59 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
 
             {isActive && (
                 <div className="p-4 bg-white border-t border-slate-100">
-                    <div className="flex mb-4 bg-slate-100 p-1 rounded-md">
-                        {['Step: LLM連携', 'Step: 確認メール', 'Step: 回答作成'].map((tab, idx) => {
-                            const tabId = ['llm', 'confirm', 'reply'][idx]
+                    <div className="flex mb-4 bg-slate-100 p-1 rounded-md overflow-x-auto">
+                        {(stage.steps && Array.isArray(stage.steps) ? stage.steps : ['LLM連携', '確認メール', '回答作成']).map((step, idx) => {
+                            const name = typeof step === 'string' ? step : step.name;
+                            const tabId = typeof step === 'string' ? ['llm', 'confirm', 'reply'][idx] : `step-${idx}`;
                             return (
                                 <button
                                     key={tabId}
-                                    className={`flex-1 py-1 text-sm rounded transition-all ${activeTab === tabId ? 'bg-white shadow-sm text-slate-800 font-bold' : 'text-slate-500'}`}
+                                    className={`flex-1 py-1 px-3 text-xs rounded transition-all whitespace-nowrap ${activeTab === tabId ? 'bg-white shadow-sm text-slate-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'}`}
                                     onClick={() => setActiveTab(tabId)}
                                 >
-                                    {tab}
+                                    {name.startsWith('Step:') ? name : `Step: ${name}`}
                                 </button>
                             )
                         })}
                     </div>
 
-                    <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100 min-h-[200px]">
-                        {activeTab === 'llm' && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <h4 className="text-xs font-bold text-emerald-800 mb-2 uppercase tracking-wide">Prompt</h4>
-                                    <textarea className="w-full h-32 p-2 text-xs font-mono border border-emerald-200 rounded bg-white" placeholder="Prompt goes here..." />
-                                </div>
-                                <div>
-                                    <h4 className="text-xs font-bold text-emerald-800 mb-2 uppercase tracking-wide">Json</h4>
-                                    <textarea className="w-full h-32 p-2 text-xs font-mono border border-emerald-200 rounded bg-white" placeholder="{ ... }" />
-                                </div>
-                            </div>
+                    <div className="bg-emerald-50 rounded-lg border border-emerald-100 min-h-[200px] overflow-hidden">
+                        {/* Custom Template Rendering */}
+                        {Array.isArray(stage.steps) ? (
+                            stage.steps.map((step, idx) => (
+                                activeTab === `step-${idx}` && (
+                                    <div
+                                        key={idx}
+                                        className="h-full w-full"
+                                        dangerouslySetInnerHTML={{ __html: step.html || '<div class="p-10 text-center text-slate-400">No content for this step</div>' }}
+                                    />
+                                )
+                            ))
+                        ) : (
+                            /* Default Fallback UI */
+                            <>
+                                {activeTab === 'llm' && (
+                                    <div className="p-4 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Prompt</h4>
+                                                <div className="flex gap-2">
+                                                    <button title="レンダリング" className="text-xs hover:bg-emerald-200 p-1 rounded transition-colors" onClick={(e) => e.stopPropagation()}>⚡️</button>
+                                                    <button title="リセット" className="text-xs hover:bg-emerald-200 p-1 rounded transition-colors" onClick={(e) => e.stopPropagation()}>🔄</button>
+                                                </div>
+                                            </div>
+                                            <textarea className="w-full h-32 p-2 text-xs font-mono border border-emerald-200 rounded bg-white" placeholder="Prompt goes here..." />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-bold text-emerald-800 mb-2 uppercase tracking-wide">Json</h4>
+                                            <textarea className="w-full h-32 p-2 text-xs font-mono border border-emerald-200 rounded bg-white" placeholder="{ ... }" />
+                                        </div>
+                                    </div>
+                                )}
+                                {activeTab === 'confirm' && <div className="p-10 text-center text-emerald-600">Confirmation Email Preview...</div>}
+                                {activeTab === 'reply' && <div className="p-10 text-center text-emerald-600">Final Reply Generator...</div>}
+                            </>
                         )}
-                        {activeTab === 'confirm' && <div className="text-center text-emerald-600 py-10">Confirmation Email Preview...</div>}
-                        {activeTab === 'reply' && <div className="text-center text-emerald-600 py-10">Final Reply Generator...</div>}
                     </div>
                 </div>
             )}
@@ -72,8 +96,9 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
     )
 }
 
-const MainContent = ({ activeCase, onUpdateCase }) => {
+const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, onDeleteTemplate }) => {
     const [expandedStageId, setExpandedStageId] = useState(null)
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
     if (!activeCase) {
         return (
@@ -89,16 +114,21 @@ const MainContent = ({ activeCase, onUpdateCase }) => {
     }
 
     const handleAddStage = () => {
+        setIsTemplateModalOpen(true)
+    }
+
+    const handleSelectTemplate = (template) => {
         const d = new Date()
         const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
         const newStage = {
             id: Date.now().toString(),
-            name: 'NEW STAGE',
+            name: template.name,
             nc: today,
-            steps: {}
+            steps: template.steps || {}
         }
         onUpdateCase({ ...activeCase, stages: [...activeCase.stages, newStage] })
         setExpandedStageId(newStage.id)
+        setIsTemplateModalOpen(false)
     }
 
     const handleDeleteStage = (id) => {
@@ -146,6 +176,15 @@ const MainContent = ({ activeCase, onUpdateCase }) => {
                     + Stage追加
                 </button>
             </div>
+
+            <TemplateModal
+                isOpen={isTemplateModalOpen}
+                onClose={() => setIsTemplateModalOpen(false)}
+                templates={templates}
+                onSelect={handleSelectTemplate}
+                onUpload={onUploadTemplate}
+                onDelete={onDeleteTemplate}
+            />
         </div>
     )
 }

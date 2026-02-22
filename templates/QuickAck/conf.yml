@@ -1,0 +1,7 @@
+id: quick-ack
+name: QuickAck
+description: ""
+steps:
+    - name: LLM連携
+    - name: 確認メール
+    - name: DfM送信
