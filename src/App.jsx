@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
+import SettingsModal from './components/SettingsModal'
 
 const App = () => {
   const [cases, setCases] = useState(() => {
@@ -9,10 +10,23 @@ const App = () => {
   })
   const [activeCaseId, setActiveCaseId] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState('disconnected') // connected, disconnected
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem('dfm_ninja_settings')
+    return saved ? JSON.parse(saved) : { prompt_template: 'Default prompt...' }
+  })
+  const [rawYaml, setRawYaml] = useState(() => {
+    return localStorage.getItem('dfm_ninja_raw_yaml') || ''
+  })
 
   useEffect(() => {
     localStorage.setItem('dfm_ninja_cases', JSON.stringify(cases))
   }, [cases])
+
+  useEffect(() => {
+    localStorage.setItem('dfm_ninja_settings', JSON.stringify(settings))
+    localStorage.setItem('dfm_ninja_raw_yaml', rawYaml)
+  }, [settings, rawYaml])
 
   const activeCase = cases.find(c => c.id === activeCaseId)
 
@@ -80,10 +94,21 @@ const App = () => {
         onNewCase={handleNewCase}
         connectionStatus={connectionStatus}
         onReconnect={handleReconnect}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
       <MainContent
         activeCase={activeCase}
         onUpdateCase={handleUpdateCase}
+        settings={settings}
+      />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        rawYaml={rawYaml}
+        onSave={(yamlText, jsonConfig) => {
+          setRawYaml(yamlText)
+          setSettings(jsonConfig)
+        }}
       />
     </div>
   )

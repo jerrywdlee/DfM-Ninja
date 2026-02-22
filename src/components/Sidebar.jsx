@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, connectionStatus, onReconnect }) => {
+const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, connectionStatus, onReconnect, onOpenSettings }) => {
     const [search, setSearch] = useState('')
     const filteredCases = cases.filter(c =>
         c.id.includes(search) || (c.title && c.title.toLowerCase().includes(search.toLowerCase()))
@@ -58,7 +58,10 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, connectionStatu
                 >
                     + 新規ケース
                 </button>
-                <button className="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 py-2 rounded-lg text-sm flex items-center justify-center gap-2 border border-slate-700 transition-all">
+                <button
+                    onClick={onOpenSettings}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 py-2 rounded-lg text-sm flex items-center justify-center gap-2 border border-slate-700 transition-all focus:outline-none focus:ring-1 focus:ring-slate-600"
+                >
                     ⚙️ 設定
                 </button>
             </div>
