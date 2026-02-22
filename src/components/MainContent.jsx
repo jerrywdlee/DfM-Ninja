@@ -19,7 +19,8 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                     />
                     <span className="text-slate-400 font-bold">NC</span>
                     <input
-                        className="bg-slate-100 rounded px-2 py-0.5 text-sm w-16 text-center border-none"
+                        type="date"
+                        className="bg-slate-100 rounded px-2 py-0.5 text-xs w-32 text-center border-none focus:ring-1 focus:ring-orange-500"
                         value={stage.nc}
                         onChange={(e) => onUpdate({ ...stage, nc: e.target.value })}
                         onClick={(e) => e.stopPropagation()}
@@ -35,7 +36,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
             {isActive && (
                 <div className="p-4 bg-white border-t border-slate-100">
                     <div className="flex mb-4 bg-slate-100 p-1 rounded-md">
-                        {['LLM連携', '確認メール', '回答作成'].map((tab, idx) => {
+                        {['Step: LLM連携', 'Step: 確認メール', 'Step: 回答作成'].map((tab, idx) => {
                             const tabId = ['llm', 'confirm', 'reply'][idx]
                             return (
                                 <button
@@ -88,10 +89,12 @@ const MainContent = ({ activeCase, onUpdateCase }) => {
     }
 
     const handleAddStage = () => {
+        const d = new Date()
+        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
         const newStage = {
             id: Date.now().toString(),
             name: 'NEW STAGE',
-            nc: '1/1',
+            nc: today,
             steps: {}
         }
         onUpdateCase({ ...activeCase, stages: [...activeCase.stages, newStage] })
@@ -140,7 +143,7 @@ const MainContent = ({ activeCase, onUpdateCase }) => {
                     onClick={handleAddStage}
                     className="mt-4 w-full border-2 border-dashed border-slate-300 py-3 rounded-lg text-slate-500 hover:border-slate-400 hover:text-slate-600 transition-all font-bold"
                 >
-                    + Step追加
+                    + Stage追加
                 </button>
             </div>
         </div>
