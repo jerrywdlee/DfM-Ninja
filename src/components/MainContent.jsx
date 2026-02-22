@@ -225,8 +225,50 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         onUpdateCase({ ...activeCase, stages: newStages })
     }
 
+    const handleDoubleClick = (e) => {
+        const target = e.target;
+        // Check if the clicked element has the specific data attribute
+        if (target && target.dataset.doubleclick === 'copy') {
+            let textToCopy = '';
+
+            // Handle input/textarea
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                target.select();
+                textToCopy = target.value;
+            }
+            // Handle contenteditable elements
+            else if (target.isContentEditable) {
+                const range = document.createRange();
+                range.selectNodeContents(target);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                textToCopy = target.innerText || target.textContent;
+            }
+
+            // Copy to clipboard if there is text
+            if (textToCopy) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // Visual feedback
+                    const originalBg = target.style.backgroundColor;
+                    const originalTransition = target.style.transition;
+                    target.style.transition = 'background-color 0.2s ease-out';
+                    target.style.backgroundColor = '#d1fae5'; // emerald-100
+
+                    setTimeout(() => {
+                        target.style.backgroundColor = originalBg;
+                        // Restore original transition after fade out
+                        setTimeout(() => {
+                            target.style.transition = originalTransition;
+                        }, 200);
+                    }, 200);
+                }).catch(err => console.error('Failed to copy', err));
+            }
+        }
+    };
+
     return (
-        <div className="flex-1 overflow-y-auto bg-slate-100 p-6">
+        <div className="flex-1 overflow-y-auto bg-slate-100 p-6" onDoubleClick={handleDoubleClick}>
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
