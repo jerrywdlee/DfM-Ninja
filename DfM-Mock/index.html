@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Dynamics 365 (DfM)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background: #f3f2f1;
+        }
+
+        .case-header {
+            background: #fff;
+            padding: 15px;
+            border-bottom: 1px solid #edebe9;
+        }
+
+        .case-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #0078d4;
+        }
+
+        .bookmarklet-btn {
+            background: #0078d4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="case-header">
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+            <div>
+                <label style="font-size: 0.8rem; color: #666;">Case Number:</label><br />
+                <input id="caseNumInput" type="text" value="4201180000000042"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; color: #666;">Case Title:</label><br />
+                <input id="caseTitleInput" type="text" value="テスト用のお問い合わせについて"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+        </div>
+        <p>This is a dummy DfM page to test the Bookmarklet and communication.</p>
+        <button class="bookmarklet-btn" onclick="runBookmarklet()">Run Bookmarklet (Mock)</button>
+    </div>
+
+    <script>
+        function runBookmarklet() {
+            const spaUrl = "http://localhost:5175";
+            const ninjaWindow = window.open(spaUrl, "DfMNinja");
+
+            // Extract data from inputs
+            const caseNum = document.getElementById('caseNumInput').value;
+            const caseTitle = document.getElementById('caseTitleInput').value;
+
+            const caseData = {
+                id: caseNum,
+                title: caseTitle,
+                extractedAt: new Date().toISOString()
+            };
+
+            // Wait for SPA to be ready
+            setTimeout(() => {
+                ninjaWindow.postMessage({ type: "EXTRACTED_DATA", data: caseData }, spaUrl);
+            }, 2000);
+        }
+
+        window.addEventListener("message", (event) => {
+            if (event.origin !== "http://localhost:5175") return;
+            console.log("Received command from Ninja:", event.data);
+            if (event.data.type === "PING") {
+                event.source.postMessage({ type: "PONG" }, event.origin);
+            }
+        });
+    </script>
+</body>
+
+</html>

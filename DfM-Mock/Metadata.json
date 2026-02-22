@@ -1,0 +1,19 @@
+{
+    "caseTitle": "テスト用のお問い合わせについて",
+    "assignedTo": "Demo Agent",
+    "internalTitle": "[PTA Pickup]",
+    "custStatement": "これはテスト用のお問い合わせコンテンツです：　フランスおよびイタリアの首都を教えてください",
+    "phoneNum": "+81-09012345678",
+    "email": "demo.customer@example.com",
+    "emailCcList": [
+        "test.customer2@example.com",
+        "demo.leader@example.com"
+    ],
+    "contactMethod": "Email",
+    "lastUpdatedAt": "Created on: 9:17 AM",
+    "SLA": "Met",
+    "caseNum": "4201180000000042",
+    "servName": "Unified Suppt | Enterprise Base",
+    "severity": "B",
+    "statusReason": "Initial contact pending"
+}
