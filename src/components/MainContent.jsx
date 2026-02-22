@@ -1,8 +1,53 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import TemplateModal from './TemplateModal'
+import DfmCase from '../models/DfmCase'
 
-const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown }) => {
-    const [activeTab, setActiveTab] = useState(Array.isArray(stage.steps) ? 'step-0' : 'llm')
+const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle }) => {
+    const containerRef = useRef(null);
+    const activeTab = activeStepId || (Array.isArray(stage.steps) ? 'step-0' : 'llm')
+
+    // Force script execution after innerHTML injection
+    useEffect(() => {
+        if (isActive && containerRef.current) {
+            const scripts = containerRef.current.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                // Copy all attributes
+                Array.from(oldScript.attributes).forEach(attr => {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+                // Copy content
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                // Replace old script with new one to trigger execution
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        }
+    }, [isActive, activeTab, stage]);
+
+    const handleSaveStep = () => {
+        if (!containerRef.current) return;
+
+        const stepIndex = parseInt(activeTab.replace('step-', ''));
+        const updatedStep = { ...(stage.steps[stepIndex] || {}) };
+
+        const inputs = containerRef.current.querySelectorAll('input, textarea, select, [contenteditable]');
+        inputs.forEach(el => {
+            const name = el.getAttribute('name');
+            if (!name) return;
+
+            let value;
+            if (el.hasAttribute('contenteditable')) {
+                value = el.innerHTML;
+            } else {
+                value = el.value;
+            }
+            updatedStep[name] = value;
+        });
+
+        const newSteps = [...stage.steps];
+        newSteps[stepIndex] = updatedStep;
+        onUpdate({ ...stage, steps: newSteps });
+    };
 
     return (
         <div className="mb-4 border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
@@ -37,16 +82,16 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
             {isActive && (
                 <div className="p-4 bg-white border-t border-slate-100">
                     <div className="flex mb-4 bg-slate-100 p-1 rounded-md overflow-x-auto">
-                        {(stage.steps && Array.isArray(stage.steps) ? stage.steps : ['LLM連携', '確認メール', '回答作成']).map((step, idx) => {
+                        {(stage.steps && Array.isArray(stage.steps) ? stage.steps : []).map((step, idx) => {
                             const name = typeof step === 'string' ? step : step.name;
                             const tabId = typeof step === 'string' ? ['llm', 'confirm', 'reply'][idx] : `step-${idx}`;
                             return (
                                 <button
-                                    key={tabId}
+                                    key={idx}
                                     className={`flex-1 py-1 px-3 text-xs rounded transition-all whitespace-nowrap ${activeTab === tabId ? 'bg-white shadow-sm text-slate-800 font-bold' : 'text-slate-500 hover:bg-slate-200/50'}`}
-                                    onClick={() => setActiveTab(tabId)}
+                                    onClick={() => onStepToggle(tabId)}
                                 >
-                                    {name.startsWith('Step:') ? name : `Step: ${name}`}
+                                    {name}
                                 </button>
                             )
                         })}
@@ -55,15 +100,13 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                     <div className="bg-emerald-50 rounded-lg border border-emerald-100 min-h-[200px] overflow-hidden">
                         {/* Custom Template Rendering */}
                         {Array.isArray(stage.steps) ? (
-                            stage.steps.map((step, idx) => (
-                                activeTab === `step-${idx}` && (
-                                    <div
-                                        key={idx}
-                                        className="h-full w-full"
-                                        dangerouslySetInnerHTML={{ __html: step.html || '<div class="p-10 text-center text-slate-400">No content for this step</div>' }}
-                                    />
-                                )
-                            ))
+                            <div
+                                ref={containerRef}
+                                className="h-full w-full"
+                                dangerouslySetInnerHTML={{
+                                    __html: stage.steps[parseInt(activeTab.replace('step-', ''))]?.html || '<div class="p-10 text-center text-slate-400">No content for this step</div>'
+                                }}
+                            />
                         ) : (
                             /* Default Fallback UI */
                             <>
@@ -90,6 +133,18 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                             </>
                         )}
                     </div>
+
+                    {/* Save Button for custom steps */}
+                    {Array.isArray(stage.steps) && (
+                        <div className="mt-3 flex justify-end">
+                            <button
+                                onClick={handleSaveStep}
+                                className="px-6 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold border border-slate-200 shadow-sm transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                💾 保存
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -97,7 +152,6 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
 }
 
 const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, onDeleteTemplate }) => {
-    const [expandedStageId, setExpandedStageId] = useState(null)
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
     if (!activeCase) {
@@ -118,16 +172,29 @@ const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, on
     }
 
     const handleSelectTemplate = (template) => {
-        const d = new Date()
-        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        const uid = Date.now().toString();
+        const d = new Date();
+        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
         const newStage = {
-            id: Date.now().toString(),
+            id: uid,
             name: template.name,
             nc: today,
-            steps: template.steps || {}
+            steps: (template.steps || []).map(step => ({
+                ...step,
+                html: window.ejs.render(step.html || '', {
+                    uid: uid,
+                    currentCase: window.currentCase
+                })
+            }))
         }
-        onUpdateCase({ ...activeCase, stages: [...activeCase.stages, newStage] })
-        setExpandedStageId(newStage.id)
+
+        const updatedCase = new DfmCase(activeCase)
+        updatedCase.stages = [...activeCase.stages, newStage]
+        updatedCase.activeStageId = newStage.id
+        updatedCase.activeStepId = 'step-0' // Default to first step for new template
+
+        onUpdateCase(updatedCase)
         setIsTemplateModalOpen(false)
     }
 
@@ -159,12 +226,22 @@ const MainContent = ({ activeCase, onUpdateCase, templates, onUploadTemplate, on
                         <Stage
                             key={stage.id}
                             stage={stage}
-                            isActive={expandedStageId === stage.id}
-                            onToggle={() => setExpandedStageId(expandedStageId === stage.id ? null : stage.id)}
+                            isActive={activeCase.activeStageId === stage.id}
+                            onToggle={() => {
+                                const updated = new DfmCase(activeCase)
+                                updated.activeStageId = activeCase.activeStageId === stage.id ? null : stage.id
+                                onUpdateCase(updated)
+                            }}
                             onUpdate={handleUpdateStage}
                             onDelete={() => handleDeleteStage(stage.id)}
                             onMoveUp={() => handleMoveStage(index, -1)}
                             onMoveDown={() => handleMoveStage(index, 1)}
+                            activeStepId={activeCase.activeStageId === stage.id ? activeCase.activeStepId : null}
+                            onStepToggle={(stepId) => {
+                                const updated = new DfmCase(activeCase)
+                                updated.activeStepId = stepId
+                                onUpdateCase(updated)
+                            }}
                         />
                     ))}
                 </div>

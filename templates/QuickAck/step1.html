@@ -1,26 +1,84 @@
-<div id="quick-ack_step1" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 min-h-[400px] shadow-inner">
-    <div class="grid grid-cols-2 gap-6 h-full">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Prompt</h4>
-                <div class="flex gap-1.5 focus-within:ring-0">
-                    <button title="リセット"
-                        class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
-                    <button title="レンダリング"
-                        class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-emerald-100 border border-emerald-200 shadow-sm">⚡️</button>
+<% const uid=new Date().getTime(); %>
+    <div id="quick-ack_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
+        <div class="grid grid-cols-2 gap-6">
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Prompt</h4>
+                    <div class="flex gap-1.5 focus-within:ring-0">
+                        <button title="リセット"
+                            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
+                        <button title="レンダリング"
+                            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
+                    </div>
                 </div>
+                <textarea name="prompt"
+                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                    placeholder="Prompt goes here..."></textarea>
             </div>
-            <textarea name="prompt"
-                class="flex-1 w-full min-h-[160px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                placeholder="Prompt goes here..."></textarea>
-        </div>
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Json</h4>
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between mt-4 mb-3 px-1">
+                    <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Json</h4>
+                </div>
+                <textarea name="json"
+                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                    placeholder="{ ... }"></textarea>
             </div>
-            <textarea name="json"
-                class="flex-1 w-full min-h-[160px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                placeholder="{ ... }"></textarea>
         </div>
+        <noscript data-name="prompt">
+            現在のお問い合わせ内容は以下です。
+            ```
+            {{custStatement}}
+            ```
+
+            上記内容を分析し、次のような認識合わせ文を記載、例:
+            ```
+            本お問い合わせにつきましては、以下の内容として認識しております。
+            ・○○○○
+            ・○○○○
+            認識に相違がございましたらご指摘頂けますと幸いでございます。
+            ```
+
+            下記のJSON形式で出力してください。
+            {
+            "detailConfirm": "認識合わせ文"
+            }
+        </noscript>
+        <script>
+            (function () {
+                const divId = '#quick-ack_step1-<%=uid%>';
+                const $scope = $(divId); // このステップの範囲内だけで探す
+                const $prompt = $scope.find('textarea[name="prompt"]');
+                const $json = $scope.find('textarea[name="json"]');
+                const promptText = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
+
+                const caseData = window.currentCase;
+                const activeStep = caseData?.activeStep;
+
+                if (activeStep && activeStep.prompt) {
+                    $prompt.val(activeStep.prompt);
+                } else {
+                    $prompt.val(promptText);
+                }
+                if (activeStep && activeStep.json) {
+                    $json.val(activeStep.json);
+                }
+
+                // .on ではなく、直接要素に .click 等でバインドする
+                $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
+                    const promptText = $scope.find('textarea[name="prompt"]').val();
+                    const jsonText = $scope.find('textarea[name="json"]').val();
+                    console.log('prompt', promptText, 'json', jsonText);
+                });
+
+                $scope.find('button[title="リセット"]').off('click').on('click', function () {
+                    if (!confirm('リセットしますか？')) {
+                        return;
+                    }
+
+                    $scope.find('textarea[name="prompt"]').val(promptText);
+                    $scope.find('textarea[name="json"]').val('');
+                });
+            })();
+        </script>
+
     </div>
-</div>

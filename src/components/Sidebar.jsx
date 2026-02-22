@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, connectionStatus, onReconnect, onOpenSettings }) => {
+const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, connectionStatus, onReconnect, onOpenSettings }) => {
     const [search, setSearch] = useState('')
     const filteredCases = cases.filter(c =>
         c.id.includes(search) || (c.title && c.title.toLowerCase().includes(search.toLowerCase()))
@@ -34,20 +34,35 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, connectionStatu
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {filteredCases.map(c => (
-                    <button
+                    <div
                         key={c.id}
-                        onClick={() => onSelectCase(c.id)}
-                        className={`w-full text-left p-4 border-b border-slate-800/50 hover:bg-slate-800/50 transition-all relative group ${activeCaseId === c.id ? 'bg-slate-800/80' : ''
-                            }`}
+                        className={`w-full text-left border-b border-slate-800/50 hover:bg-slate-800/50 transition-all relative group ${activeCaseId === c.id ? 'bg-slate-800/80' : ''}`}
                     >
                         {activeCaseId === c.id && (
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-400 to-orange-600" />
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-400 to-orange-600 z-10" />
                         )}
-                        <div className={`font-mono text-sm font-bold ${activeCaseId === c.id ? 'text-orange-400' : 'text-slate-300 group-hover:text-white'}`}>
-                            {c.id}
+                        <div className="flex justify-between items-start p-4">
+                            <div
+                                className="flex-1 min-w-0 cursor-pointer"
+                                onClick={() => onSelectCase(c.id)}
+                            >
+                                <div className={`font-mono text-sm font-bold ${activeCaseId === c.id ? 'text-orange-400' : 'text-slate-300 group-hover:text-white'}`}>
+                                    {c.id}
+                                </div>
+                                <div className="truncate text-xs text-slate-500 group-hover:text-slate-400">{c.title}</div>
+                            </div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteCase(c.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-slate-600 hover:text-red-500 transition-all active:scale-90"
+                                title="削除"
+                            >
+                                🗑️
+                            </button>
                         </div>
-                        <div className="truncate text-xs text-slate-500 group-hover:text-slate-400">{c.title}</div>
-                    </button>
+                    </div>
                 ))}
             </div>
 
