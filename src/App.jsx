@@ -3,6 +3,8 @@ import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
 import SettingsModal from './components/SettingsModal'
 import DfmCase from './models/DfmCase'
+import { useDfmBridge } from './hooks/useDfmBridge'
+import { extractCaseData } from './utils/dfmScripts'
 
 const App = () => {
   // 1. Initial State & Migration
@@ -28,7 +30,6 @@ const App = () => {
   const [activeCaseId, setActiveCaseId] = useState(null)
   const [activeCaseData, setActiveCaseData] = useState(null)
 
-  const [connectionStatus, setConnectionStatus] = useState('disconnected')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_settings')
@@ -41,6 +42,9 @@ const App = () => {
     const saved = localStorage.getItem('dfm_ninja_templates')
     return saved ? JSON.parse(saved) : []
   })
+
+  // 1.5. DfM Bridge
+  const { connectionStatus, execDfM, reconnect } = useDfmBridge()
 
   // 2. Persistence
   useEffect(() => {
@@ -110,49 +114,34 @@ const App = () => {
     }
   }
 
-  // Cross-origin communication handler
+  // 3. Initial Extraction & Global State Sync
   useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.data.type === 'EXTRACTED_DATA') {
-        const { id, title } = event.data.data
-        const newCase = new DfmCase({ id, title, stages: [] })
+    if (connectionStatus === 'connected') {
+      // Data extraction via RPC
+      execDfM(extractCaseData).then(data => {
+        const { id, title } = data
+
+        // Merge with existing data if available
+        const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`)
+        const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] }
+
+        const mergedCase = new DfmCase({
+          ...existingData,
+          ...data
+        });
+
         setCases(prev => {
           if (prev.find(c => c.id === id)) return prev
           return [...prev, { id, title }]
         })
-        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(newCase))
+        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(mergedCase))
         setActiveCaseId(id)
-        setConnectionStatus('connected')
-      }
-
-      if (event.data.type === 'PONG') {
-        setConnectionStatus('connected')
-      }
+      }).catch(err => console.error('Initial RPC extraction failed', err))
     }
-    window.addEventListener('message', handleMessage)
-
-    // Initial Ping
-    if (window.opener) {
-      window.opener.postMessage({ type: 'PING' }, '*')
-    }
-
-    return () => window.removeEventListener('message', handleMessage)
-  }, [])
+  }, [connectionStatus])
 
   // Synchronize current case globally for templates
   window.currentCase = activeCaseData;
-
-  const handleReconnect = () => {
-    if (window.opener) {
-      setConnectionStatus('checking...')
-      window.opener.postMessage({ type: 'PING' }, '*')
-      setTimeout(() => {
-        if (connectionStatus !== 'connected') setConnectionStatus('disconnected')
-      }, 1000)
-    } else {
-      alert('Parent window not found. Please run the bookmarklet on the DfM page.')
-    }
-  }
 
   const handleDeleteCase = (id) => {
     if (window.confirm(`Case ${id} を削除しますか？`)) {
@@ -173,7 +162,7 @@ const App = () => {
         onNewCase={handleNewCase}
         onDeleteCase={handleDeleteCase}
         connectionStatus={connectionStatus}
-        onReconnect={handleReconnect}
+        onReconnect={reconnect}
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
       <MainContent

@@ -17,11 +17,11 @@
             </div>
             <div class="flex flex-col">
                 <div class="flex items-center justify-between mt-4 mb-3 px-1">
-                    <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Json</h4>
+                    <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">認識合わせ文</h4>
                 </div>
-                <textarea name="json"
+                <textarea name="detailConfirm"
                     class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                    placeholder="{ ... }"></textarea>
+                    placeholder=" ... "></textarea>
             </div>
         </div>
         <noscript data-name="prompt">
@@ -38,17 +38,14 @@
             認識に相違がございましたらご指摘頂けますと幸いでございます。
             ```
 
-            下記のJSON形式で出力してください。
-            {
-            "detailConfirm": "認識合わせ文"
-            }
+            Plan Textとして、Code Blockで出力してください。
         </noscript>
         <script>
             (function () {
                 const divId = '#quick-ack_step1-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $prompt = $scope.find('textarea[name="prompt"]');
-                const $json = $scope.find('textarea[name="json"]');
+                const $detailConfirm = $scope.find('textarea[name="detailConfirm"]');
                 const promptText = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
 
                 const caseData = window.currentCase;
@@ -57,17 +54,22 @@
                 if (activeStep && activeStep.prompt) {
                     $prompt.val(activeStep.prompt);
                 } else {
-                    $prompt.val(promptText);
+                    const renderedPrompt = caseData.render(promptText);
+                    $prompt.val(renderedPrompt);
                 }
-                if (activeStep && activeStep.json) {
-                    $json.val(activeStep.json);
+                if (activeStep && activeStep.detailConfirm) {
+                    $detailConfirm.val(activeStep.detailConfirm);
                 }
 
                 // .on ではなく、直接要素に .click 等でバインドする
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
                     const promptText = $scope.find('textarea[name="prompt"]').val();
-                    const jsonText = $scope.find('textarea[name="json"]').val();
-                    console.log('prompt', promptText, 'json', jsonText);
+                    const detailConfirmText = $scope.find('textarea[name="detailConfirm"]').val();
+
+                    const renderedPrompt = caseData.render(promptText);
+                    $prompt.val(renderedPrompt);
+
+                    console.log('prompt', renderedPrompt, 'detailConfirm', detailConfirmText);
                 });
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
@@ -75,8 +77,9 @@
                         return;
                     }
 
-                    $scope.find('textarea[name="prompt"]').val(promptText);
-                    $scope.find('textarea[name="json"]').val('');
+                    const renderedPrompt = caseData.render(promptText);
+                    $scope.find('textarea[name="prompt"]').val(renderedPrompt);
+                    $scope.find('textarea[name="detailConfirm"]').val('');
                 });
             })();
         </script>

@@ -37,7 +37,7 @@
 
 <body>
     <div class="case-header">
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-cols: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Case Number:</label><br />
                 <input id="caseNumInput" type="text" value="4201180000000042"
@@ -46,6 +46,31 @@
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Case Title:</label><br />
                 <input id="caseTitleInput" type="text" value="テスト用のお問い合わせについて"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; color: #666;">Assigned To:</label><br />
+                <input id="assignedToInput" type="text" value="Demo Agent"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; color: #666;">Severity:</label><br />
+                <input id="severityInput" type="text" value="B"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="grid-column: span 2;">
+                <label style="font-size: 0.8rem; color: #666;">Customer Statement:</label><br />
+                <textarea id="custStatementInput"
+                    style="width: 100%; height: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">これはテスト用のお問い合わせコンテンツです：　フランスおよびイタリアの首都を教えてください</textarea>
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; color: #666;">Email:</label><br />
+                <input id="emailInput" type="text" value="demo.customer@example.com"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="font-size: 0.8rem; color: #666;">Phone:</label><br />
+                <input id="phoneNumInput" type="text" value="+81-09012345678"
                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
         </div>
@@ -77,6 +102,28 @@
         window.addEventListener("message", (event) => {
             if (event.origin !== "http://localhost:5175") return;
             console.log("Received command from Ninja:", event.data);
+
+            // RPC Request Handler for Mock
+            if (event.data.type === "RPC_REQUEST") {
+                const { functionStr, timestamp } = event.data;
+                try {
+                    const executor = eval('(' + functionStr + ')');
+                    const result = executor();
+                    event.source.postMessage({
+                        type: "RPC_RESPONSE",
+                        timestamp: timestamp,
+                        data: result
+                    }, event.origin);
+                } catch (e) {
+                    event.source.postMessage({
+                        type: "RPC_RESPONSE",
+                        timestamp: timestamp,
+                        error: e.message
+                    }, event.origin);
+                }
+                return;
+            }
+
             if (event.data.type === "PING") {
                 event.source.postMessage({ type: "PONG" }, event.origin);
             }
