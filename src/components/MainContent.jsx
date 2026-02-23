@@ -64,7 +64,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                         onChange={(e) => onUpdate({ ...stage, name: e.target.value })}
                         onClick={(e) => e.stopPropagation()}
                     />
-                    <span className="text-slate-400 font-bold">NC</span>
+                    <span className="text-slate-400 font-bold">Current NC: </span>
                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                         <input
                             type="date"
@@ -74,7 +74,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                         />
                         <button
                             title="Next NC (3 business days later)"
-                            className="bg-slate-200 hover:bg-slate-300 px-2 py-0.5 text-[10px] font-bold rounded-r transition-colors border-l border-white text-slate-600"
+                            className="bg-slate-200 hover:bg-slate-300 px-2 py-0.5 mx-2 text-[10px] font-bold rounded-r transition-colors border-l border-white text-slate-600"
                             onClick={() => {
                                 const current = stage.nc ? new Date(stage.nc) : new Date();
                                 const next = calculateNcDate(current, 3);

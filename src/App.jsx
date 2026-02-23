@@ -119,9 +119,6 @@ const App = () => {
   const handleUploadTemplate = (newTemp) => {
     const existingIndex = templates.findIndex(t => t.id === newTemp.id)
     if (existingIndex !== -1) {
-      if (!confirm(`テンプレートID "${newTemp.id}" は既に存在します。上書きしますか？`)) {
-        return
-      }
       setTemplates(prev => {
         const updated = [...prev]
         updated[existingIndex] = newTemp

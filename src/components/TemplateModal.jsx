@@ -4,8 +4,14 @@ import yaml from 'js-yaml'
 
 const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelete }) => {
     const fileInputRef = useRef(null)
+    const [actionMsg, setActionMsg] = useState(null)
 
     if (!isOpen) return null
+
+    const showMsg = (msg) => {
+        setActionMsg(msg)
+        setTimeout(() => setActionMsg(null), 3000)
+    }
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0]
@@ -41,20 +47,42 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
             const templateData = {
                 id: config.id || config.name || file.name.replace('.zip', ''),
                 name: config.name || file.name.replace('.zip', ''),
+                version: config.version || '1.0.0',
                 description: config.description || '',
                 steps: richSteps
             }
 
-            onUpload(templateData)
+            const existingIndex = templates.findIndex(t => t.id === templateData.id)
+            if (existingIndex !== -1) {
+                const existingTemp = templates[existingIndex]
+                const existingVer = existingTemp.version || 'N/A'
+                const newVer = templateData.version
+
+                if (!confirm(`Template ID "${templateData.id}" は既に存在します。\n現在のバージョン: ${existingVer}\nアップロードするバージョン: ${newVer}\n\n上書きしますか？`)) {
+                    return
+                }
+                onUpload(templateData)
+                showMsg(`✅ "${templateData.id}" を上書きしました (v${newVer})`)
+            } else {
+                onUpload(templateData)
+                showMsg(`✨ "${templateData.id}" を新しく追加しました (v${templateData.version})`)
+            }
         } catch (err) {
             console.error(err)
             alert('Error processing zip: ' + err.message)
+        } finally {
+            e.target.value = '' // Reset input
         }
     }
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl flex flex-col max-h-[85vh] relative">
+                {actionMsg && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-emerald-600/95 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-xl shadow-emerald-900/50 z-[100] animate-fade-in-down whitespace-nowrap">
+                        {actionMsg}
+                    </div>
+                )}
                 <div className="p-4 border-b border-slate-800 flex items-center justify-between">
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         <span className="text-orange-500">📋</span> Template選択
@@ -78,8 +106,15 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                                         className="flex-1 cursor-pointer"
                                         onClick={() => onSelect(template)}
                                     >
-                                        <div className="font-bold text-slate-200 group-hover:text-orange-400 transition-colors">
-                                            {template.name}
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-slate-200 group-hover:text-orange-400 transition-colors">
+                                                {template.name}
+                                            </span>
+                                            {template.version && (
+                                                <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full font-mono border border-slate-700">
+                                                    v{template.version}
+                                                </span>
+                                            )}
                                         </div>
                                         {template.description && (
                                             <div className="text-xs text-slate-400 mt-0.5 italic">

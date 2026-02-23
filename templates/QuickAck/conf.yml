@@ -1,5 +1,6 @@
 id: quick-ack
 name: QuickAck
+version: 1.0.0
 description: ""
 steps:
     - name: LLM連携
