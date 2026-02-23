@@ -4,7 +4,7 @@ import MainContent from './components/MainContent'
 import SettingsModal from './components/SettingsModal'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
-import { extractCaseData } from './utils/dfmScripts'
+import * as dfmScripts from './utils/dfmScripts'
 
 const App = () => {
   // 1. Initial State & Migration
@@ -54,6 +54,12 @@ const App = () => {
   useEffect(() => {
     localStorage.setItem('dfm_ninja_case_index', JSON.stringify(cases))
   }, [cases])
+
+  // Expose bridge and scripts to global window for templates
+  useEffect(() => {
+    window.execDfM = execDfM;
+    window.dfmScripts = dfmScripts;
+  }, [execDfM]);
 
   useEffect(() => {
     if (activeCaseId) {
@@ -123,7 +129,7 @@ const App = () => {
   useEffect(() => {
     if (connectionStatus === 'connected') {
       // Data extraction via RPC
-      execDfM(extractCaseData).then(data => {
+      execDfM(dfmScripts.extractCaseData).then(data => {
         const { id, title } = data
 
         // Merge with existing data if available

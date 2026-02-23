@@ -105,10 +105,11 @@
 
             // RPC Request Handler for Mock
             if (event.data.type === "RPC_REQUEST") {
-                const { functionStr, timestamp } = event.data;
+                const { functionStr, timestamp, args } = event.data;
                 try {
                     const executor = eval('(' + functionStr + ')');
-                    const result = executor();
+                    // 万が一 args が無い時も空の配列として扱う
+                    const result = executor(...(args || []));
                     event.source.postMessage({
                         type: "RPC_RESPONSE",
                         timestamp: timestamp,

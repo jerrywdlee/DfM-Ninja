@@ -8,7 +8,7 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
     const [connectionStatus, setConnectionStatus] = useState('disconnected')
     const rpcRequests = useRef({})
 
-    const execDfM = (executorFn) => {
+    const execDfM = (executorFn, ...args) => {
         return new Promise((resolve, reject) => {
             if (!window.opener) {
                 reject(new Error('Parent window (DfM) not found.'))
@@ -22,6 +22,7 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
             window.opener.postMessage({
                 type: 'RPC_REQUEST',
                 functionStr: executorFn.toString(),
+                args: args,
                 timestamp: timestamp
             }, '*')
         })

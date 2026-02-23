@@ -33,3 +33,40 @@ export const extractCaseData = () => {
         extractedAt: new Date().toISOString()
     };
 };
+
+/**
+ * Highlights a list of keywords in the DOM using CSS Custom Highlights API.
+ * Needs to be sent with args: { keywords: [...] } or just keywords array
+ */
+export const highlightKeywords = (args) => {
+    // If args is an array, use it directly. Otherwise check for args.keywords.
+    const keywords = Array.isArray(args) ? args : (args?.keywords || []);
+
+    if (!keywords.length || !CSS.highlights) return;
+
+    // 1. スタイル注入（省略可：CSSファイルに書いてもOK）
+    if (!document.getElementById("hl-style")) {
+        document.head.insertAdjacentHTML("beforeend", `<style id="hl-style">::highlight(search-results){background:#ffeb3b;color:#000;}</style>`);
+    }
+
+    // 2. 正規表現の作成 (g: 全体、i: 大文字小文字不問)
+    // 特殊文字をエスケープし、| で結合
+    const pattern = keywords.map(k => k.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')).join('|');
+    const regex = new RegExp(pattern, 'gi');
+
+    const ranges = [];
+    const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+
+    while (node = treeWalker.nextNode()) {
+        // matchAll を使って、ノード内の全ヒット箇所のインデックスを取得
+        for (const match of node.textContent.matchAll(regex)) {
+            const range = new Range();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            ranges.push(range);
+        }
+    }
+
+    CSS.highlights.set("search-results", new Highlight(...ranges));
+};
