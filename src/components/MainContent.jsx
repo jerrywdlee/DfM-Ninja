@@ -321,9 +321,28 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         const d = new Date();
         const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
+        const baseName = template.name || 'New Stage';
+        let maxCount = 0;
+        let hasBaseName = false;
+        
+        activeCase.stages.forEach(stage => {
+            if (stage.name === baseName) {
+                hasBaseName = true;
+                if (maxCount < 1) maxCount = 1;
+            } else if (stage.name && stage.name.startsWith(baseName + ' #')) {
+                const countStr = stage.name.substring((baseName + ' #').length);
+                const count = parseInt(countStr, 10);
+                if (!isNaN(count) && count > maxCount) {
+                    maxCount = count;
+                }
+            }
+        });
+
+        const newName = hasBaseName ? `${baseName} #${maxCount + 1}` : baseName;
+
         const newStage = {
             id: uid,
-            name: template.name,
+            name: newName,
             nc: today,
             steps: (template.steps || []).map(step => ({
                 ...step,
