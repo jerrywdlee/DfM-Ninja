@@ -1,6 +1,7 @@
 ---
 id: footerHoliday
 title: Footer - 年末年始
+version: 1.0.0
 ---
 {{attentions}}
 下記が、本お問い合わせの対応メンバーとなります。  

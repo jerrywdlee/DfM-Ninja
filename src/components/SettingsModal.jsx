@@ -6,10 +6,16 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     const [code, setCode] = useState(rawYaml || '')
     const [error, setError] = useState(null)
     const [activeTab, setActiveTab] = useState('yaml') // 'yaml', 'sysTemp', or 'data'
+    const [sysTempActionMsg, setSysTempActionMsg] = useState(null)
     const fileInputRef = useRef(null)
     const importInputRef = useRef(null)
 
     if (!isOpen) return null
+
+    const showSysTempMsg = (msg) => {
+        setSysTempActionMsg(msg)
+        setTimeout(() => setSysTempActionMsg(null), 3000)
+    }
 
     const handleSave = () => {
         try {
@@ -55,20 +61,27 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                 const newTemp = {
                     id: data.id,
                     title: data.title || data.id,
+                    version: data.version || '1.0.0',
                     renderIf: data.renderIf,
                     content: content
                 }
 
                 const existingIndex = sysTemplates.findIndex(t => t.id === newTemp.id)
                 if (existingIndex !== -1) {
-                    if (!confirm(`Sys Template ID "${newTemp.id}" は既に存在します。上書きしますか？`)) {
+                    const existingTemp = sysTemplates[existingIndex]
+                    const existingVer = existingTemp.version || 'N/A'
+                    const newVer = newTemp.version
+
+                    if (!confirm(`Sys Template ID "${newTemp.id}" は既に存在します。\n現在のバージョン: ${existingVer}\nアップロードするバージョン: ${newVer}\n\n上書きしますか？`)) {
                         return
                     }
                     const updated = [...sysTemplates]
                     updated[existingIndex] = newTemp
                     setSysTemplates(updated)
+                    showSysTempMsg(`✅ "${newTemp.id}" を上書きしました (v${newVer})`)
                 } else {
                     setSysTemplates([...sysTemplates, newTemp])
+                    showSysTempMsg(`✨ "${newTemp.id}" を新しく追加しました (v${newTemp.version})`)
                 }
             } catch (err) {
                 alert(`Error parsing Markdown/YAML:\n${err.message}`)
@@ -215,7 +228,12 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh] relative">
+                {sysTempActionMsg && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-emerald-600/95 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-xl shadow-emerald-900/50 z-[100] animate-fade-in-down whitespace-nowrap">
+                        {sysTempActionMsg}
+                    </div>
+                )}
                 <div className="p-4 border-b border-slate-800 flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -276,13 +294,40 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                         </p>
                         <div className="bg-slate-950 border border-slate-700 rounded-lg overflow-hidden flex flex-col min-h-[300px]">
                             {sysTemplates.map((t, index) => (
-                                <div key={t.id} className={`p-4 flex justify-between items-center ${index !== sysTemplates.length - 1 ? 'border-b border-slate-800' : ''}`}>
+                                <div 
+                                    key={t.id} 
+                                    className={`p-4 flex justify-between items-center group hover:bg-slate-900/80 transition-colors cursor-pointer ${index !== sysTemplates.length - 1 ? 'border-b border-slate-800' : ''}`}
+                                    onDoubleClick={(e) => {
+                                        // prevent body double clicks
+                                        e.stopPropagation()
+                                        const textToCopy = `{{${t.id}}}`;
+                                        navigator.clipboard.writeText(textToCopy).then(() => {
+                                            showSysTempMsg(`📋 コピーしました: ${textToCopy}`);
+                                        });
+                                    }}
+                                    title="Double-click to copy ID as {{id}}"
+                                >
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-slate-200 font-bold">{t.title}</span>
-                                        <span className="text-xs text-slate-500">{t.id}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-slate-200 font-bold">{t.title}</span>
+                                            {t.version && (
+                                                <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full font-mono border border-slate-700">
+                                                    v{t.version}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-slate-500 font-mono group-hover:text-slate-400 transition-colors">{t.id}</span>
+                                            <span className="text-[10px] text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                (Double-click to copy)
+                                            </span>
+                                        </div>
                                     </div>
                                     <button
-                                        onClick={() => handleDeleteSysTemp(t.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDeleteSysTemp(t.id)
+                                        }}
                                         className="text-red-400 hover:text-white hover:bg-red-500/20 px-2 py-1 rounded transition-colors text-sm font-bold flex gap-1 items-center"
                                         title="Delete Template"
                                     >

@@ -1,6 +1,7 @@
 ---
 id: holidayNotice
 title: 休業案内 - 年末年始
+version: 1.0.0
 ---
 
 【休業する窓口】
