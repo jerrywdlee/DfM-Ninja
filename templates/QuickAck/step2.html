@@ -1,26 +1,271 @@
-<div id="quick-ack_step2" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 min-h-[400px] shadow-inner">
-    <div class="grid grid-cols-2 gap-6 h-full">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Prompt</h4>
-                <div class="flex gap-1.5">
-                    <button title="リセット"
-                        class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
-                    <button title="レンダリング"
-                        class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-emerald-100 border border-emerald-200 shadow-sm">⚡️</button>
+<% const uid=new Date().getTime(); %>
+    <div id="quick-ack_step2-<%=uid%>"
+        class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
+
+        <!-- Action Buttons -->
+        <div class="absolute top-4 right-6 flex gap-1.5 focus-within:ring-0">
+            <button title="リセット"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
+            <button title="レンダリング"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
+            <button title="メール作成"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">✉️</button>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-2 gap-6 mt-6">
+            <!-- Left Column -->
+            <div class="flex flex-col gap-4">
+                <!-- Email Head -->
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">Email Head</h4>
+                    </div>
+                    <textarea name="emailHead" data-doubleclick="copy"
+                        class="w-full h-[120px] p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="宛先やご挨拶など..."></textarea>
+                </div>
+
+                <!-- Email 本文 -->
+                <div class="flex flex-col flex-1">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">Email 本文</h4>
+                    </div>
+                    <textarea name="emailBody" data-doubleclick="copy"
+                        class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="メール本文..."></textarea>
                 </div>
             </div>
-            <textarea name="prompt"
-                class="flex-1 w-full min-h-[160px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                placeholder="Prompt goes here..."></textarea>
-        </div>
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Json</h4>
+
+            <!-- Right Column -->
+            <div class="flex flex-col gap-4">
+                <!-- To -->
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">To:</h4>
+                    </div>
+                    <input type="text" name="emailTo" data-doubleclick="copy"
+                        class="w-full p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all focus:bg-white"
+                        placeholder="To..." />
+                </div>
+
+                <!-- CC -->
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">CC:</h4>
+                    </div>
+                    <input type="text" name="emailCc" data-doubleclick="copy"
+                        class="w-full p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all focus:bg-white"
+                        placeholder="CC..." />
+                </div>
+
+                <!-- 件名 -->
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">件名:</h4>
+                    </div>
+                    <input type="text" name="emailSubject" data-doubleclick="copy"
+                        class="w-full p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all focus:bg-white"
+                        placeholder="件名..." />
+                </div>
+
+                <!-- レビュー要請 -->
+                <div class="flex flex-col flex-1">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">レビュー要請:</h4>
+                    </div>
+                    <textarea name="reviewRequest" data-doubleclick="copy"
+                        class="h-full w-full min-h-[120px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="レビュー担当者への依頼文..."></textarea>
+                </div>
             </div>
-            <textarea name="json"
-                class="flex-1 w-full min-h-[160px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                placeholder="{ ... }"></textarea>
         </div>
+
+        <noscript data-name="emailSubject">
+            [TL review][MP][{{Lic_L}}] {{caseNum}} {{caseTitle}}
+        </noscript>
+
+        <noscript data-name="emailHead">
+            {{mailToNames}}
+
+            お疲れ様です、 {{familyName}} です。
+
+            TL review をお願いいたします。
+            QuickACKです。 (SLA: {{SLA}})
+
+            [Next C]
+            {{nextNC_S}}
+
+            [お問い合わせ番号]
+            {{caseNum}}
+
+            [タイトル]
+            {{caseTitle}}
+
+            [お問い合わせ内容]
+            {{custStatement}}
+        </noscript>
+
+        <noscript data-name="emailBody">
+            ご担当者 様
+
+            この度は、お問い合わせいただきましてありがとうございます。
+            本件につきましては、{{CompanyAndSection}}の {{nameWithKana}} が担当させていただきます。
+
+            [お問い合わせ番号]
+            {{caseNum}}
+
+            [タイトル]
+            {{caseTitle}}
+
+            [お問い合わせ内容]
+            {{custStatement}}
+
+            [ご用命事項]
+            {{detailConfirm}}
+
+            [調査方針]
+            先に申し上げました認識に基づき、弊社が開示しております公開情報ならびに、
+            弊社にて保有しております過去の事例を参照のうえ、慎重に調査を進めたうえでご回答申し上げたく存じます。
+
+            誠に恐れ入りますが、調査には一定のお時間を頂戴する可能性がございます。
+            お客様におかれましては、今しばらくお待ちくださいますよう、何卒よろしくお願い申し上げます。
+
+            [次回ご連絡日程]
+            {{nextNC_XL}} までにご連絡させていただきます。
+            引き続きどうぞよろしくお願いいたします。
+
+            下記が、本お問い合わせの対応メンバーとなります。
+            対応中のご質問やご連絡にあたっては、本メールに全員返信いただくか、担当までお電話ください。
+            ----------------------------------------
+            {{agentAndLeaders}}
+            ----------------------------------------
+        </noscript>
+
+        <noscript data-name="emailTo">
+            {{mailTo}}
+        </noscript>
+
+        <noscript data-name="emailCc">
+            {{mailCc}}
+        </noscript>
+
+        <noscript data-name="reviewRequest">
+            @ さん、お疲れ様です。
+            TL review をお願いします。
+            [{{Lic_L}}] {{caseNum}} {{caseTitle}}
+            QuickACKです。 (SLA: {{SLA}})
+        </noscript>
+
+        <script>
+            (function () {
+                const divId = '#quick-ack_step2-<%=uid%>';
+                const $scope = $(divId); // このステップの範囲内だけで探す
+                const $emailHead = $scope.find('textarea[name="emailHead"]');
+                const $emailBody = $scope.find('textarea[name="emailBody"]');
+                const $emailTo = $scope.find('input[name="emailTo"]');
+                const $emailCc = $scope.find('input[name="emailCc"]');
+                const $emailSubject = $scope.find('input[name="emailSubject"]');
+                const $reviewRequest = $scope.find('textarea[name="reviewRequest"]');
+
+                const emailHeadText = $scope.find('noscript[data-name="emailHead"]').text().trim().replace(/\n +/g, '\n');
+                const emailBodyText = $scope.find('noscript[data-name="emailBody"]').text().trim().replace(/\n +/g, '\n');
+                const emailSubjectText = $scope.find('noscript[data-name="emailSubject"]').text().trim().replace(/\n +/g, '\n');
+                const emailToText = $scope.find('noscript[data-name="emailTo"]').text().trim().replace(/\n +/g, '\n');
+                const emailCcText = $scope.find('noscript[data-name="emailCc"]').text().trim().replace(/\n +/g, '\n');
+                const reviewRequestText = $scope.find('noscript[data-name="reviewRequest"]').text().trim().replace(/\n +/g, '\n');
+
+                const caseData = window.currentCase;
+                const activeStep = caseData?.activeStep;
+
+                if (activeStep && activeStep.emailHead) {
+                    $emailHead.val(activeStep.emailHead);
+                } else {
+                    const renderedEmailHead = caseData.render(emailHeadText);
+                    $emailHead.val(renderedEmailHead);
+                }
+                if (activeStep && activeStep.emailBody) {
+                    $emailBody.val(activeStep.emailBody);
+                } else {
+                    const renderedEmailBody = caseData.render(emailBodyText);
+                    $emailBody.val(renderedEmailBody);
+                }
+                if (activeStep && activeStep.emailTo) {
+                    $emailTo.val(activeStep.emailTo);
+                } else {
+                    const renderedEmailTo = caseData.render(emailToText);
+                    $emailTo.val(renderedEmailTo);
+                }
+                if (activeStep && activeStep.emailCc) {
+                    $emailCc.val(activeStep.emailCc);
+                } else {
+                    const renderedEmailCc = caseData.render(emailCcText);
+                    $emailCc.val(renderedEmailCc);
+                }
+                if (activeStep && activeStep.emailSubject) {
+                    $emailSubject.val(activeStep.emailSubject);
+                } else {
+                    const renderedEmailSubject = caseData.render(emailSubjectText);
+                    $emailSubject.val(renderedEmailSubject);
+                }
+                if (activeStep && activeStep.reviewRequest) {
+                    $reviewRequest.val(activeStep.reviewRequest);
+                } else {
+                    const renderedReviewRequest = caseData.render(reviewRequestText);
+                    $reviewRequest.val(renderedReviewRequest);
+                }
+
+                // .on ではなく、直接要素に .click 等でバインドする
+                $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
+                    const emailHeadText = $scope.find('textarea[name="emailHead"]').val();
+                    const emailBodyText = $scope.find('textarea[name="emailBody"]').val();
+                    const emailSubjectText = $scope.find('input[name="emailSubject"]').val();
+                    const reviewRequestText = $scope.find('textarea[name="reviewRequest"]').val();
+
+                    const renderedEmailHead = caseData.render(emailHeadText);
+                    const renderedEmailBody = caseData.render(emailBodyText);
+                    const renderedEmailSubject = caseData.render(emailSubjectText);
+                    const renderedReviewRequest = caseData.render(reviewRequestText);
+
+                    $emailHead.val(renderedEmailHead);
+                    $emailBody.val(renderedEmailBody);
+                    $emailSubject.val(renderedEmailSubject);
+                    $reviewRequest.val(renderedReviewRequest);
+
+                    console.log('emailHead', renderedEmailHead, 'emailBody', renderedEmailBody, 'emailSubject', renderedEmailSubject, 'reviewRequest', renderedReviewRequest);
+                });
+
+                $scope.find('button[title="リセット"]').off('click').on('click', function () {
+                    if (!confirm('リセットしますか？')) {
+                        return;
+                    }
+
+                    const renderedEmailHead = caseData.render(emailHeadText);
+                    const renderedEmailBody = caseData.render(emailBodyText);
+                    const renderedEmailSubject = caseData.render(emailSubjectText);
+                    const renderedReviewRequest = caseData.render(reviewRequestText);
+
+                    $scope.find('textarea[name="emailHead"]').val(renderedEmailHead);
+                    $scope.find('textarea[name="emailBody"]').val(renderedEmailBody);
+                    $scope.find('input[name="emailSubject"]').val(renderedEmailSubject);
+                    $scope.find('textarea[name="reviewRequest"]').val(renderedReviewRequest);
+                    $scope.find('input[name="emailTo"]').val('');
+                    $scope.find('input[name="emailCc"]').val('');
+                });
+
+                $scope.find('button[title="メール作成"]').off('click').on('click', function () {
+                    const emailHead = $scope.find('textarea[name="emailHead"]').val();
+                    const emailBody = $scope.find('textarea[name="emailBody"]').val();
+                    const emailTo = $scope.find('input[name="emailTo"]').val();
+                    const emailCc = $scope.find('input[name="emailCc"]').val();
+                    const emailSubject = $scope.find('input[name="emailSubject"]').val();
+                    const reviewRequest = $scope.find('textarea[name="reviewRequest"]').val();
+
+                    const separator = '\n\n========================================\n\n';
+                    const emailContent = `${emailHead}${separator}${emailBody}`;
+                    const emailUrl = `mailto:${emailTo}?cc=${emailCc}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailContent)}`;
+                    window.open(emailUrl, '_blank');
+                });
+            })();
+        </script>
     </div>
-</div>
