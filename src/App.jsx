@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
 import SettingsModal from './components/SettingsModal'
+import TemplateModal from './components/TemplateModal'
 import NewCaseModal from './components/NewCaseModal'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
@@ -32,6 +33,7 @@ const App = () => {
   const [activeCaseData, setActiveCaseData] = useState(null)
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false)
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_settings')
@@ -129,6 +131,10 @@ const App = () => {
     }
   }
 
+  const handleReorderTemplates = (newTemplates) => {
+    setTemplates(newTemplates)
+  }
+
   const handleUpdateCase = (updatedCase) => {
     // Ensure we are dealing with the plain JSON for storage
     const rawData = updatedCase instanceof DfmCase ? updatedCase.toJSON() : updatedCase
@@ -205,7 +211,24 @@ const App = () => {
         onDeleteTemplate={(id) => {
           setTemplates(prev => prev.filter(t => t.id !== id))
         }}
+        onReorderTemplate={handleReorderTemplates}
       />
+        <TemplateModal
+          isOpen={isTemplateModalOpen}
+          onClose={() => setIsTemplateModalOpen(false)}
+          templates={templates}
+          onSelect={(template) => {
+            if (activeCaseData) {
+              const newCase = new DfmCase(activeCaseData.toJSON(), settings)
+              newCase.addStageFromTemplate(template)
+              handleUpdateCase(newCase)
+            }
+            setIsTemplateModalOpen(false)
+          }}
+          onUpload={handleUploadTemplate}
+          onDelete={(id) => setTemplates(templates.filter(t => t.id !== id))}
+          onReorder={handleReorderTemplates}
+        />
       <NewCaseModal
         isOpen={isNewCaseModalOpen}
         onClose={() => setIsNewCaseModalOpen(false)}

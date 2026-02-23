@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import JSZip from 'jszip'
 import yaml from 'js-yaml'
 
-const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelete }) => {
+const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelete, onReorder }) => {
     const fileInputRef = useRef(null)
     const [actionMsg, setActionMsg] = useState(null)
 
@@ -11,6 +11,20 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
     const showMsg = (msg) => {
         setActionMsg(msg)
         setTimeout(() => setActionMsg(null), 3000)
+    }
+
+    const handleMoveUp = (index) => {
+        if (index === 0) return;
+        const newTemplates = [...templates];
+        [newTemplates[index - 1], newTemplates[index]] = [newTemplates[index], newTemplates[index - 1]];
+        onReorder(newTemplates);
+    }
+
+    const handleMoveDown = (index) => {
+        if (index === templates.length - 1) return;
+        const newTemplates = [...templates];
+        [newTemplates[index], newTemplates[index + 1]] = [newTemplates[index + 1], newTemplates[index]];
+        onReorder(newTemplates);
     }
 
     const handleFileUpload = async (e) => {
@@ -128,18 +142,44 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                                             {template.steps?.length || 0} steps included
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (confirm(`Template "${template.name}" を削除しますか？`)) {
-                                                onDelete(template.id);
-                                            }
-                                        }}
-                                        className="text-slate-600 hover:text-red-500 p-1 transition-colors text-lg active:scale-90"
-                                        title="削除"
-                                    >
-                                        🗑️
-                                    </button>
+                                    <div className="flex flex-col items-center gap-1 border-l border-slate-700 pl-3 ml-2">
+                                        <div className="flex gap-1 mb-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMoveUp(idx);
+                                                }}
+                                                disabled={idx === 0}
+                                                className={`p-1 rounded transition-colors text-xs flex items-center justify-center border ${idx === 0 ? 'text-slate-600 border-transparent cursor-not-allowed' : 'text-slate-400 hover:text-white hover:bg-slate-700 bg-slate-800 border-slate-700 active:scale-90'}`}
+                                                title="上へ移動"
+                                            >
+                                                ▲
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMoveDown(idx);
+                                                }}
+                                                disabled={idx === templates.length - 1}
+                                                className={`p-1 rounded transition-colors text-xs flex items-center justify-center border ${idx === templates.length - 1 ? 'text-slate-600 border-transparent cursor-not-allowed' : 'text-slate-400 hover:text-white hover:bg-slate-700 bg-slate-800 border-slate-700 active:scale-90'}`}
+                                                title="下へ移動"
+                                            >
+                                                ▼
+                                            </button>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (confirm(`Template "${template.name}" を削除しますか？`)) {
+                                                    onDelete(template.id);
+                                                }
+                                            }}
+                                            className="text-slate-500 hover:text-red-400 p-1.5 transition-colors text-lg active:scale-90 bg-slate-800/50 hover:bg-red-500/10 rounded-lg w-full flex items-center justify-center"
+                                            title="削除"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}

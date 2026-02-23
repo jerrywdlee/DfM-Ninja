@@ -165,7 +165,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
     )
 }
 
-const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate }) => {
+const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate, onReorderTemplate }) => {
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
     if (!activeCase) {
@@ -321,6 +321,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                 onSelect={handleSelectTemplate}
                 onUpload={onUploadTemplate}
                 onDelete={onDeleteTemplate}
+                onReorder={onReorderTemplate}
             />
         </div>
     )
