@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react'
 import yaml from 'js-yaml'
+import JSZip from 'jszip'
 
 const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates }) => {
     const [code, setCode] = useState(rawYaml || '')
     const [error, setError] = useState(null)
-    const [activeTab, setActiveTab] = useState('yaml') // 'yaml' or 'sysTemp'
+    const [activeTab, setActiveTab] = useState('yaml') // 'yaml', 'sysTemp', or 'data'
     const fileInputRef = useRef(null)
+    const importInputRef = useRef(null)
 
     if (!isOpen) return null
 
@@ -86,6 +88,131 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         }
     }
 
+    const handleExportCases = async () => {
+        try {
+            const indexStr = localStorage.getItem('dfm_ninja_case_index');
+            if (!indexStr) {
+                alert('No cases to export.');
+                return;
+            }
+            const index = JSON.parse(indexStr);
+            if (!Array.isArray(index) || index.length === 0) {
+                alert('No cases to export.');
+                return;
+            }
+
+            const zip = new JSZip();
+            index.forEach(item => {
+                const caseDataStr = localStorage.getItem(`dfm_ninja_case_${item.id}`);
+                if (caseDataStr) {
+                    zip.file(`MetaData_${item.id}.json`, caseDataStr);
+                }
+            });
+
+            const content = await zip.generateAsync({ type: 'blob' });
+            
+            // Generate filename with YYYYMMDD
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const filename = `DfM-Ninja_Backup_${yyyy}${mm}${dd}.zip`;
+
+            // Trigger download
+            const url = URL.createObjectURL(content);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert('Export failed: ' + e.message);
+        }
+    };
+
+    const handleResetCases = () => {
+        if (!confirm('本当にすべてのケースを削除しますか？\n（※テンプレートや設定は保持されます）\n\nこの操作は元に戻せません。')) {
+            return;
+        }
+        
+        const indexStr = localStorage.getItem('dfm_ninja_case_index');
+        if (indexStr) {
+            try {
+                const index = JSON.parse(indexStr);
+                index.forEach(item => {
+                    localStorage.removeItem(`dfm_ninja_case_${item.id}`);
+                });
+            } catch(e) {}
+        }
+        
+        localStorage.removeItem('dfm_ninja_case_index');
+        alert('すべてのケースを削除しました。画面をリロードします。');
+        window.location.reload();
+    };
+
+    const handleImportCases = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!confirm('バックアップファイル内のケースを取り込みますか？\n（同じ Case ID が存在する場合は上書きされます）')) {
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            const zip = await JSZip.loadAsync(file);
+            const files = Object.keys(zip.files).filter(name => name.endsWith('.json'));
+            
+            if (files.length === 0) {
+                alert('有効なJSONファイルが見つかりませんでした。');
+                return;
+            }
+
+            let index = [];
+            const indexStr = localStorage.getItem('dfm_ninja_case_index');
+            if (indexStr) {
+                try {
+                    index = JSON.parse(indexStr);
+                } catch(e) {}
+            }
+
+            let importedCount = 0;
+
+            for (const filename of files) {
+                const content = await zip.files[filename].async('string');
+                try {
+                    const caseData = JSON.parse(content);
+                    const id = caseData.id || caseData.caseNum;
+                    const title = caseData.title || caseData.caseTitle || 'Imported Case';
+                    
+                    if (id) {
+                        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(caseData));
+                        
+                        // Update index
+                        const existingIdx = index.findIndex(item => item.id === id);
+                        if (existingIdx >= 0) {
+                            index[existingIdx] = { id, title };
+                        } else {
+                            index.push({ id, title });
+                        }
+                        importedCount++;
+                    }
+                } catch (parseErr) {
+                    console.error('Failed to parse ' + filename, parseErr);
+                }
+            }
+
+            localStorage.setItem('dfm_ninja_case_index', JSON.stringify(index));
+            alert(`${importedCount} 件のケースを取り込みました。画面をリロードします。`);
+            window.location.reload();
+
+        } catch (e) {
+            alert('取り込みに失敗しました: ' + e.message);
+        } finally {
+            e.target.value = '';
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
@@ -110,6 +237,12 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                             onClick={() => setActiveTab('sysTemp')}
                         >
                             Sys Temp.
+                        </button>
+                        <button
+                            className={`px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${activeTab === 'data' ? 'bg-slate-800 text-orange-400 shadow-sm' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
+                            onClick={() => setActiveTab('data')}
+                        >
+                            Data Backup
                         </button>
                     </div>
                 </div>
@@ -162,6 +295,57 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                                     <span>No System Templates loaded.</span>
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Data Backup Tab Content */}
+                    <div className={`flex-1 flex flex-col gap-6 overflow-y-auto ${activeTab === 'data' ? '' : 'hidden'}`}>
+                        <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
+                            <h4 className="text-lg font-bold text-slate-200 mb-2">Export Data</h4>
+                            <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
+                                現在所有するすべてのケース情報を `MetaData_&lt;caseNum&gt;.json` のセットとし、zip形式でダウンロードします。
+                                テンプレートなどの設定はエクスポートされません。
+                            </p>
+                            <button
+                                onClick={handleExportCases}
+                                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-900/20 transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                📦 Export Cases
+                            </button>
+                        </div>
+
+                        <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
+                            <h4 className="text-lg font-bold text-slate-200 mb-2">Import Data</h4>
+                            <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
+                                バックアップとしてエクスポートされたZIPファイルを取り込みます。
+                                ローカルに同IDのケースがある場合は<strong>上書き</strong>されます。
+                            </p>
+                            <input 
+                                type="file" 
+                                accept=".zip"
+                                ref={importInputRef}
+                                onChange={handleImportCases}
+                                className="hidden"
+                            />
+                            <button
+                                onClick={() => importInputRef.current?.click()}
+                                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-emerald-900/20 transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                📥 Import Cases
+                            </button>
+                        </div>
+
+                        <div className="bg-red-950/20 border border-red-900/40 p-6 rounded-xl shadow-inner">
+                            <h4 className="text-lg font-bold text-red-400 mb-2">Danger Zone</h4>
+                            <p className="text-sm text-red-400/70 mb-4 pb-4 border-b border-red-900/40">
+                                ローカルに保存されているすべてのケースを削除します。テンプレートや基本設定は保持されます。
+                            </p>
+                            <button
+                                onClick={handleResetCases}
+                                className="px-6 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-red-900/20 transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                🗑️ Reset Cases
+                            </button>
                         </div>
                     </div>
                 </div>
