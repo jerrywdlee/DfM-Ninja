@@ -1,7 +1,7 @@
 ---
 id: footerNormal
 title: Footer - 通常
-version: 1.0.0
+version: 1.0.1
 ---
 {{attentions}}
 下記が、本お問い合わせの対応メンバーとなります。    
@@ -23,11 +23,11 @@ version: 1.0.0
 ご理解くださいますようお願いいたします。 
 
 サポートでの個人情報の取り扱い、および一般データ保護規則 (GDPR) に関する内容については、次の URL をご覧ください。 
-https://privacy.example.org/ja-jp/privacystatement  
-https://www.example.org/ja-jp/trust-center/privacy/gdpr-overview 
+https://privacy.example.org/ja-jp/privacystatement
+https://www.example.org/ja-jp/trust-center/privacy/gdpr-overview
 
-日本FooBar株式会社
-Security ＆ Compliance サポート
+{{CompanyName}}
+{{SectionName}}
 
 サポート窓口営業時間 9:00 ～17:30 (土日祝日、弊社指定休業日除く)
 電話番号 : 0120-720-352 (音声録音の有無を選択後 8 桁の内線番号の入力をお願いします。)

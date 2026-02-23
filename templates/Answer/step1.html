@@ -19,9 +19,9 @@
                 <div class="flex items-center justify-between mt-4 mb-3 px-1">
                     <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">回答文面</h4>
                 </div>
-                <textarea name="answerText" data-doubleclick="copy"
-                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                    placeholder=" ... "></textarea>
+                <div name="answerText" data-doubleclick="copy" contenteditable="true"
+                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
+                    placeholder=" ... "></div>
             </div>
         </div>
         <noscript data-name="prompt">
@@ -52,7 +52,7 @@
                 const divId = '#EmailAnswer_step1-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $prompt = $scope.find('textarea[name="prompt"]');
-                const $answerText = $scope.find('textarea[name="answerText"]');
+                const $answerText = $scope.find('[name="answerText"]');
                 const promptText = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
 
                 const caseData = window.currentCase;
@@ -65,13 +65,17 @@
                     $prompt.val(renderedPrompt);
                 }
                 if (activeStep && activeStep.answerText) {
-                    $answerText.val(activeStep.answerText);
+                    if ($answerText.is('textarea, input')) {
+                        $answerText.val(activeStep.answerText);
+                    } else {
+                        $answerText.html(activeStep.answerText);
+                    }
                 }
 
                 // .on ではなく、直接要素に .click 等でバインドする
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
                     const promptText = $scope.find('textarea[name="prompt"]').val();
-                    const answerTextText = $scope.find('textarea[name="answerText"]').val();
+                    const answerTextText = $answerText.is('textarea, input') ? $answerText.val() : $answerText.html();
 
                     const renderedPrompt = caseData.render(promptText);
                     $prompt.val(renderedPrompt);
@@ -86,7 +90,7 @@
 
                     // リセットしたら、手動でレンダリング
                     $scope.find('textarea[name="prompt"]').val(promptText);
-                    // $scope.find('textarea[name="answerText"]').val('');
+                    // $answerText.val(''); or .html('');
                 });
             })();
         </script>

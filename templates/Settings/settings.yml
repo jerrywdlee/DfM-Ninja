@@ -1,5 +1,6 @@
 TeamName: SCIM Messaging Protection
-CompanyAndSection: 日本FooBar株式会社 Security ＆ Compliance サポート
+CompanyName: 日本FooBar株式会社
+SectionName: Security ＆ Compliance サポート
 Editor: # 自分の情報
   nameWithKana: Demo Agent (デモ エージェント) # フルネーム
   familyName: Agent # 苗字

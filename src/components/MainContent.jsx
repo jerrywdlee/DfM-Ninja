@@ -168,6 +168,132 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
 const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate, onReorderTemplate }) => {
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
+    // Global event listener for contenteditable elements
+    useEffect(() => {
+        const handlePaste = (e) => {
+            const target = e.target;
+            if (!target.isContentEditable) return;
+
+            // Handle image paste
+            if (e.clipboardData.items) {
+                for (let i = 0; i < e.clipboardData.items.length; i++) {
+                    const item = e.clipboardData.items[i];
+                    if (item.type.indexOf("image") !== -1) {
+                        e.preventDefault();
+                        const blob = item.getAsFile();
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            const img = document.createElement("img");
+                            img.src = event.target.result;
+                            img.className = "max-w-full h-auto my-2 rounded-lg border border-slate-200 shadow-sm"; // default styling for pasted images
+                            
+                            const selection = window.getSelection();
+                            if (selection.rangeCount > 0) {
+                                const range = selection.getRangeAt(0);
+                                range.deleteContents();
+                                range.insertNode(img);
+                                range.collapse(false);
+                            } else {
+                                target.appendChild(img);
+                            }
+                        };
+                        reader.readAsDataURL(blob);
+                        return; // Done after first image
+                    }
+                }
+            }
+
+            // Handle URL paste
+            const text = e.clipboardData.getData("text/plain");
+            if (text && text.match(/^https?:\/\/.+/)) {
+                e.preventDefault();
+                const a = document.createElement("a");
+                a.href = text;
+                a.textContent = text;
+                a.className = "text-blue-500 hover:text-blue-600 underline cursor-pointer";
+                a.target = "_blank";
+                a.contentEditable = "false"; 
+                
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    range.deleteContents();
+                    range.insertNode(a);
+                    
+                    // Add a space after the link to allow typing continuously
+                    const space = document.createTextNode(" ");
+                    a.parentNode.insertBefore(space, a.nextSibling);
+                    range.setStartAfter(space);
+                    range.collapse(true);
+                    
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                } else {
+                    target.appendChild(a);
+                    target.appendChild(document.createTextNode(" "));
+                }
+            }
+        };
+
+        const handleKeyDown = (e) => {
+            const target = e.target;
+            if (!target.isContentEditable) return;
+
+            if (e.key === "Enter") {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0 && selection.isCollapsed) {
+                    const range = selection.getRangeAt(0);
+                    const node = range.startContainer;
+                    
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        const textToCursor = node.textContent.substring(0, range.startOffset);
+                        // Regex looks for http/https URLs at the end of the line
+                        const urlMatch = textToCursor.match(/(?:^|\s)(https?:\/\/[^\s]+)$/);
+                        
+                        if (urlMatch) {
+                            const url = urlMatch[1];
+                            const urlStart = textToCursor.lastIndexOf(url);
+                            
+                            const beforeUrlText = node.textContent.substring(0, urlStart);
+                            const afterUrlText = node.textContent.substring(urlStart + url.length);
+                            
+                            const parent = node.parentNode;
+                            
+                            const beforeNode = document.createTextNode(beforeUrlText);
+                            const afterNode = document.createTextNode(afterUrlText);
+                            
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.textContent = url;
+                            a.className = 'text-blue-500 hover:text-blue-600 underline cursor-pointer';
+                            a.target = '_blank';
+                            a.contentEditable = "false";
+                            
+                            parent.insertBefore(beforeNode, node);
+                            parent.insertBefore(a, node);
+                            parent.insertBefore(afterNode, node);
+                            parent.removeChild(node);
+                            
+                            // Let the default Enter behavior happen on the afterNode
+                            const newRange = document.createRange();
+                            newRange.setStart(afterNode, 0);
+                            newRange.collapse(true);
+                            selection.removeAllRanges();
+                            selection.addRange(newRange);
+                        }
+                    }
+                }
+            }
+        };
+
+        document.addEventListener("paste", handlePaste);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("paste", handlePaste);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
     if (!activeCase) {
         return (
             <div className="flex-1 flex items-center justify-center bg-slate-50 text-slate-400">

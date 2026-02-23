@@ -8,7 +8,7 @@
                 class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
             <button title="レンダリング"
                 class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
-            <button title="メール作成"
+            <button title="メール文面コピー"
                 class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">✉️</button>
         </div>
 
@@ -21,9 +21,9 @@
                     <div class="flex items-center justify-between mb-2 px-1">
                         <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">Email Head</h4>
                     </div>
-                    <textarea name="emailHead" data-doubleclick="copy"
-                        class="w-full h-[120px] p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                        placeholder="宛先やご挨拶など..."></textarea>
+                    <div name="emailHead" data-doubleclick="copy" contenteditable="true"
+                        class="w-full h-[120px] p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
+                        placeholder="宛先やご挨拶など..."></div>
                 </div>
 
                 <!-- Email 本文 -->
@@ -31,9 +31,9 @@
                     <div class="flex items-center justify-between mb-2 px-1">
                         <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">Email 本文</h4>
                     </div>
-                    <textarea name="emailBody" data-doubleclick="copy"
-                        class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                        placeholder="メール本文..."></textarea>
+                    <div name="emailBody" data-doubleclick="copy" contenteditable="true"
+                        class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
+                        placeholder="メール本文..."></div>
                 </div>
             </div>
 
@@ -91,10 +91,10 @@
             お疲れ様です、 {{familyName}} です。
 
             TL review をお願いいたします。
-            QuickACKです。 (SLA: {{SLA}})
+            本回答です。
 
             [Next C]
-            {{nextNC_S}}
+            {{currentNC_S}}
 
             [お問い合わせ番号]
             {{caseNum}}
@@ -109,8 +109,9 @@
         <noscript data-name="emailBody">
             ご担当者 様
 
-            この度は、お問い合わせいただきましてありがとうございます。
-            本件につきましては、{{CompanyAndSection}}の {{nameWithKana}} が担当させていただきます。
+            いつもお世話になっております。{{CompanyName}} の {{nameWithKana}} です。
+
+            本メールは以下のお問い合わせに関するご連絡になります。
 
             [お問い合わせ番号]
             {{caseNum}}
@@ -118,21 +119,18 @@
             [タイトル]
             {{caseTitle}}
 
-            [お問い合わせ内容]
-            {{custStatement}}
+            [回答]
 
-            [ご用命事項]
-            {{detailConfirm}}
+            平素より弊社製品をご愛顧いただき、誠にありがとうございます。
+            お問い合わせいただいた件につきまして、以下に回答を記載いたします。
 
-            [調査方針]
-            先に申し上げました認識に基づき、弊社が開示しております公開情報ならびに、
-            弊社にて保有しております過去の事例を参照のうえ、慎重に調査を進めたうえでご回答申し上げたく存じます。
+            {{answerText}}
 
-            誠に恐れ入りますが、調査には一定のお時間を頂戴する可能性がございます。
-            お客様におかれましては、今しばらくお待ちくださいますよう、何卒よろしくお願い申し上げます。
+            ご不明点がございましたら、お気軽にお申し付けください。
+            今後ともどうぞよろしくお願いいたします。
 
             [次回ご連絡日程]
-            {{nextNC_XL}} までにご連絡させていただきます。
+            ご連絡が無い場合でも、{{nextNC_XL}} を目途に改めてご連絡をさせて頂く予定でございます。
             引き続きどうぞよろしくお願いいたします。
 
             {{footerNormal}}
@@ -150,15 +148,16 @@
             @ さん、お疲れ様です。
             TL review をお願いします。
             [{{Lic_L}}] {{caseNum}} {{caseTitle}}
-            QuickACKです。 (SLA: {{SLA}})
+            QuickACK後の本回答です
+            [Next C] {{currentNC_S}}
         </noscript>
 
         <script>
             (function () {
                 const divId = '#EmailAnswer_step2-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
-                const $emailHead = $scope.find('textarea[name="emailHead"]');
-                const $emailBody = $scope.find('textarea[name="emailBody"]');
+                const $emailHead = $scope.find('[name="emailHead"]');
+                const $emailBody = $scope.find('[name="emailBody"]');
                 const $emailTo = $scope.find('input[name="emailTo"]');
                 const $emailCc = $scope.find('input[name="emailCc"]');
                 const $emailSubject = $scope.find('input[name="emailSubject"]');
@@ -175,16 +174,16 @@
                 const activeStep = caseData?.activeStep;
 
                 if (activeStep && activeStep.emailHead) {
-                    $emailHead.val(activeStep.emailHead);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(activeStep.emailHead); else $emailHead.html(activeStep.emailHead);
                 } else {
                     const renderedEmailHead = caseData.render(emailHeadText);
-                    $emailHead.val(renderedEmailHead);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(renderedEmailHead); else $emailHead.html(renderedEmailHead);
                 }
                 if (activeStep && activeStep.emailBody) {
-                    $emailBody.val(activeStep.emailBody);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(activeStep.emailBody); else $emailBody.html(activeStep.emailBody);
                 } else {
                     const renderedEmailBody = caseData.render(emailBodyText);
-                    $emailBody.val(renderedEmailBody);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody); else $emailBody.html(renderedEmailBody);
                 }
                 if (activeStep && activeStep.emailTo) {
                     $emailTo.val(activeStep.emailTo);
@@ -213,8 +212,8 @@
 
                 // .on ではなく、直接要素に .click 等でバインドする
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
-                    const emailHeadText = $scope.find('textarea[name="emailHead"]').val();
-                    const emailBodyText = $scope.find('textarea[name="emailBody"]').val();
+                    const emailHeadText = $emailHead.is('textarea, input') ? $emailHead.val() : $emailHead.html();
+                    const emailBodyText = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
                     const emailSubjectText = $scope.find('input[name="emailSubject"]').val();
                     const reviewRequestText = $scope.find('textarea[name="reviewRequest"]').val();
 
@@ -225,8 +224,8 @@
                     const renderedEmailTo = caseData.render(emailToText);
                     const renderedEmailCc = caseData.render(emailCcText);
 
-                    $emailHead.val(renderedEmailHead);
-                    $emailBody.val(renderedEmailBody);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(renderedEmailHead); else $emailHead.html(renderedEmailHead);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody); else $emailBody.html(renderedEmailBody);
                     $emailSubject.val(renderedEmailSubject);
                     $reviewRequest.val(renderedReviewRequest);
                     $emailTo.val(renderedEmailTo);
@@ -240,26 +239,54 @@
                         return;
                     }
 
-                    $scope.find('textarea[name="emailHead"]').val(emailHeadText);
-                    $scope.find('textarea[name="emailBody"]').val(emailBodyText);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(emailHeadText); else $emailHead.html(emailHeadText);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(emailBodyText); else $emailBody.html(emailBodyText);
                     $scope.find('input[name="emailSubject"]').val(emailSubjectText);
                     $scope.find('textarea[name="reviewRequest"]').val(reviewRequestText);
                     $scope.find('input[name="emailTo"]').val(emailToText);
                     $scope.find('input[name="emailCc"]').val(emailCcText);
                 });
 
-                $scope.find('button[title="メール作成"]').off('click').on('click', function () {
-                    const emailHead = $scope.find('textarea[name="emailHead"]').val();
-                    const emailBody = $scope.find('textarea[name="emailBody"]').val();
-                    const emailTo = $scope.find('input[name="emailTo"]').val();
-                    const emailCc = $scope.find('input[name="emailCc"]').val();
-                    const emailSubject = $scope.find('input[name="emailSubject"]').val();
-                    const reviewRequest = $scope.find('textarea[name="reviewRequest"]').val();
+                $scope.find('button[title="メール文面コピー"]').off('click').on('click', async function () {
+                    const cleanHtml = (html) => {
+                        return html.replace(/<br\s*\/?>/gi, '\n')
+                                   .replace(/<div[^>]*>/gi, '\n')
+                                   .replace(/<\/div>/gi, '')
+                                   .replace(/<p[^>]*>/gi, '\n')
+                                   .replace(/<\/p>/gi, '')
+                                   .replace(/&nbsp;/gi, ' ')
+                                   .trim();
+                    };
+
+                    const emailHeadContent = $emailHead.is('textarea, input') ? $emailHead.val() : cleanHtml($emailHead.html());
+                    const emailBodyContent = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
 
                     const separator = '\n\n========================================\n\n';
-                    const emailContent = `${emailHead}${separator}${emailBody}`;
-                    const emailUrl = `mailto:${emailTo}?cc=${emailCc}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailContent)}`;
-                    window.open(emailUrl, '_blank');
+                    let emailContentHTML = `<div style="font-family: 'Yu Gothic', '游ゴシック', sans-serif; font-size: 12px; white-space: pre-wrap;">`
+                    emailContentHTML += emailHeadContent;
+                    emailContentHTML += separator;
+                    emailContentHTML += emailBodyContent;
+                    emailContentHTML += `</div>`;
+
+                    try {
+                        const blobHTML = new Blob([emailContentHTML], { type: 'text/html' });
+                        
+                        const tmpDiv = document.createElement('div');
+                        tmpDiv.innerHTML = emailHeadContent + separator + emailBodyContent;
+                        const blockText = tmpDiv.textContent;
+                        
+                        const blobText = new Blob([blockText], { type: 'text/plain' });
+                        const data = [new ClipboardItem({
+                            'text/html': blobHTML,
+                            'text/plain': blobText
+                        })];
+
+                        await navigator.clipboard.write(data);
+                        alert('メール文面をコピーしました！（游ゴシック・12px）');
+                    } catch (err) {
+                        console.error('Failed to copy: ', err);
+                        alert('コピーに失敗しました。');
+                    }
                 });
             })();
         </script>
