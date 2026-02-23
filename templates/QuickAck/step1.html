@@ -77,9 +77,9 @@
                         return;
                     }
 
-                    const renderedPrompt = caseData.render(promptText);
-                    $scope.find('textarea[name="prompt"]').val(renderedPrompt);
-                    $scope.find('textarea[name="detailConfirm"]').val('');
+                    // リセットしたら、手動でレンダリング
+                    $scope.find('textarea[name="prompt"]').val(promptText);
+                    // $scope.find('textarea[name="detailConfirm"]').val('');
                 });
             })();
         </script>

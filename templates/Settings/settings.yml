@@ -1,0 +1,39 @@
+TeamName: SCIM Messaging Protection
+CompanyAndSection: 日本FooBar株式会社 Security ＆ Compliance サポート
+Editor: # 自分の情報
+  nameWithKana: Demo Agent (デモ エージェント) # フルネーム
+  familyName: Agent # 苗字
+  extNum: 1234 5678 # 内線番号
+  email: v-demoagent@example.org
+  ttl: 担当エンジニア # 肩書き
+CoEditors: # チーム内の情報
+  -
+    nameWithKana: Demo Leader (デモ リーダー) # フルネーム
+    familyName: Leader # 苗字
+    extNum: 2234 5679 # 内線番号
+    email: v-demoleader@example.org
+    ttl: チーム リーダー
+  -
+    nameWithKana: Demo Coeditor1 (デモ CoEditor1) # フルネーム
+    familyName: Coeditor1 # 苗字
+    extNum: 2234 5680 # 内線番号
+    email: v-democoeditor1@example.org
+    ttl: 担当エンジニア
+  -
+    nameWithKana: Demo Manager (デモ マネージャー) # フルネーム
+    familyName: Leader # 苗字
+    email: v-demomanager@example.org
+    ttl: チーム マネージャー
+MailList:
+  to:
+    - v-demoagent@example.org
+    - v-demoleader@example.org
+  cc:
+    - v-demoleader@example.org
+    - check@example.org
+  ccDfM: # Footerのリストもこの順
+    - v-demoagent@example.org
+    - v-demoleader@example.org
+    - v-demomanager@example.org
+    - check@example.org
+

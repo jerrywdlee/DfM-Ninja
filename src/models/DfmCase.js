@@ -18,6 +18,23 @@ class DfmCase {
         // Internal state for UI shortcuts (Persisted for seamless experience)
         this.activeStageId = data.activeStageId || (this.stages && this.stages.length > 0 ? this.stages[0].id : null);
         this.activeStepId = data.activeStepId || (this.activeStageId ? (Array.isArray(this.activeStage?.steps) ? 'step-0' : 'llm') : null);
+
+        // Determine base Lic once at initialization if not explicitly set
+        if (!data.Lic) {
+            let isPro = false;
+            const checkServName = (obj) => obj && obj.servName && /professional|office\s*technical\s*support/i.test(obj.servName);
+
+            if (checkServName(this)) {
+                isPro = true;
+            } else if (this.stages) {
+                isPro = this.stages.some(stage =>
+                    checkServName(stage) || (stage.steps && stage.steps.some(checkServName))
+                );
+            }
+            this.Lic = isPro ? 'Pro' : 'Pre';
+        } else {
+            this.Lic = data.Lic;
+        }
     }
 
     /**
@@ -43,16 +60,39 @@ class DfmCase {
 
     /**
      * Render a string by replacing {{key}} with values from:
+     * 0. System Templates (recursive)
      * 1. Dynamic NC Date formatting (prevNC, currentNC, nextNC)
      * 2. activeStep
      * 3. activeStage
      * 4. this (DfmCase)
      * 5. settings (injected)
      */
-    render(text) {
+    render(text, depth = 0) {
         if (!text) return '';
+        if (depth > 5) return text; // Prevent infinite recursion
+
         return text.replace(/\{\{(.+?)\}\}/g, (match, key) => {
             const k = key.trim();
+
+            // 0. Check System Templates (window.sysTemplates)
+            if (window.sysTemplates && Array.isArray(window.sysTemplates)) {
+                const sysTemp = window.sysTemplates.find(t => t.id === k);
+                if (sysTemp && sysTemp.content) {
+                    // Evaluate renderIf condition if present
+                    if (sysTemp.renderIf) {
+                        try {
+                            const condition = new Function(`return ${sysTemp.renderIf}`).bind(this);
+                            if (!condition()) {
+                                return ''; // Render as empty string if condition fails
+                            }
+                        } catch (e) {
+                            console.error(`Error evaluating renderIf for template ${sysTemp.id}:`, e);
+                            return ''; // Safety fallback
+                        }
+                    }
+                    return this.render(sysTemp.content, depth + 1);
+                }
+            }
 
             // 1. Dynamic NC Date formatting
             const ncMatch = k.match(/^(prevNC|currentNC|nextNC)(_XS|_S|_L|_XL)?$/);
@@ -91,10 +131,7 @@ class DfmCase {
             const licMatch = k.match(/^Lic(_S|_L|_XL)?$/);
             if (licMatch) {
                 const suffix = licMatch[1] || '';
-                const servName = (this.servName || '').toLowerCase();
-
-                // Determine if Pro
-                const isPro = servName.includes('professional') || servName.includes('office technical support');
+                const isPro = this.Lic === 'Pro';
 
                 if (isPro) {
                     if (suffix === '_S') return 'Pro';

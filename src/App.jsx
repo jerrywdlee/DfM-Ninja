@@ -42,6 +42,10 @@ const App = () => {
     const saved = localStorage.getItem('dfm_ninja_templates')
     return saved ? JSON.parse(saved) : []
   })
+  const [sysTemplates, setSysTemplates] = useState(() => {
+    const saved = localStorage.getItem('dfm_ninja_sys_templates')
+    return saved ? JSON.parse(saved) : []
+  })
 
   // 1.5. DfM Bridge
   const { connectionStatus, execDfM, reconnect } = useDfmBridge()
@@ -66,7 +70,8 @@ const App = () => {
     localStorage.setItem('dfm_ninja_settings', JSON.stringify(settings))
     localStorage.setItem('dfm_ninja_raw_yaml', rawYaml)
     localStorage.setItem('dfm_ninja_templates', JSON.stringify(templates))
-  }, [settings, rawYaml, templates])
+    localStorage.setItem('dfm_ninja_sys_templates', JSON.stringify(sysTemplates))
+  }, [settings, rawYaml, templates, sysTemplates])
 
   const handleNewCase = () => {
     const id = prompt('Please enter Case ID')
@@ -142,6 +147,7 @@ const App = () => {
 
   // Synchronize current case globally for templates
   window.currentCase = activeCaseData;
+  window.sysTemplates = sysTemplates;
 
   const handleDeleteCase = (id) => {
     if (window.confirm(`Case ${id} を削除しますか？`)) {
@@ -183,6 +189,8 @@ const App = () => {
           setRawYaml(yamlText)
           setSettings(jsonConfig)
         }}
+        sysTemplates={sysTemplates}
+        setSysTemplates={setSysTemplates}
       />
     </div>
   )

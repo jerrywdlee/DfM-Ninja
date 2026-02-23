@@ -87,6 +87,9 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                                             </div>
                                         )}
                                         <div className="text-xs text-slate-500 mt-1">
+                                            {template.id}
+                                        </div>
+                                        <div className="text-xs text-slate-500 mt-1">
                                             {template.steps?.length || 0} steps included
                                         </div>
                                     </div>

@@ -135,11 +135,7 @@
             {{nextNC_XL}} までにご連絡させていただきます。
             引き続きどうぞよろしくお願いいたします。
 
-            下記が、本お問い合わせの対応メンバーとなります。
-            対応中のご質問やご連絡にあたっては、本メールに全員返信いただくか、担当までお電話ください。
-            ----------------------------------------
-            {{agentAndLeaders}}
-            ----------------------------------------
+            {{footerNormal}}
         </noscript>
 
         <noscript data-name="emailTo">
@@ -226,11 +222,15 @@
                     const renderedEmailBody = caseData.render(emailBodyText);
                     const renderedEmailSubject = caseData.render(emailSubjectText);
                     const renderedReviewRequest = caseData.render(reviewRequestText);
+                    const renderedEmailTo = caseData.render(emailToText);
+                    const renderedEmailCc = caseData.render(emailCcText);
 
                     $emailHead.val(renderedEmailHead);
                     $emailBody.val(renderedEmailBody);
                     $emailSubject.val(renderedEmailSubject);
                     $reviewRequest.val(renderedReviewRequest);
+                    $emailTo.val(renderedEmailTo);
+                    $emailCc.val(renderedEmailCc);
 
                     console.log('emailHead', renderedEmailHead, 'emailBody', renderedEmailBody, 'emailSubject', renderedEmailSubject, 'reviewRequest', renderedReviewRequest);
                 });
@@ -240,17 +240,12 @@
                         return;
                     }
 
-                    const renderedEmailHead = caseData.render(emailHeadText);
-                    const renderedEmailBody = caseData.render(emailBodyText);
-                    const renderedEmailSubject = caseData.render(emailSubjectText);
-                    const renderedReviewRequest = caseData.render(reviewRequestText);
-
-                    $scope.find('textarea[name="emailHead"]').val(renderedEmailHead);
-                    $scope.find('textarea[name="emailBody"]').val(renderedEmailBody);
-                    $scope.find('input[name="emailSubject"]').val(renderedEmailSubject);
-                    $scope.find('textarea[name="reviewRequest"]').val(renderedReviewRequest);
-                    $scope.find('input[name="emailTo"]').val('');
-                    $scope.find('input[name="emailCc"]').val('');
+                    $scope.find('textarea[name="emailHead"]').val(emailHeadText);
+                    $scope.find('textarea[name="emailBody"]').val(emailBodyText);
+                    $scope.find('input[name="emailSubject"]').val(emailSubjectText);
+                    $scope.find('textarea[name="reviewRequest"]').val(reviewRequestText);
+                    $scope.find('input[name="emailTo"]').val(emailToText);
+                    $scope.find('input[name="emailCc"]').val(emailCcText);
                 });
 
                 $scope.find('button[title="メール作成"]').off('click').on('click', function () {
