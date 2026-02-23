@@ -271,10 +271,14 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         <div className="flex-1 overflow-y-auto bg-slate-100 p-6" onDoubleClick={handleDoubleClick}>
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
-                        <span className="bg-blue-600 text-white px-3 py-1 rounded text-lg font-mono">{activeCase.id}</span>
-                        {activeCase.title}
-                    </h2>
+                    <div className="flex items-center gap-3 w-full">
+                        <input type="text" readOnly data-doubleclick="copy"
+                            className="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-md text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer w-[250px] text-center"
+                            value={activeCase.id} title="Case Number (Double-click to copy)" />
+                        <input type="text" readOnly data-doubleclick="copy"
+                            className="bg-transparent text-slate-800 font-bold text-2xl focus:outline-none flex-1 truncate cursor-pointer"
+                            value={activeCase.title} title="Case Title (Double-click to copy)" />
+                    </div>
                 </div>
 
                 <div className="space-y-2">

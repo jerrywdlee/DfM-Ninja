@@ -1,26 +1,136 @@
-<div id="quick-ack_step3" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 min-h-[400px] shadow-inner">
-    <div class="grid grid-cols-2 gap-6 h-full">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Prompt</h4>
-                <div class="flex gap-1.5">
-                    <button title="リセット"
-                        class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
-                    <button title="レンダリング"
-                        class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-emerald-100 border border-emerald-200 shadow-sm">⚡️</button>
+<% const uid=new Date().getTime(); %>
+    <div id="quick-ack_step3-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
+
+        <!-- Header Actions -->
+        <div class="flex justify-end mb-4">
+            <div class="flex gap-1.5 focus-within:ring-0">
+                <button title="リセット"
+                    class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white border border-emerald-200 shadow-sm text-slate-600">🔄</button>
+                <button title="レンダリング"
+                    class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white border border-emerald-200 shadow-sm text-yellow-500">⚡️</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-[1fr_300px] gap-8">
+
+            <!-- Left Side: Email Body -->
+            <div class="flex flex-col">
+                <h4 class="text-sm font-bold text-emerald-800 mb-2">Email 本文</h4>
+                <textarea name="emailBody" data-doubleclick="copy"
+                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                    placeholder="FoooBarFoooBarFoooBar..."></textarea>
+            </div>
+
+            <!-- Right Side: Actions & CC -->
+            <div class="flex flex-col gap-6 pt-8">
+
+                <div class="flex flex-col gap-3">
+                    <button title="Highlight Case TTL Num"
+                        class="w-full py-2.5 px-4 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95">
+                        Highlight Case TTL Num
+                    </button>
+                    <button title="Highlight CC List"
+                        class="w-full py-2.5 px-4 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95">
+                        Highlight CC List
+                    </button>
+                    <button title="Auto Checkbox"
+                        class="w-full py-2.5 px-4 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95">
+                        Auto Checkbox
+                    </button>
+                </div>
+
+                <div class="flex flex-col">
+                    <h4 class="text-sm font-bold text-emerald-800 mb-2">DfM CC:</h4>
+                    <input type="text" name="dfmCc" data-doubleclick="copy"
+                        class="w-full p-3 text-xs font-mono border border-emerald-200 rounded-lg bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all"
+                        placeholder="FoooBarFoooBarFoooBar" />
                 </div>
             </div>
-            <textarea name="prompt"
-                class="flex-1 w-full min-h-[160px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                placeholder="Prompt goes here..."></textarea>
         </div>
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">Json</h4>
-            </div>
-            <textarea name="json"
-                class="flex-1 w-full min-h-[160px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                placeholder="{ ... }"></textarea>
+
+        <!-- Bottom: Internal Title -->
+        <div class="mt-6">
+            <h4 class="text-sm font-bold text-emerald-800 mb-2">Internal Title:</h4>
+            <input type="text" name="internalTitle" data-doubleclick="copy"
+                class="w-full p-3 text-xs font-mono border border-emerald-200 rounded-lg bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all"
+                placeholder="FoooBarFoooBarFoooBar" />
         </div>
+
+        <noscript data-name="emailBodyText">
+            {{emailBody}}
+        </noscript>
+        <noscript data-name="dfmCcText">
+            {{dfmCc}}
+        </noscript>
+        <noscript data-name="internalTitleText">
+            P{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | SE | Green | PI: N/A | SE: {{currentNC_L}} | Troubleshooting | <QuickAck>
+        </noscript>
+
+        <script>
+            (function () {
+                const divId = '#quick-ack_step3-<%=uid%>';
+                const $scope = $(divId);
+                const $emailBody = $scope.find('textarea[name="emailBody"]');
+                const $dfmCc = $scope.find('input[name="dfmCc"]');
+                const $internalTitle = $scope.find('input[name="internalTitle"]');
+
+                const caseData = window.currentCase;
+                const activeStep = caseData?.activeStep;
+
+                const emailBodyText = $scope.find('noscript[data-name="emailBodyText"]').text().trim().replace(/\\n +/g, '\\n') || '';
+                const dfmCcText = $scope.find('noscript[data-name="dfmCcText"]').text().trim() || '';
+                const internalTitleText = $scope.find('noscript[data-name="internalTitleText"]').text().trim() || '';
+
+                if (activeStep) {
+                    if (activeStep.emailBody) $emailBody.val(activeStep.emailBody);
+                    else $emailBody.val(caseData.render(emailBodyText));
+
+                    if (activeStep.dfmCc) $dfmCc.val(activeStep.dfmCc);
+                    else $dfmCc.val(caseData.render(dfmCcText));
+
+                    if (activeStep.internalTitle) $internalTitle.val(activeStep.internalTitle);
+                    else $internalTitle.val(caseData.render(internalTitleText));
+                }
+
+                $scope.find('button[title="リセット"]').off('click').on('click', function () {
+                    if (!confirm('リセットしますか？')) return;
+                    $emailBody.val(emailBodyText);
+                    $dfmCc.val(dfmCcText);
+                    $internalTitle.val(internalTitleText);
+                });
+
+                $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
+                    $emailBody.val(caseData.render(emailBodyText));
+                    $dfmCc.val(caseData.render(dfmCcText));
+                    $internalTitle.val(caseData.render(internalTitleText));
+                });
+
+                // Dummy actions for now
+                $scope.find('button[title="Highlight Case TTL Num"]').off('click').on('click', function () {
+                    console.log("Highlight Case TTL Num clicked");
+                    if (window.execDfM && window.dfmScripts) {
+                        const keywords = [caseData.caseNum, caseData.caseTitle].filter(Boolean);
+                        window.execDfM(window.dfmScripts.highlightKeywords, keywords)
+                            .then(() => console.log('Highlighted TTL and Num'))
+                            .catch(e => console.error(e));
+                    }
+                });
+
+                $scope.find('button[title="Highlight CC List"]').off('click').on('click', function () {
+                    console.log("Highlight CC List clicked");
+                    if (window.execDfM && window.dfmScripts) {
+                        const ccList = (caseData.emailCcList || []).map(s => s.trim()).filter(Boolean);
+                        window.execDfM(window.dfmScripts.highlightKeywords, ccList)
+                            .then(() => console.log('Highlighted CC List'))
+                            .catch(e => console.error(e));
+                    }
+                });
+
+                $scope.find('button[title="Auto Checkbox"]').off('click').on('click', function () {
+                    console.log("Auto Checkbox clicked");
+                });
+
+            })();
+        </script>
     </div>
-</div>
