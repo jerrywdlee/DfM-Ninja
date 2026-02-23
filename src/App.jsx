@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
 import SettingsModal from './components/SettingsModal'
+import NewCaseModal from './components/NewCaseModal'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
 import * as dfmScripts from './utils/dfmScripts'
@@ -31,6 +32,7 @@ const App = () => {
   const [activeCaseData, setActiveCaseData] = useState(null)
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false)
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_settings')
     return saved ? JSON.parse(saved) : { prompt_template: 'Default prompt...' }
@@ -79,19 +81,39 @@ const App = () => {
     localStorage.setItem('dfm_ninja_sys_templates', JSON.stringify(sysTemplates))
   }, [settings, rawYaml, templates, sysTemplates])
 
-  const handleNewCase = () => {
-    const id = prompt('Please enter Case ID')
-    if (!id) return
-    const newCase = new DfmCase({
+  const handleCreateOrUpdateCase = (jsonData) => {
+    const id = jsonData.caseNum || jsonData.id;
+    const title = jsonData.caseTitle || jsonData.title || 'New Case';
+
+    const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`);
+    const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] };
+
+    // Update with new data
+    const mergedData = {
+      ...existingData,
+      ...jsonData,
       id,
-      title: 'New Case',
-      stages: []
-    }, settings)
-    // Update Index
-    setCases([...cases, { id: newCase.id, title: newCase.title }])
+      title
+    };
+
+    const newCase = new DfmCase(mergedData, settings);
+
     // Save full data
-    localStorage.setItem(`dfm_ninja_case_${newCase.id}`, JSON.stringify(newCase))
-    setActiveCaseId(id)
+    localStorage.setItem(`dfm_ninja_case_${newCase.id}`, JSON.stringify(newCase));
+
+    // Update Index
+    setCases(prev => {
+        const idx = prev.findIndex(c => c.id === id);
+        if (idx >= 0) {
+            const newIndex = [...prev];
+            newIndex[idx] = { id, title };
+            return newIndex;
+        } else {
+            return [...prev, { id, title }];
+        }
+    });
+
+    setActiveCaseId(id);
   }
 
   const handleUploadTemplate = (newTemp) => {
@@ -171,7 +193,7 @@ const App = () => {
         cases={cases}
         activeCaseId={activeCaseId}
         onSelectCase={setActiveCaseId}
-        onNewCase={handleNewCase}
+        onNewCase={() => setIsNewCaseModalOpen(true)}
         onDeleteCase={handleDeleteCase}
         connectionStatus={connectionStatus}
         onReconnect={reconnect}
@@ -186,6 +208,11 @@ const App = () => {
         onDeleteTemplate={(id) => {
           setTemplates(prev => prev.filter(t => t.id !== id))
         }}
+      />
+      <NewCaseModal
+        isOpen={isNewCaseModalOpen}
+        onClose={() => setIsNewCaseModalOpen(false)}
+        onSave={handleCreateOrUpdateCase}
       />
       <SettingsModal
         isOpen={isSettingsOpen}
