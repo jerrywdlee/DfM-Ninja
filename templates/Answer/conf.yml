@@ -1,6 +1,6 @@
 id: EmailAnswer
 name: Answer
-version: 0.0.9
+version: 0.0.11
 description: ""
 steps:
     - name: LLM連携

@@ -1,6 +1,6 @@
 id: EmailQuickAck
 name: QuickAck
-version: 1.0.1
+version: 1.0.4
 description: ""
 steps:
     - name: LLM連携
