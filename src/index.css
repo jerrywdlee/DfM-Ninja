@@ -14,3 +14,12 @@
     }
   }
 }
+
+@layer base {
+  .dfm-stage-content input, 
+  .dfm-stage-content textarea, 
+  .dfm-stage-content [contenteditable="true"] {
+    font-family: 'Yu Gothic', '游ゴシック', sans-serif !important;
+    font-size: 12px !important;
+  }
+}

@@ -171,7 +171,7 @@
                 const reviewRequestText = $scope.find('noscript[data-name="reviewRequest"]').text().trim().replace(/\n +/g, '\n');
 
                 const caseData = window.currentCase;
-                const autoLink = window.autoLinkUrls;
+                const autoLink = window.autoLinkUrls || ((text) => text);
                 const activeStep = caseData?.activeStep;
 
                 if (activeStep && activeStep.emailHead) {
@@ -263,9 +263,10 @@
                     const emailBodyContent = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
 
                     const separator = '\n\n========================================\n\n';
-                    let emailContentHTML = `<div style="font-family: 'Yu Gothic', '游ゴシック', sans-serif; font-size: 12px; white-space: pre-wrap;">`
+                    const style = `font-family: 'Yu Gothic', '游ゴシック', sans-serif; font-size: 12px; white-space: pre-wrap;`;
+                    let emailContentHTML = `<div style="${style}">`
                     emailContentHTML += emailHeadContent;
-                    emailContentHTML += separator;
+                    emailContentHTML += separator;  
                     emailContentHTML += emailBodyContent;
                     emailContentHTML += `</div>`;
 

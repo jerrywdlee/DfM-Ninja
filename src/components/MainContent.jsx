@@ -111,7 +111,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                         })}
                     </div>
 
-                    <div className="bg-emerald-50 rounded-lg border border-emerald-100 min-h-[200px] overflow-hidden">
+                    <div className="bg-emerald-50 rounded-lg border border-emerald-100 min-h-[200px] overflow-hidden dfm-stage-content">
                         {/* Custom Template Rendering */}
                         {Array.isArray(stage.steps) ? (
                             <div
@@ -401,12 +401,19 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                                    .replace(/&nbsp;/gi, ' ')
                                    .trim();
                     };
+
+                    const createHtmlWrapper = (html) => {
+                        const style = `font-family: 'Yu Gothic', '游ゴシック', sans-serif; font-size: 12px; white-space: pre-wrap;`;
+                        return `<div style="${style}">${html}</div>`;
+                    };
+                    
                     const tmpDiv = document.createElement('div');
-                    tmpDiv.innerHTML = cleanHtml(htmlContent);
+                    tmpDiv.innerHTML = createHtmlWrapper(cleanHtml(htmlContent));
+
                     const plainText = tmpDiv.textContent;
 
-                    if (plainText || htmlContent) {
-                        const blobHTML = new Blob([htmlContent], { type: 'text/html' });
+                    if (plainText || tmpDiv.innerHTML) {
+                        const blobHTML = new Blob([tmpDiv.innerHTML], { type: 'text/html' });
                         const blobText = new Blob([plainText], { type: 'text/plain' });
                         
                         await navigator.clipboard.write([new ClipboardItem({
