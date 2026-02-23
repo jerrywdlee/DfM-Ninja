@@ -1,5 +1,5 @@
 <% const uid=new Date().getTime(); %>
-    <div id="EmailQuickAck_step3-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
+    <div id="EmailAnswer_step3-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
 
         <!-- Header Actions -->
         <div class="flex justify-end mb-4">
@@ -69,7 +69,7 @@
 
         <script>
             (function () {
-                const divId = '#EmailQuickAck_step3-<%=uid%>';
+                const divId = '#EmailAnswer_step3-<%=uid%>';
                 const $scope = $(divId);
                 const $emailBody = $scope.find('textarea[name="emailBody"]');
                 const $dfmCc = $scope.find('input[name="dfmCc"]');

@@ -1,5 +1,5 @@
 <% const uid=new Date().getTime(); %>
-    <div id="EmailQuickAck_step2-<%=uid%>"
+    <div id="EmailAnswer_step2-<%=uid%>"
         class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
 
         <!-- Action Buttons -->
@@ -155,7 +155,7 @@
 
         <script>
             (function () {
-                const divId = '#EmailQuickAck_step2-<%=uid%>';
+                const divId = '#EmailAnswer_step2-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $emailHead = $scope.find('textarea[name="emailHead"]');
                 const $emailBody = $scope.find('textarea[name="emailBody"]');

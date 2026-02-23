@@ -1,5 +1,5 @@
 <% const uid=new Date().getTime(); %>
-    <div id="EmailQuickAck_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
+    <div id="EmailAnswer_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
         <div class="grid grid-cols-2 gap-6">
             <div class="flex flex-col">
                 <div class="flex items-center justify-between mb-3 px-1">
@@ -17,9 +17,9 @@
             </div>
             <div class="flex flex-col">
                 <div class="flex items-center justify-between mt-4 mb-3 px-1">
-                    <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">認識合わせ文</h4>
+                    <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest opacity-70">回答文面</h4>
                 </div>
-                <textarea name="detailConfirm" data-doubleclick="copy"
+                <textarea name="answerText" data-doubleclick="copy"
                     class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
                     placeholder=" ... "></textarea>
             </div>
@@ -30,22 +30,29 @@
             {{custStatement}}
             ```
 
-            上記内容を分析し、次のような認識合わせ文を記載、例:
-            ```
-            本お問い合わせにつきましては、以下の内容として認識しております。
-            ・○○○○
-            ・○○○○
-            認識に相違がございましたらご指摘頂けますと幸いでございます。
+            上記質問の回答として、下記の回答文の表現が不適切な箇所を修正し、読みやすいように修正してください。
+            また、文面をPlain Textにし、Code Blockの中に出力してください。
+
+            - 半角英数字の前後に半角スペースはある
+            - お客様名が統一している
+            - 挨拶は不要（定型文あり）
+            - 感情表現は不要、ただしお客様を追及しようとする感覚はしないこと
+            - ケースと関連しない個人情報等は含まれていない
+            - お客様の文脈を考慮して回答する
+
+            回答本文：
             ```
 
-            Plan Textとして、Code Blockで出力してください。
+
+
+            ```
         </noscript>
         <script>
             (function () {
-                const divId = '#EmailQuickAck_step1-<%=uid%>';
+                const divId = '#EmailAnswer_step1-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $prompt = $scope.find('textarea[name="prompt"]');
-                const $detailConfirm = $scope.find('textarea[name="detailConfirm"]');
+                const $answerText = $scope.find('textarea[name="answerText"]');
                 const promptText = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
 
                 const caseData = window.currentCase;
@@ -57,19 +64,19 @@
                     const renderedPrompt = caseData.render(promptText);
                     $prompt.val(renderedPrompt);
                 }
-                if (activeStep && activeStep.detailConfirm) {
-                    $detailConfirm.val(activeStep.detailConfirm);
+                if (activeStep && activeStep.answerText) {
+                    $answerText.val(activeStep.answerText);
                 }
 
                 // .on ではなく、直接要素に .click 等でバインドする
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
                     const promptText = $scope.find('textarea[name="prompt"]').val();
-                    const detailConfirmText = $scope.find('textarea[name="detailConfirm"]').val();
+                    const answerTextText = $scope.find('textarea[name="answerText"]').val();
 
                     const renderedPrompt = caseData.render(promptText);
                     $prompt.val(renderedPrompt);
 
-                    console.log('prompt', renderedPrompt, 'detailConfirm', detailConfirmText);
+                    console.log('prompt', renderedPrompt, 'answerText', answerTextText);
                 });
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
@@ -79,7 +86,7 @@
 
                     // リセットしたら、手動でレンダリング
                     $scope.find('textarea[name="prompt"]').val(promptText);
-                    // $scope.find('textarea[name="detailConfirm"]').val('');
+                    // $scope.find('textarea[name="answerText"]').val('');
                 });
             })();
         </script>
