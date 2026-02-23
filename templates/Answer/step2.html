@@ -171,19 +171,20 @@
                 const reviewRequestText = $scope.find('noscript[data-name="reviewRequest"]').text().trim().replace(/\n +/g, '\n');
 
                 const caseData = window.currentCase;
+                const autoLink = window.autoLinkUrls;
                 const activeStep = caseData?.activeStep;
 
                 if (activeStep && activeStep.emailHead) {
-                    if ($emailHead.is('textarea, input')) $emailHead.val(activeStep.emailHead); else $emailHead.html(activeStep.emailHead);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(activeStep.emailHead); else $emailHead.html(autoLink(activeStep.emailHead));
                 } else {
                     const renderedEmailHead = caseData.render(emailHeadText);
-                    if ($emailHead.is('textarea, input')) $emailHead.val(renderedEmailHead); else $emailHead.html(renderedEmailHead);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(renderedEmailHead); else $emailHead.html(autoLink(renderedEmailHead));
                 }
                 if (activeStep && activeStep.emailBody) {
-                    if ($emailBody.is('textarea, input')) $emailBody.val(activeStep.emailBody); else $emailBody.html(activeStep.emailBody);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(activeStep.emailBody); else $emailBody.html(autoLink(activeStep.emailBody));
                 } else {
                     const renderedEmailBody = caseData.render(emailBodyText);
-                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody); else $emailBody.html(renderedEmailBody);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody); else $emailBody.html(autoLink(renderedEmailBody));
                 }
                 if (activeStep && activeStep.emailTo) {
                     $emailTo.val(activeStep.emailTo);
@@ -224,8 +225,8 @@
                     const renderedEmailTo = caseData.render(emailToText);
                     const renderedEmailCc = caseData.render(emailCcText);
 
-                    if ($emailHead.is('textarea, input')) $emailHead.val(renderedEmailHead); else $emailHead.html(renderedEmailHead);
-                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody); else $emailBody.html(renderedEmailBody);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(renderedEmailHead); else $emailHead.html(autoLink(renderedEmailHead));
+                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody); else $emailBody.html(autoLink(renderedEmailBody));
                     $emailSubject.val(renderedEmailSubject);
                     $reviewRequest.val(renderedReviewRequest);
                     $emailTo.val(renderedEmailTo);
@@ -239,8 +240,8 @@
                         return;
                     }
 
-                    if ($emailHead.is('textarea, input')) $emailHead.val(emailHeadText); else $emailHead.html(emailHeadText);
-                    if ($emailBody.is('textarea, input')) $emailBody.val(emailBodyText); else $emailBody.html(emailBodyText);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(emailHeadText); else $emailHead.html(autoLink(emailHeadText));
+                    if ($emailBody.is('textarea, input')) $emailBody.val(emailBodyText); else $emailBody.html(autoLink(emailBodyText));
                     $scope.find('input[name="emailSubject"]').val(emailSubjectText);
                     $scope.find('textarea[name="reviewRequest"]').val(reviewRequestText);
                     $scope.find('input[name="emailTo"]').val(emailToText);

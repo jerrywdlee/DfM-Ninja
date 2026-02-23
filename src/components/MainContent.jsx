@@ -251,6 +251,11 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                         const urlMatch = textToCursor.match(/(?:^|\s)(https?:\/\/[^\s]+)$/);
                         
                         if (urlMatch) {
+                            // Check if already inside an anchor tag
+                            if (node.parentElement && node.parentElement.closest('a')) {
+                                return;
+                            }
+
                             const url = urlMatch[1];
                             const urlStart = textToCursor.lastIndexOf(url);
                             
@@ -351,44 +356,68 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         onUpdateCase({ ...activeCase, stages: newStages })
     }
 
-    const handleDoubleClick = (e) => {
+    const handleDoubleClick = async (e) => {
         const target = e.target;
         // Check if the clicked element has the specific data attribute
         if (target && target.dataset.doubleclick === 'copy') {
-            let textToCopy = '';
-
-            // Handle input/textarea
-            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-                target.select();
-                textToCopy = target.value;
-            }
-            // Handle contenteditable elements
-            else if (target.isContentEditable) {
-                const range = document.createRange();
-                range.selectNodeContents(target);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-                textToCopy = target.innerText || target.textContent;
-            }
-
-            // Copy to clipboard if there is text
-            if (textToCopy) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    // Visual feedback
-                    const originalBg = target.style.backgroundColor;
-                    const originalTransition = target.style.transition;
+            try {
+                // Initialize visual feedback early
+                const originalBg = target.style.backgroundColor;
+                const originalTransition = target.style.transition;
+                const feedbackAction = () => {
                     target.style.transition = 'background-color 0.2s ease-out';
                     target.style.backgroundColor = '#d1fae5'; // emerald-100
-
                     setTimeout(() => {
                         target.style.backgroundColor = originalBg;
-                        // Restore original transition after fade out
-                        setTimeout(() => {
-                            target.style.transition = originalTransition;
-                        }, 200);
+                        setTimeout(() => { target.style.transition = originalTransition; }, 200);
                     }, 200);
-                }).catch(err => console.error('Failed to copy', err));
+                };
+
+                // Handle input/textarea
+                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                    target.select();
+                    if (target.value) {
+                        await navigator.clipboard.writeText(target.value);
+                        feedbackAction();
+                    }
+                }
+                // Handle contenteditable elements
+                else if (target.isContentEditable) {
+                    const range = document.createRange();
+                    range.selectNodeContents(target);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    
+                    const htmlContent = target.innerHTML;
+                    
+                    // Convert HTML to Plain Text by replacing HTML breaks with \n
+                    const cleanHtml = (html) => {
+                        return html.replace(/<br\s*\/?>/gi, '\n')
+                                   .replace(/<div[^>]*>/gi, '\n')
+                                   .replace(/<\/div>/gi, '')
+                                   .replace(/<p[^>]*>/gi, '\n')
+                                   .replace(/<\/p>/gi, '')
+                                   .replace(/&nbsp;/gi, ' ')
+                                   .trim();
+                    };
+                    const tmpDiv = document.createElement('div');
+                    tmpDiv.innerHTML = cleanHtml(htmlContent);
+                    const plainText = tmpDiv.textContent;
+
+                    if (plainText || htmlContent) {
+                        const blobHTML = new Blob([htmlContent], { type: 'text/html' });
+                        const blobText = new Blob([plainText], { type: 'text/plain' });
+                        
+                        await navigator.clipboard.write([new ClipboardItem({
+                            'text/html': blobHTML,
+                            'text/plain': blobText
+                        })]);
+                        feedbackAction();
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to copy', err);
             }
         }
     };
