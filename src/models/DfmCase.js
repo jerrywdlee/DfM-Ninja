@@ -147,6 +147,23 @@ class DfmCase {
                 }
             }
 
+            // 2.5. Stage Log (Previous Stages)
+            if (k === 'stageLog') {
+                const activeIndex = this.stages.findIndex(s => s.id === this.activeStageId);
+                if (activeIndex <= 0) return '';
+                
+                const previousStages = this.stages.slice(0, activeIndex);
+                const logLines = previousStages.map(stage => {
+                    if (!stage.nc) return `MM/DD ${stage.name}`; // Fallback
+                    const ncDate = new Date(stage.nc);
+                    const mm = String(ncDate.getMonth() + 1).padStart(2, '0');
+                    const dd = String(ncDate.getDate()).padStart(2, '0');
+                    return `${mm}/${dd} ${stage.name}`;
+                });
+                
+                return logLines.join('\n');
+            }
+
             // 3. Dynamic Settings-based formatting
             if (this.settings) {
                 if (k === 'mailTo') {
