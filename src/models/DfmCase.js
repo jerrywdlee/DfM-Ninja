@@ -150,10 +150,10 @@ class DfmCase {
             // 3. Dynamic Settings-based formatting
             if (this.settings) {
                 if (k === 'mailTo') {
-                    return Array.isArray(this.settings.MailList?.cc) ? this.settings.MailList.cc.join(', ') : '';
+                    return Array.isArray(this.settings.MailList?.to) ? this.settings.MailList.to.join(', ') : '';
                 }
                 if (k === 'mailCc') {
-                    return Array.isArray(this.settings.MailList?.to) ? this.settings.MailList.to.join(', ') : '';
+                    return Array.isArray(this.settings.MailList?.cc) ? this.settings.MailList.cc.join(', ') : '';
                 }
                 if (k === 'dfmCc') {
                     return Array.isArray(this.settings.MailList?.ccDfM) ? this.settings.MailList.ccDfM.join(', ') : '';

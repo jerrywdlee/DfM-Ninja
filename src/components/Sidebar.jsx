@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import pkg from '../../package.json'
 
 const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, connectionStatus, onReconnect, onOpenSettings }) => {
     const [search, setSearch] = useState('')
@@ -8,8 +9,11 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, c
 
     return (
         <div className="w-64 bg-slate-900 text-white h-screen flex flex-col border-r border-slate-800 shadow-2xl">
-            <div className="p-6 bg-gradient-to-b from-slate-800 to-slate-900 font-black text-center text-orange-400 text-2xl italic uppercase tracking-tighter border-b border-slate-800">
+            <div className="p-6 bg-gradient-to-b from-slate-800 to-slate-900 font-black text-center text-orange-400 text-2xl italic uppercase tracking-tighter border-b border-slate-800 relative">
                 DfM-Ninja
+                <span className="absolute bottom-2 right-2 text-[9px] text-slate-500 font-normal not-italic tracking-normal">
+                    v{pkg.version}
+                </span>
             </div>
 
             <div className="px-4 py-2 bg-slate-950 flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-slate-500">

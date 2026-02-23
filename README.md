@@ -1,16 +1,35 @@
-# React + Vite
+# DfM-Ninja
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+DfM-Ninja is a premium, frontend-only SPA (Single Page Application) designed to assist Dynamics 365 customer support engineers. It provides a clean, fast, and feature-rich interface to manage support cases, format emails, handle metadata, and easily copy-paste templates into the Dynamics 365 environment.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The application is built with **React** and **Vite**, using **Tailwind CSS** for styling. It runs entirely in the browser and persists data using `localStorage`, requiring no backend server.
 
-## React Compiler
+It uses a Bookmarklet script (found in `tmp/bookmarklet.js`) injected into the DfM (Dynamics 365) page to extract case metadata and communicate with the DfM-Ninja SPA via `postMessage`.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+## Documentation & Templating
 
-## Expanding the ESLint configuration
+DfM-Ninja features a robust templating engine that automatically resolves variables like `{{caseNum}}`, `{{nextNC_XL}}`, and dynamic email configurations from `settings.yml`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+For a full list of rendering variables and how they resolve, please see **[Variables Reference](docs/Variables.md)**.
+
+## Getting Started
+
+1. Clone the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+4. Access the application at `http://localhost:5175`.
+
+## Built With
+- React 18
+- Vite
+- Tailwind CSS
+- JS-YAML (for settings & templates parsing)
+- JSZip (for template bundle uploads)
