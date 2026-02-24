@@ -15,9 +15,9 @@
             <!-- Left Side: Email Body -->
             <div class="flex flex-col">
                 <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80 mb-2">Email 本文</h4>
-                <textarea name="emailBody" data-doubleclick="copy"
-                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                    placeholder="FoooBarFoooBarFoooBar..."></textarea>
+                <div name="emailBodyFinal" data-doubleclick="copy" contenteditable="true"
+                    class="w-full h-[320px] p-4 text-[12px] border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
+                    placeholder="FoooBarFoooBarFoooBar..."></div>
             </div>
 
             <!-- Right Side: Actions & CC -->
@@ -69,11 +69,12 @@
             (function () {
                 const divId = '#EmailQuickAck_step3-<%=uid%>';
                 const $scope = $(divId);
-                const $emailBody = $scope.find('textarea[name="emailBody"]');
+                const $emailBody = $scope.find('[name="emailBodyFinal"]');
                 const $dfmCc = $scope.find('input[name="dfmCc"]');
                 const $internalTitle = $scope.find('input[name="internalTitle"]');
 
                 const caseData = window.currentCase;
+                const autoLink = window.autoLinkUrls || ((text) => text);
                 const activeStep = caseData?.activeStep;
 
                 const emailBodyText = $scope.find('noscript[data-name="emailBodyText"]').text().trim().replace(/\\n +/g, '\\n') || '';
@@ -81,8 +82,14 @@
                 const internalTitleText = $scope.find('noscript[data-name="internalTitleText"]').text().trim() || '';
 
                 if (activeStep) {
-                    if (activeStep.emailBody) $emailBody.val(activeStep.emailBody);
-                    else $emailBody.val(caseData.render(emailBodyText));
+                    if (activeStep.emailBodyFinal) {
+                        if ($emailBody.is('textarea, input')) $emailBody.val(activeStep.emailBodyFinal);
+                        else $emailBody.html(autoLink(activeStep.emailBodyFinal));
+                    } else {
+                        const rendered = caseData.render(emailBodyText);
+                        if ($emailBody.is('textarea, input')) $emailBody.val(rendered);
+                        else $emailBody.html(autoLink(rendered));
+                    }
 
                     if (activeStep.dfmCc) $dfmCc.val(activeStep.dfmCc);
                     else $dfmCc.val(caseData.render(dfmCcText));
@@ -93,13 +100,16 @@
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
-                    $emailBody.val(emailBodyText);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(emailBodyText);
+                    else $emailBody.html(autoLink(emailBodyText));
                     $dfmCc.val(dfmCcText);
                     $internalTitle.val(internalTitleText);
                 });
 
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
-                    $emailBody.val(caseData.render(emailBodyText));
+                    const rendered = caseData.render(emailBodyText);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(rendered);
+                    else $emailBody.html(autoLink(rendered));
                     $dfmCc.val(caseData.render(dfmCcText));
                     $internalTitle.val(caseData.render(internalTitleText));
                 });
