@@ -48,25 +48,29 @@
                 const $detailConfirm = $scope.find('textarea[name="detailConfirm"]');
                 const promptText = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
 
-                const caseData = window.currentCase;
-                const activeStep = caseData?.activeStep;
+                {
+                    const caseDataInitial = window.currentCase;
+                    const activeStepInitial = caseDataInitial?.activeStep;
 
-                if (activeStep && activeStep.prompt) {
-                    $prompt.val(activeStep.prompt);
-                } else {
-                    const renderedPrompt = caseData.render(promptText);
-                    $prompt.val(renderedPrompt);
-                }
-                if (activeStep && activeStep.detailConfirm) {
-                    $detailConfirm.val(activeStep.detailConfirm);
+                    if (activeStepInitial && activeStepInitial.prompt) {
+                        $prompt.val(activeStepInitial.prompt);
+                    } else if (caseDataInitial) {
+                        const renderedPrompt = caseDataInitial.render(promptText);
+                        $prompt.val(renderedPrompt);
+                    }
+                    if (activeStepInitial && activeStepInitial.detailConfirm) {
+                        $detailConfirm.val(activeStepInitial.detailConfirm);
+                    }
                 }
 
                 // .on ではなく、直接要素に .click 等でバインドする
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
-                    const promptText = $scope.find('textarea[name="prompt"]').val();
+                    const caseData = window.currentCase;
+                    if (!caseData) return;
+                    const promptVal = $scope.find('textarea[name="prompt"]').val();
                     const detailConfirmText = $scope.find('textarea[name="detailConfirm"]').val();
 
-                    const renderedPrompt = caseData.render(promptText);
+                    const renderedPrompt = caseData.render(promptVal);
                     $prompt.val(renderedPrompt);
 
                     console.log('prompt', renderedPrompt, 'detailConfirm', detailConfirmText);

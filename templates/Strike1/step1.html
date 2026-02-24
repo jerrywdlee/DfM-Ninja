@@ -173,58 +173,60 @@
                 const emailCcText = $scope.find('noscript[data-name="emailCc"]').text().trim().replace(/\n +/g, '\n');
                 const reviewRequestText = $scope.find('noscript[data-name="reviewRequest"]').text().trim().replace(/\n +/g, '\n');
 
-                const caseData = window.currentCase;
+                const caseDataInitial = window.currentCase;
                 const autoLink = window.autoLinkUrls || ((text) => text);
-                const activeStep = caseData?.activeStep;
+                const activeStepInitial = caseDataInitial?.activeStep;
 
-                if (activeStep && activeStep.emailHead) {
-                    if ($emailHead.is('textarea, input')) $emailHead.val(activeStep.emailHead); else $emailHead.html(autoLink(activeStep.emailHead));
-                } else {
-                    const renderedEmailHead = caseData.render(emailHeadText);
+                if (activeStepInitial && activeStepInitial.emailHead) {
+                    if ($emailHead.is('textarea, input')) $emailHead.val(activeStepInitial.emailHead); else $emailHead.html(autoLink(activeStepInitial.emailHead));
+                } else if (caseDataInitial) {
+                    const renderedEmailHead = caseDataInitial.render(emailHeadText);
                     if ($emailHead.is('textarea, input')) $emailHead.val(renderedEmailHead); else $emailHead.html(autoLink(renderedEmailHead));
                 }
-                if (activeStep && activeStep.emailBody) {
-                    if ($emailBody.is('textarea, input')) $emailBody.val(activeStep.emailBody); else $emailBody.html(autoLink(activeStep.emailBody));
-                } else {
-                    const renderedEmailBody = caseData.render(emailBodyText);
+                if (activeStepInitial && activeStepInitial.emailBody) {
+                    if ($emailBody.is('textarea, input')) $emailBody.val(activeStepInitial.emailBody); else $emailBody.html(autoLink(activeStepInitial.emailBody));
+                } else if (caseDataInitial) {
+                    const renderedEmailBody = caseDataInitial.render(emailBodyText);
                     if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody); else $emailBody.html(autoLink(renderedEmailBody));
                 }
-                if (activeStep && activeStep.emailTo) {
-                    $emailTo.val(activeStep.emailTo);
-                } else {
-                    const renderedEmailTo = caseData.render(emailToText);
+                if (activeStepInitial && activeStepInitial.emailTo) {
+                    $emailTo.val(activeStepInitial.emailTo);
+                } else if (caseDataInitial) {
+                    const renderedEmailTo = caseDataInitial.render(emailToText);
                     $emailTo.val(renderedEmailTo);
                 }
-                if (activeStep && activeStep.emailCc) {
-                    $emailCc.val(activeStep.emailCc);
-                } else {
-                    const renderedEmailCc = caseData.render(emailCcText);
+                if (activeStepInitial && activeStepInitial.emailCc) {
+                    $emailCc.val(activeStepInitial.emailCc);
+                } else if (caseDataInitial) {
+                    const renderedEmailCc = caseDataInitial.render(emailCcText);
                     $emailCc.val(renderedEmailCc);
                 }
-                if (activeStep && activeStep.emailSubject) {
-                    $emailSubject.val(activeStep.emailSubject);
-                } else {
-                    const renderedEmailSubject = caseData.render(emailSubjectText);
+                if (activeStepInitial && activeStepInitial.emailSubject) {
+                    $emailSubject.val(activeStepInitial.emailSubject);
+                } else if (caseDataInitial) {
+                    const renderedEmailSubject = caseDataInitial.render(emailSubjectText);
                     $emailSubject.val(renderedEmailSubject);
                 }
-                if (activeStep && activeStep.reviewRequest) {
-                    $reviewRequest.val(activeStep.reviewRequest);
-                } else {
-                    const renderedReviewRequest = caseData.render(reviewRequestText);
+                if (activeStepInitial && activeStepInitial.reviewRequest) {
+                    $reviewRequest.val(activeStepInitial.reviewRequest);
+                } else if (caseDataInitial) {
+                    const renderedReviewRequest = caseDataInitial.render(reviewRequestText);
                     $reviewRequest.val(renderedReviewRequest);
                 }
 
                 // .on ではなく、直接要素に .click 等でバインドする
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
-                    const emailHeadText = $emailHead.is('textarea, input') ? $emailHead.val() : $emailHead.html();
-                    const emailBodyText = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
-                    const emailSubjectText = $scope.find('input[name="emailSubject"]').val();
-                    const reviewRequestText = $scope.find('textarea[name="reviewRequest"]').val();
+                    const caseData = window.currentCase;
+                    if (!caseData) return;
+                    const headVal = $emailHead.is('textarea, input') ? $emailHead.val() : $emailHead.html();
+                    const bodyVal = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
+                    const subjectVal = $scope.find('input[name="emailSubject"]').val();
+                    const reviewVal = $scope.find('textarea[name="reviewRequest"]').val();
 
-                    const renderedEmailHead = caseData.render(emailHeadText);
-                    const renderedEmailBody = caseData.render(emailBodyText);
-                    const renderedEmailSubject = caseData.render(emailSubjectText);
-                    const renderedReviewRequest = caseData.render(reviewRequestText);
+                    const renderedEmailHead = caseData.render(headVal);
+                    const renderedEmailBody = caseData.render(bodyVal);
+                    const renderedEmailSubject = caseData.render(subjectVal);
+                    const renderedReviewRequest = caseData.render(reviewVal);
                     const renderedEmailTo = caseData.render(emailToText);
                     const renderedEmailCc = caseData.render(emailCcText);
 
