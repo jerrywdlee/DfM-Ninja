@@ -148,17 +148,20 @@ class DfmCase {
             }
 
             // 2.5. Stage Log (Previous Stages)
-            if (k === 'stageLog') {
+            const logMatch = k.match(/^stageLog(_Dot|_Dash)?$/);
+            if (logMatch) {
+                const suffix = logMatch[1];
                 const activeIndex = this.stages.findIndex(s => s.id === this.activeStageId);
                 if (activeIndex <= 0) return '';
                 
+                const prefix = suffix === '_Dot' ? '・' : (suffix === '_Dash' ? '- ' : '');
                 const previousStages = this.stages.slice(0, activeIndex);
                 const logLines = previousStages.map(stage => {
-                    if (!stage.nc) return `MM/DD ${stage.name}`; // Fallback
+                    if (!stage.nc) return `${prefix}MM/DD ${stage.name}`; // Fallback
                     const ncDate = new Date(stage.nc);
                     const mm = String(ncDate.getMonth() + 1).padStart(2, '0');
                     const dd = String(ncDate.getDate()).padStart(2, '0');
-                    return `${mm}/${dd} ${stage.name}`;
+                    return `${prefix}${mm}/${dd} ${stage.name}`;
                 });
                 
                 return logLines.join('\n');
