@@ -27,6 +27,24 @@ For a full list of rendering variables and how they resolve, please see **[Varia
    ```
 4. Access the application at `http://localhost:5175`.
 
+## Deployment & Release
+
+### GitHub Pages (Automatic)
+Pushing changes to the `main` branch automatically triggers a GitHub Action that builds and deploys the latest version to:
+`https://jerrywdlee.github.io/DfM-Ninja/`
+
+> [!IMPORTANT]
+> Ensure **Settings > Pages > Build and deployment > Source** is set to **GitHub Actions**.
+
+### GitHub Releases (Manual/Automated)
+To create a formal release with a downloadable `dist.zip` on GitHub:
+1. Ensure your `package.json` version is updated.
+2. Run the release command:
+   ```bash
+   npm run release
+   ```
+This script automatically tags the current commit with the version number (e.g., `v0.1.5`) and pushes it to GitHub, triggering the release workflow.
+
 ## Built With
 - React 18
 - Vite
