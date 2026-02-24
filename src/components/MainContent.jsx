@@ -356,6 +356,22 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         onUpdateCase({ ...activeCase, stages: newStages })
     }
 
+    const handleExportCase = () => {
+        try {
+            const rawData = activeCase instanceof DfmCase ? activeCase.toJSON() : activeCase;
+            const content = JSON.stringify(rawData, null, 2);
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MetaData_${activeCase.id}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert('Export failed: ' + e.message);
+        }
+    };
+
     const handleMoveStage = (index, direction) => {
         const newStages = [...activeCase.stages]
         const targetIndex = index + direction
@@ -441,13 +457,22 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         <div className="flex-1 overflow-y-auto bg-slate-100 p-6" onDoubleClick={handleDoubleClick}>
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3 w-full">
+                    <div className="flex items-center gap-3 w-full group relative">
                         <input type="text" readOnly data-doubleclick="copy"
                             className="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-md text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer w-[250px] text-center"
                             value={activeCase.id} title="Case Number (Double-click to copy)" />
                         <input type="text" readOnly data-doubleclick="copy"
                             className="bg-transparent text-slate-800 font-bold text-2xl focus:outline-none flex-1 truncate cursor-pointer"
                             value={activeCase.title} title="Case Title (Double-click to copy)" />
+                        <button
+                            onClick={handleExportCase}
+                            className="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors border border-transparent hover:bg-white hover:border-slate-200 hover:shadow-sm opacity-50 hover:opacity-100 flex items-center justify-center shrink-0"
+                            title="Export Case Data"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
