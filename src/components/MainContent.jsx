@@ -5,25 +5,34 @@ import { calculateNcDate } from '../utils/dateUtils'
 
 const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle }) => {
     const containerRef = useRef(null);
-    const activeTab = activeStepId || (Array.isArray(stage.steps) ? 'step-0' : 'llm')
+    const renderedTabRef = useRef(null);
+    const activeTab = activeStepId || 'step-0';
 
-    // Force script execution after innerHTML injection
+    // Force script execution after innerHTML injection and protect DOM from React reconciliation
     useEffect(() => {
         if (isActive && containerRef.current) {
-            const scripts = containerRef.current.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                // Copy all attributes
-                Array.from(oldScript.attributes).forEach(attr => {
-                    newScript.setAttribute(attr.name, attr.value);
+            if (renderedTabRef.current !== activeTab || !containerRef.current.innerHTML.trim()) {
+                const stepIndex = parseInt(activeTab.replace('step-', ''));
+                const htmlContent = stage.steps[stepIndex]?.html || '<div class="p-10 text-center text-slate-400">No content for this step</div>';
+                
+                containerRef.current.innerHTML = htmlContent;
+                renderedTabRef.current = activeTab;
+
+                const scripts = containerRef.current.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    // Copy all attributes
+                    Array.from(oldScript.attributes).forEach(attr => {
+                        newScript.setAttribute(attr.name, attr.value);
+                    });
+                    // Copy content
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    // Replace old script with new one to trigger execution
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
                 });
-                // Copy content
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                // Replace old script with new one to trigger execution
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            });
+            }
         }
-    }, [isActive, activeTab, stage]);
+    }, [isActive, activeTab, stage.steps]);
 
     const handleSaveStep = () => {
         if (!containerRef.current) return;
@@ -97,8 +106,8 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                 <div className="p-4 bg-white border-t border-slate-100">
                     <div className="flex mb-4 bg-slate-100 p-1 rounded-md overflow-x-auto">
                         {(stage.steps && Array.isArray(stage.steps) ? stage.steps : []).map((step, idx) => {
-                            const name = typeof step === 'string' ? step : step.name;
-                            const tabId = typeof step === 'string' ? ['llm', 'confirm', 'reply'][idx] : `step-${idx}`;
+                            const name = step.name;
+                            const tabId = `step-${idx}`;
                             return (
                                 <button
                                     key={idx}
@@ -117,33 +126,13 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                             <div
                                 ref={containerRef}
                                 className="h-full w-full"
-                                dangerouslySetInnerHTML={{
-                                    __html: stage.steps[parseInt(activeTab.replace('step-', ''))]?.html || '<div class="p-10 text-center text-slate-400">No content for this step</div>'
-                                }}
+                                onBlur={handleSaveStep}
                             />
                         ) : (
                             /* Default Fallback UI */
                             <>
-                                {activeTab === 'llm' && (
-                                    <div className="p-4 grid grid-cols-2 gap-4">
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Prompt</h4>
-                                                <div className="flex gap-2">
-                                                    <button title="レンダリング" className="text-xs hover:bg-emerald-200 p-1 rounded transition-colors" onClick={(e) => e.stopPropagation()}>⚡️</button>
-                                                    <button title="リセット" className="text-xs hover:bg-emerald-200 p-1 rounded transition-colors" onClick={(e) => e.stopPropagation()}>🔄</button>
-                                                </div>
-                                            </div>
-                                            <textarea className="w-full h-32 p-2 text-xs font-mono border border-emerald-200 rounded bg-white" placeholder="Prompt goes here..." />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-xs font-bold text-emerald-800 mb-2 uppercase tracking-wide">Json</h4>
-                                            <textarea className="w-full h-32 p-2 text-xs font-mono border border-emerald-200 rounded bg-white" placeholder="{ ... }" />
-                                        </div>
-                                    </div>
-                                )}
-                                {activeTab === 'confirm' && <div className="p-10 text-center text-emerald-600">Confirmation Email Preview...</div>}
-                                {activeTab === 'reply' && <div className="p-10 text-center text-emerald-600">Final Reply Generator...</div>}
+                                {activeTab === 'step-0' && <div className="p-10 text-center text-emerald-600">Under Construction...</div>}
+                                {activeTab === 'step-1' && <div className="p-10 text-center text-emerald-600">Under Construction...</div>}
                             </>
                         )}
                     </div>
