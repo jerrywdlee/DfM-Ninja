@@ -426,19 +426,13 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                                    .trim();
                     };
 
-                    const createHtmlWrapper = (html) => {
-                        const style = `font-family: 'Yu Gothic', '游ゴシック', sans-serif; font-size: 12px; white-space: pre-wrap;`;
-                        return `<div style="${style}">${html}</div>`;
-                    };
-                    
-                    const tmpDiv = document.createElement('div');
-                    tmpDiv.innerHTML = createHtmlWrapper(cleanHtml(htmlContent));
+                    const plainTextCleaned = cleanHtml(target.innerHTML);
+                    const htmlToCopy = plainTextCleaned.replace(/\r?\n|\r/g, '<br>');
+                    const plainToCopy = target.innerText.replace(/^$/gm, ' ');
 
-                    const plainText = tmpDiv.textContent;
-
-                    if (plainText || tmpDiv.innerHTML) {
-                        const blobHTML = new Blob([tmpDiv.innerHTML], { type: 'text/html' });
-                        const blobText = new Blob([plainText], { type: 'text/plain' });
+                    if (plainToCopy || htmlToCopy) {
+                        const blobHTML = new Blob([htmlToCopy], { type: 'text/html' });
+                        const blobText = new Blob([plainToCopy], { type: 'text/plain' });
                         
                         await navigator.clipboard.write([new ClipboardItem({
                             'text/html': blobHTML,

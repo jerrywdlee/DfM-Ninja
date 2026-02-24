@@ -267,19 +267,16 @@
                     const emailBodyContent = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
 
                     const separator = '\n\n========================================\n\n';
-                    const style = `font-family: 'Yu Gothic', '游ゴシック', sans-serif; font-size: 12px; white-space: pre-wrap;`;
-                    let emailContentHTML = `<div style="${style}">`
-                    emailContentHTML += emailHeadContent;
-                    emailContentHTML += separator;  
-                    emailContentHTML += emailBodyContent;
-                    emailContentHTML += `</div>`;
-
+                    let emailContentHTML = emailHeadContent + separator + emailBodyContent;
+                    emailContentHTML = emailContentHTML.replace(/\r?\n|\r/g, '<br>');
+                    
                     try {
                         const blobHTML = new Blob([emailContentHTML], { type: 'text/html' });
                         
                         const tmpDiv = document.createElement('div');
                         tmpDiv.innerHTML = emailHeadContent + separator + emailBodyContent;
-                        const blockText = tmpDiv.textContent;
+                        let blockText = tmpDiv.innerText;
+                        blockText = blockText.replace(/^$/gm, ' ');
                         
                         const blobText = new Blob([blockText], { type: 'text/plain' });
                         const data = [new ClipboardItem({
@@ -288,7 +285,7 @@
                         })];
 
                         await navigator.clipboard.write(data);
-                        alert('メール文面をコピーしました！（游ゴシック・12px）');
+                        alert('メール文面をコピーしました！');
                     } catch (err) {
                         console.error('Failed to copy: ', err);
                         alert('コピーに失敗しました。');
