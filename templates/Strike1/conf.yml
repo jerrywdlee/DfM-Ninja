@@ -1,0 +1,7 @@
+id: Strike1
+name: Strike1
+version: 0.0.1
+description: ""
+steps:
+    - name: 確認メール
+    - name: DfM送信
