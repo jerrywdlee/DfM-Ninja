@@ -5,7 +5,7 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, c
     const [search, setSearch] = useState('')
     const filteredCases = cases.filter(c =>
         c.id.includes(search) || (c.title && c.title.toLowerCase().includes(search.toLowerCase()))
-    )
+    ).reverse()
 
     return (
         <div className="w-64 bg-slate-900 text-white h-screen flex flex-col border-r border-slate-800 shadow-2xl">

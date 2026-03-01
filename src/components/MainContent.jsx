@@ -25,8 +25,8 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                     Array.from(oldScript.attributes).forEach(attr => {
                         newScript.setAttribute(attr.name, attr.value);
                     });
-                    // Copy content
-                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    // Copy content and wrap in a block scope to avoid redeclaration errors (const/let)
+                    newScript.appendChild(document.createTextNode(`{ ${oldScript.innerHTML} }`));
                     // Replace old script with new one to trigger execution
                     oldScript.parentNode.replaceChild(newScript, oldScript);
                 });
@@ -468,6 +468,15 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                             </svg>
                         </button>
                     </div>
+                </div>
+
+                <div className="flex justify-end gap-6 mb-4 text-[10px] font-medium text-slate-400 italic">
+                    {activeCase.createdAt && (
+                        <span>Created At: {activeCase.createdAt.split('T')[0]}</span>
+                    )}
+                    {activeCase.updatedAt && (
+                        <span>Updated At: {activeCase.updatedAt.split('T')[0]}</span>
+                    )}
                 </div>
 
                 <div className="space-y-2">

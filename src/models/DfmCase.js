@@ -14,6 +14,8 @@ class DfmCase {
         this.title = data.title || 'New Case';
         this.SLA = data.SLA || 'Met';
         this.stages = data.stages || [];
+        this.createdAt = data.createdAt || null;
+        this.updatedAt = data.updatedAt || null;
 
         // Internal state for UI shortcuts (Persisted for seamless experience)
         this.activeStageId = data.activeStageId || (this.stages && this.stages.length > 0 ? this.stages[0].id : null);

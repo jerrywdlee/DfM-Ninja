@@ -90,18 +90,20 @@ const App = () => {
     const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`);
     const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] };
 
-    // Update with new data
+    const now = new Date().toISOString();
     const mergedData = {
       ...existingData,
       ...jsonData,
       id,
-      title
+      title,
+      createdAt: existingData.createdAt || now,
+      updatedAt: now
     };
 
     const newCase = new DfmCase(mergedData, settings);
 
     // Save full data
-    localStorage.setItem(`dfm_ninja_case_${newCase.id}`, JSON.stringify(newCase));
+    localStorage.setItem(`dfm_ninja_case_${newCase.id}`, JSON.stringify(newCase.toJSON()));
 
     // Update Index
     setCases(prev => {
@@ -136,12 +138,21 @@ const App = () => {
   }
 
   const handleUpdateCase = (updatedCase) => {
+    const now = new Date().toISOString();
     // Ensure we are dealing with the plain JSON for storage
-    const rawData = updatedCase instanceof DfmCase ? updatedCase.toJSON() : updatedCase
+    const rawData = updatedCase instanceof DfmCase ? updatedCase.toJSON() : { ...updatedCase };
+    
+    rawData.updatedAt = now;
+    if (!rawData.createdAt) rawData.createdAt = now;
+
     localStorage.setItem(`dfm_ninja_case_${rawData.id}`, JSON.stringify(rawData))
 
     // Update state with instance to keep methods
-    setActiveCaseData(updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase, settings))
+    const caseInstance = updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase, settings);
+    caseInstance.updatedAt = now;
+    if (!caseInstance.createdAt) caseInstance.createdAt = now;
+    
+    setActiveCaseData(caseInstance)
 
     // Update index if title changed
     const currentCaseInIndex = cases.find(c => c.id === rawData.id)
@@ -161,16 +172,21 @@ const App = () => {
         const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`)
         const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] }
 
-        const mergedCase = new DfmCase({
+        const now = new Date().toISOString();
+        const mergedCaseData = {
           ...existingData,
-          ...data
-        }, settings);
+          ...data,
+          createdAt: existingData.createdAt || now,
+          updatedAt: now
+        };
+
+        const mergedCase = new DfmCase(mergedCaseData, settings);
 
         setCases(prev => {
           if (prev.find(c => c.id === id)) return prev
           return [...prev, { id, title }]
         })
-        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(mergedCase))
+        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(mergedCase.toJSON()))
         setActiveCaseId(id)
       }).catch(err => console.error('Initial RPC extraction failed', err))
     }
