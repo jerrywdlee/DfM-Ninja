@@ -1,14 +1,16 @@
 {
   "name": "dfm-ninja",
   "private": true,
-  "version": "0.1.8",
+  "version": "0.1.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "build:templates": "node scripts/build-templates.js",
+    "build:templates:bundle": "node scripts/build-templates.js --master"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.0",
