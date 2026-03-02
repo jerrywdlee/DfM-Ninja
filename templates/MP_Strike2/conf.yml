@@ -1,6 +1,6 @@
-id: Strike2
+id: MP_Strike2
 name: Strike2
-version: 0.0.3
+version: 0.0.4
 description: ""
 steps:
     - name: 確認メール

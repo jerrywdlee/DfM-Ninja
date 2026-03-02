@@ -1,8 +1,7 @@
-id: EmailAnswer
-name: Answer
-version: 0.0.14
+id: MP_Strike1
+name: Strike1
+version: 0.0.4
 description: ""
 steps:
-    - name: LLM連携
     - name: 確認メール
     - name: DfM送信

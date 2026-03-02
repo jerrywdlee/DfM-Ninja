@@ -1,7 +1,8 @@
-id: Strike1
-name: Strike1
-version: 0.0.3
+id: MP_QuickAck
+name: QuickAck
+version: 0.0.7
 description: ""
 steps:
+    - name: LLM連携
     - name: 確認メール
     - name: DfM送信
