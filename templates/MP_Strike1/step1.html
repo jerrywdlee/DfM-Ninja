@@ -1,5 +1,5 @@
 <% const uid=new Date().getTime(); %>
-    <div id="Strike1_step1-<%=uid%>"
+    <div id="MP_Strke1_step1-<%=uid%>"
         class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
 
         <!-- Action Buttons -->
@@ -157,7 +157,7 @@
 
         <script>
             (function () {
-                const divId = '#Strike1_step1-<%=uid%>';
+                const divId = '#MP_Strke1_step1-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $emailHead = $scope.find('[name="emailHead"]');
                 const $emailBody = $scope.find('[name="emailBody"]');

@@ -1,5 +1,5 @@
 <% const uid=new Date().getTime(); %>
-    <div id="EmailAnswer_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
+    <div id="MP_Answer_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
         <div class="grid grid-cols-2 gap-6">
             <div class="flex flex-col">
                 <div class="flex items-center justify-between mb-3 px-1">
@@ -49,7 +49,7 @@
         </noscript>
         <script>
             (function () {
-                const divId = '#EmailAnswer_step1-<%=uid%>';
+                const divId = '#MP_Answer_step1-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $prompt = $scope.find('textarea[name="prompt"]');
                 const $answerText = $scope.find('[name="answerText"]');
