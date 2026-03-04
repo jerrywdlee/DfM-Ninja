@@ -1,0 +1,8 @@
+id: MP_Strike3
+name: Strike3 / Close
+version: 0.0.4
+description: ""
+steps:
+    - name: ケースノート
+    - name: 確認メール
+    - name: DfM送信

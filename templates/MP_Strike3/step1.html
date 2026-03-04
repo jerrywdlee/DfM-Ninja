@@ -1,0 +1,184 @@
+<% const uid=new Date().getTime(); %>
+    <div id="MP_Strike3_step1-<%=uid%>"
+        class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
+
+        <!-- Action Buttons -->
+        <div class="absolute top-4 right-6 flex gap-1.5 focus-within:ring-0">
+            <button title="リセット"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
+            <button title="レンダリング"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-2 gap-6 mt-6">
+            <!-- Left Column -->
+            <div class="flex flex-col gap-4">
+                <!-- Case Summary Prompt -->
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Case Summary Prompt <span class="text-[11px] font-normal text-emerald-700/70">(メールのCopilotにて)</span></h4>
+                    </div>
+                    <textarea name="caseSummaryPrompt" data-doubleclick="copy"
+                        class="w-full h-[120px] p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="Copilot用のプロンプト..."></textarea>
+                </div>
+
+                <!-- Case Summary Result -->
+                <div class="flex flex-col flex-1">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Case Summary Result</h4>
+                    </div>
+                    <textarea name="caseSummaryResult" data-doubleclick="copy"
+                        class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="サマリー結果..."></textarea>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="flex flex-col gap-4">
+                <!-- Close Type Radio Buttons -->
+                <div class="flex flex-col bg-white/40 p-3 rounded-xl border border-emerald-200/50 shadow-sm">
+                    <div class="flex items-center gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <input type="radio" name="closeType" value="customerApprove" class="w-4 h-4 text-emerald-600 border-emerald-300 focus:ring-emerald-500 cursor-pointer">
+                            <span class="text-sm font-bold text-emerald-900 group-hover:text-emerald-700 transition-colors">お客様承認Close</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <input type="radio" name="closeType" value="strike3" class="w-4 h-4 text-emerald-600 border-emerald-300 focus:ring-emerald-500 cursor-pointer" checked>
+                            <span class="text-sm font-bold text-emerald-900 group-hover:text-emerald-700 transition-colors">Strike 3</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Close要請 -->
+                <div class="flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Close要請:</h4>
+                    </div>
+                    <textarea name="closeRequest" data-doubleclick="copy"
+                        class="w-full h-full min-h-[350px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="Close要請文..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <noscript data-name="caseSummaryPrompt">
+            メール文面およびメタデータを基づいて、
+            下記のスタイルでこのケースの CASE SUMMARY を生成してください
+
+            生成された文面はPlain Textとして、コードブロックの中に入れてください。
+
+            ```
+            +++++++++++++++++++++++++++
+
+            CASE SUMMARY
+
+            [Scope Agreement]
+
+            [Troubleshooting]
+            ①
+            ②
+            ③
+
+            [Case Status]
+
+            [Next Action]
+
+            +++++++++++++++++++++++++++
+            ```
+        </noscript>
+
+        <noscript data-name="caseSummaryResult"></noscript>
+
+        <noscript data-name="closeRequest">
+            @ さん
+            お疲れ様です。ケースクローズの確認をお願いします。
+
+            [{{Lic_L}}] {{caseNum}} {{caseTitle}}
+
+            SLA Met：CaseBuddy の SLA 項目を確認　Y
+            FQR： 初期対応に問題がなかったか？　Y
+            LQR：クローズ対応に問題がなかったか？　Y
+            Customer Commitments/Follow-ups were kept：コミットメントを守れたか？フォローアップを適切に行ったか？　Y
+            Customer did not ask for case updates：顧客からケースの状況を尋ねられなかったか？　Y
+            There was no need for an ICM on this case：インシデントマネジメントチームのサポートが必要なかったか？　Y
+            All customer Issues were resolved：顧客の事象が解決されたか？　Y
+            Did the case owner resolve the issue：ケース担当者が事象を解決したか？　Y
+            Resolution was confirmed by Customer：顧客が解決を確認したか？　Y
+            Was the issue resolved within 14 days：14 日以内に事象が解決されたか？　{{isResolvedWithin14Days_YN}}
+            Did Customer confirm closure of the case：顧客からクローズ了承があったか？　{{closeType_YN}}
+        </noscript>
+
+        <script>
+            (function () {
+                const divId = '#MP_Strike3_step1-<%=uid%>';
+                const $scope = $(divId);
+                const $caseSummaryPrompt = $scope.find('textarea[name="caseSummaryPrompt"]');
+                const $caseSummaryResult = $scope.find('textarea[name="caseSummaryResult"]');
+                const $closeRequest = $scope.find('textarea[name="closeRequest"]');
+                const $closeTypeRadios = $scope.find('input[name="closeType"]');
+
+                const caseSummaryPromptText = $scope.find('noscript[data-name="caseSummaryPrompt"]').text().trim().replace(/\n +/g, '\n');
+                const caseSummaryResultText = $scope.find('noscript[data-name="caseSummaryResult"]').text().trim().replace(/\n +/g, '\n');
+                const closeRequestText = $scope.find('noscript[data-name="closeRequest"]').text().trim().replace(/\n +/g, '\n');
+
+                const caseDataInitial = window.currentCase;
+                const activeStepInitial = caseDataInitial?.activeStep;
+
+                // Load initial values (Auto-save)
+                if (activeStepInitial && activeStepInitial.caseSummaryPrompt) {
+                    $caseSummaryPrompt.val(activeStepInitial.caseSummaryPrompt);
+                } else if (caseDataInitial) {
+                    $caseSummaryPrompt.val(caseDataInitial.render(caseSummaryPromptText));
+                }
+                
+                if (activeStepInitial && activeStepInitial.caseSummaryResult) {
+                    $caseSummaryResult.val(activeStepInitial.caseSummaryResult);
+                } else if (caseDataInitial) {
+                    $caseSummaryResult.val(caseDataInitial.render(caseSummaryResultText));
+                }
+
+                if (activeStepInitial && activeStepInitial.closeRequest) {
+                    $closeRequest.val(activeStepInitial.closeRequest);
+                } else if (caseDataInitial) {
+                    $closeRequest.val(closeRequestText); // このエリアだけ、最初はレンダリングしない（レンダリングボタンを押すとレンダリングされる）
+                }
+
+                if (activeStepInitial && activeStepInitial.closeType) {
+                    $scope.find(`input[name="closeType"][value="${activeStepInitial.closeType}"]`).prop('checked', true);
+                }
+
+                $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
+                    const caseData = window.currentCase;
+                    if (!caseData) return;
+                    
+                    // 次のレンダリングに現在のラジオ状態を反映させる
+                    const currentCloseType = $scope.find('input[name="closeType"]:checked').val();
+                    if (caseData.activeStep) {
+                        caseData.activeStep.closeType = currentCloseType;
+                    }
+
+                    const promptVal = $caseSummaryPrompt.val();
+                    const resultVal = $caseSummaryResult.val();
+                    const closeVal = $closeRequest.val();
+
+                    $caseSummaryPrompt.val(caseData.render(promptVal));
+                    $caseSummaryResult.val(caseData.render(resultVal));
+                    $closeRequest.val(caseData.render(closeVal));
+                });
+
+                $scope.find('button[title="リセット"]').off('click').on('click', function () {
+                    if (!confirm('リセットしますか？')) {
+                        return;
+                    }
+
+                    $caseSummaryPrompt.val(caseSummaryPromptText);
+                    $caseSummaryResult.val(caseSummaryResultText);
+                    $closeRequest.val(closeRequestText);
+
+                    $scope.find('input[name="closeType"][value="strike3"]').prop('checked', true);
+                });
+            })();
+        </script>
+    </div>

@@ -45,6 +45,11 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
             const name = el.getAttribute('name');
             if (!name) return;
 
+            // For radio/checkbox, only save if it's checked
+            if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) {
+                return;
+            }
+
             let value;
             if (el.hasAttribute('contenteditable')) {
                 value = el.innerHTML;

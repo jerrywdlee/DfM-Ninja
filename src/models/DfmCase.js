@@ -169,6 +169,58 @@ class DfmCase {
                 return logLines.join('\n');
             }
 
+            // 2.6. Close Type variations
+            if (k === 'closeType_Str' || k === 'closeType_YN') {
+                let closeType = null;
+                const step = this.activeStep;
+                if (step && step.closeType !== undefined) {
+                    closeType = step.closeType;
+                } else {
+                    const stage = this.activeStage;
+                    if (stage && Array.isArray(stage.steps)) {
+                        // Look through all steps in reverse order (newest first)
+                        for (let i = stage.steps.length - 1; i >= 0; i--) {
+                            if (stage.steps[i].closeType !== undefined) {
+                                closeType = stage.steps[i].closeType;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (closeType === null) closeType = 'strike3'; // default to strike3
+                const isApprove = (closeType === 'customerApprove');
+
+                if (k === 'closeType_Str') {
+                    return isApprove ? 'お客様承認' : 'Strike3';
+                }
+                if (k === 'closeType_YN') {
+                    return isApprove ? 'Y' : 'N';
+                }
+            }
+
+            // 2.7. Resolution Date variations
+            if (k === 'resolutionDays' || k === 'isResolvedWithin14Days_YN') {
+                if (this.stages && this.stages.length > 0) {
+                    const firstStage = this.stages[0];
+                    const activeStage = this.activeStage || this.stages[this.stages.length - 1];
+                    
+                    if (firstStage.nc && activeStage.nc) {
+                        const firstDate = new Date(firstStage.nc);
+                        const activeDate = new Date(activeStage.nc);
+                        
+                        // Calculate difference in days (simple calculation, non-business days)
+                        const diffTime = Math.abs(activeDate - firstDate);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (k === 'resolutionDays') return diffDays;
+                        if (k === 'isResolvedWithin14Days_YN') return diffDays <= 14 ? 'Y' : 'N';
+                    }
+                }
+                if (k === 'resolutionDays') return '0';
+                if (k === 'isResolvedWithin14Days_YN') return 'Y';
+            }
+
             // 3. Dynamic Settings-based formatting
             if (this.settings) {
                 if (k === 'mailTo') {
