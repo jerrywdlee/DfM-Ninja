@@ -9,9 +9,13 @@ The application is built with **React** and **Vite**, using **Tailwind CSS** for
 It uses a Bookmarklet script (found in `tmp/bookmarklet.js`) injected into the DfM (Dynamics 365) page to extract case metadata and communicate with the DfM-Ninja SPA via `postMessage`.
 
 ## Documentation & Templating
-
-DfM-Ninja features a robust templating engine that automatically resolves variables like `{{caseNum}}`, `{{nextNC_XL}}`, `{{stageLog}}`, and dynamic email configurations from `settings.yml`. Users can construct custom "Stages" by uploading `.zip` templates containing custom HTML and YAML configuration, mapping natively to the tabbed interface.
-
+ 
+DfM-Ninja features a robust templating engine that automatically resolves variables like `{{caseNum}}`, `{{nextNC_XL}}`, `{{stageLog}}`, and dynamic email configurations from `settings.yml`. 
+ 
+In addition to standard variable replacement, it supports **EJS (Embedded JavaScript)** for complex logic (e.g., conditional blocks, formatting) within templates using custom `{% %}` and `{%= %}` delimiters.
+ 
+Users can construct custom "Stages" by uploading `.zip` templates containing custom HTML and YAML configuration, mapping natively to the tabbed interface.
+ 
 For a full list of rendering variables and how they resolve, please see **[Variables Reference](docs/Variables.md)**.
 
 ## Getting Started
