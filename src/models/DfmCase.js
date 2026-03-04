@@ -73,7 +73,36 @@ class DfmCase {
         if (!text) return '';
         if (depth > 5) return text; // Prevent infinite recursion
 
-        return text.replace(/\{\{(.+?)\}\}/g, (match, key) => {
+        // 0. EJS Evaluation (First step)
+        let processedText = text;
+        if (depth === 0 && window.ejs) {
+            try {
+                // Construct context: Case Data + Stage Data + All Steps Data
+                const context = { ...this.toJSON() };
+                const stage = this.activeStage;
+                if (stage) {
+                    // Merge stage properties
+                    Object.keys(stage).forEach(k => {
+                        if (k !== 'steps') context[k] = stage[k];
+                    });
+                    // Merge all steps properties
+                    if (Array.isArray(stage.steps)) {
+                        stage.steps.forEach(s => {
+                            Object.assign(context, s);
+                        });
+                    }
+                }
+                // Add 'this' to context so methods/getters are still accessible
+                context.this = this;
+
+                processedText = window.ejs.render(text, context, { openDelimiter: '{', closeDelimiter: '}' });
+            } catch (e) {
+                console.error('EJS Render Error:', e);
+                // Fallback to original text if EJS fails
+            }
+        }
+
+        return processedText.replace(/\{\{(.+?)\}\}/g, (match, key) => {
             const k = key.trim();
 
             // 0. Check System Templates (window.sysTemplates)
