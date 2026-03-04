@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import yaml from 'js-yaml'
 import JSZip from 'jszip'
 
@@ -9,6 +9,17 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     const [sysTempActionMsg, setSysTempActionMsg] = useState(null)
     const fileInputRef = useRef(null)
     const importInputRef = useRef(null)
+
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null
 
@@ -265,13 +276,13 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     </div>
                 </div>
 
-                <div className="p-6 flex-1 overflow-hidden flex flex-col gap-4">
+                <div className="p-6 flex-1 overflow-hidden flex flex-col gap-4 min-h-0">
                     {/* YAML Tab Content */}
-                    <div className={`flex-1 flex flex-col gap-4 ${activeTab === 'yaml' ? '' : 'hidden'}`}>
+                    <div className={`flex-1 flex flex-col gap-4 min-h-0 ${activeTab === 'yaml' ? 'flex' : 'hidden'}`}>
                         <p className="text-xs text-slate-400">
                             Configure system prompts, templates, and UI behavior using YAML format.
                         </p>
-                        <div className="flex-1 min-h-[300px] relative border border-slate-700 rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-orange-500/50">
+                        <div className="flex-1 min-h-[400px] relative border border-slate-700 rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-orange-500/50">
                             <textarea
                                 className="absolute inset-0 w-full h-full bg-slate-950 p-4 text-sm font-mono text-emerald-400 resize-none focus:outline-none"
                                 value={code}
@@ -288,11 +299,11 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     </div>
 
                     {/* Sys Temp Tab Content */}
-                    <div className={`flex-1 flex flex-col gap-4 overflow-y-auto ${activeTab === 'sysTemp' ? '' : 'hidden'}`}>
+                    <div className={`flex-1 flex flex-col gap-4 min-h-0 ${activeTab === 'sysTemp' ? '' : 'hidden'}`}>
                         <p className="text-xs text-slate-400">
                             Upload System Templates (.md format with YAML frontmatter).
                         </p>
-                        <div className="bg-slate-950 border border-slate-700 rounded-lg overflow-hidden flex flex-col min-h-[300px]">
+                        <div className="bg-slate-950 border border-slate-700 rounded-lg flex flex-col flex-1 overflow-y-auto min-h-0">
                             {sysTemplates.map((t, index) => (
                                 <div 
                                     key={t.id} 
@@ -344,7 +355,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     </div>
 
                     {/* Data Backup Tab Content */}
-                    <div className={`flex-1 flex flex-col gap-6 overflow-y-auto ${activeTab === 'data' ? '' : 'hidden'}`}>
+                    <div className={`flex-1 flex flex-col gap-6 overflow-y-auto min-h-0 ${activeTab === 'data' ? '' : 'hidden'}`}>
                         <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
                             <h4 className="text-lg font-bold text-slate-200 mb-2">Export Data</h4>
                             <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
