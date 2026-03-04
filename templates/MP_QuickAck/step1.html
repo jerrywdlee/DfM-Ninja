@@ -25,20 +25,27 @@
             </div>
         </div>
         <noscript data-name="prompt">
-            現在のお問い合わせ内容は以下です。
-            ```
+            # Role: Expert Technical Support Engineer
+            # Task: Analyze customer statement and draft a clear "Understanding/Recognition" text.
+            
+            # Context (Customer Statement):
+            """
             {{custStatement}}
-            ```
+            """
 
-            上記内容を分析し、次のような認識合わせ文を記載、例:
+            # Instructions:
+            1. Analyze the core issue and technical context from the statement.
+            2. Draft a concise "Recognition/Alignment" (認識合わせ) text in Japanese.
+            3. The output MUST be formatted as a "Plan Text" within a single Code Block.
+            4. Focus on clarity and brevity. Avoid redundant opening/closing remarks.
+
+            # Output Example:
             ```
             本お問い合わせにつきましては、以下の内容として認識しております。
-            ・○○○○
-            ・○○○○
+            ・[具体事象]
+            ・[発生環境/条件]
             認識に相違がございましたらご指摘頂けますと幸いでございます。
             ```
-
-            Plan Textとして、Code Blockで出力してください。
         </noscript>
         <script>
             (function () {
