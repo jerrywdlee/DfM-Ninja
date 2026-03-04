@@ -448,36 +448,42 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
     };
 
     return (
-        <div className="flex-1 overflow-y-auto bg-slate-100 p-6" onDoubleClick={handleDoubleClick}>
-            <div className="max-w-4xl mx-auto">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3 w-full group relative">
-                        <input type="text" readOnly data-doubleclick="copy"
-                            className="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-md text-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer w-[250px] text-center"
-                            value={activeCase.id} title="Case Number (Double-click to copy)" />
-                        <input type="text" readOnly data-doubleclick="copy"
-                            className="bg-transparent text-slate-800 font-bold text-2xl focus:outline-none flex-1 truncate cursor-pointer"
-                            value={activeCase.title} title="Case Title (Double-click to copy)" />
+        <div className="flex-1 overflow-y-auto bg-slate-100" onDoubleClick={handleDoubleClick}>
+            {/* Sticky Header Container */}
+            <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-md border-b border-slate-200/60 px-6 py-4 mb-2">
+                <div className="max-w-4xl mx-auto">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <input type="text" readOnly data-doubleclick="copy"
+                                className="bg-blue-600 text-white font-black px-4 py-2 rounded-lg text-lg shadow-lg shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer w-[240px] text-center shrink-0 border-none tracking-tight"
+                                value={activeCase.id} title="Case Number (Double-click to copy)" />
+                            <input type="text" readOnly data-doubleclick="copy"
+                                className="bg-transparent text-slate-900 font-extrabold text-2xl focus:outline-none flex-1 truncate cursor-pointer tracking-tight"
+                                value={activeCase.title} title="Case Title (Double-click to copy)" />
+                        </div>
                         <button
                             onClick={handleExportCase}
-                            className="text-slate-400 hover:text-blue-600 p-2 rounded-lg transition-colors border border-transparent hover:bg-white hover:border-slate-200 hover:shadow-sm opacity-50 hover:opacity-100 flex items-center justify-center shrink-0"
+                            className="text-slate-400 hover:text-blue-600 p-2.5 rounded-xl transition-all border border-transparent hover:bg-white hover:border-slate-200 hover:shadow-sm opacity-60 hover:opacity-100 flex items-center justify-center shrink-0 active:scale-95"
                             title="Export Case Data"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                         </button>
                     </div>
+                    
+                    <div className="flex justify-end gap-6 mt-2 text-[10px] font-bold text-slate-400/80 italic tracking-wider">
+                        {activeCase.createdAt && (
+                            <span>Created At: {activeCase.createdAt.split('T')[0]}</span>
+                        )}
+                        {activeCase.updatedAt && (
+                            <span>Updated At: {activeCase.updatedAt.split('T')[0]}</span>
+                        )}
+                    </div>
                 </div>
+            </div>
 
-                <div className="flex justify-end gap-6 mb-4 text-[10px] font-medium text-slate-400 italic">
-                    {activeCase.createdAt && (
-                        <span>Created At: {activeCase.createdAt.split('T')[0]}</span>
-                    )}
-                    {activeCase.updatedAt && (
-                        <span>Updated At: {activeCase.updatedAt.split('T')[0]}</span>
-                    )}
-                </div>
+            <div className="max-w-4xl mx-auto px-6 pb-12">
 
                 <div className="space-y-2">
                     {activeCase.stages.map((stage, index) => (
