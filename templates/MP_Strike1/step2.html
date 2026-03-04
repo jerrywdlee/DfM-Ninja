@@ -109,11 +109,14 @@
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
-                    const rendered = caseData.render(emailBodyText);
+
+                    const currentBody = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
+                    const rendered = caseData.render(currentBody);
                     if ($emailBody.is('textarea, input')) $emailBody.val(rendered);
                     else $emailBody.html(autoLink(rendered));
-                    $dfmCc.val(caseData.render(dfmCcText));
-                    $internalTitle.val(caseData.render(internalTitleText));
+
+                    $dfmCc.val(caseData.render($dfmCc.val()));
+                    $internalTitle.val(caseData.render($internalTitle.val()));
                 });
 
                 // Dummy actions for now
