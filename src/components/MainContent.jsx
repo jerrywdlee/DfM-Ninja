@@ -504,6 +504,9 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                         {activeCase.updatedAt && (
                             <span>Updated At: {activeCase.updatedAt.split('T')[0]}</span>
                         )}
+                        {activeCase.resolvedAt && (
+                            <span>Resolved At: {activeCase.resolvedAt.split('T')[0]}</span>
+                        )}
                     </div>
                 </div>
             </div>

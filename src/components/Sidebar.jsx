@@ -6,7 +6,13 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
     const [showResolved, setShowResolved] = useState(false)
 
     const filteredCases = cases.filter(c => {
-        const matchesSearch = c.id.includes(search) || (c.title && c.title.toLowerCase().includes(search.toLowerCase()));
+        const keywords = search.split(',').map(k => k.trim()).filter(k => k !== '');
+        
+        const matchesSearch = keywords.length === 0 || keywords.some(k => {
+            const lowerK = k.toLowerCase();
+            return c.id.toLowerCase().includes(lowerK) || (c.title && c.title.toLowerCase().includes(lowerK));
+        });
+
         const matchesResolved = !c.resolvedAt || showResolved;
         return matchesSearch && matchesResolved;
     }).reverse()
@@ -38,7 +44,8 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                     <div className="relative flex-1 group">
                         <input
                             type="text"
-                            placeholder="Search cases..."
+                            placeholder="Search (`,` for OR)..."
+                            title="Multiple keywords separated by commas (OR search)"
                             className="w-full pl-8 pr-2 py-1.5 bg-slate-950 rounded border border-slate-800 text-[11px] focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/10 transition-all text-slate-200 placeholder-slate-600"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -48,7 +55,7 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                     <button
                         onClick={() => setShowResolved(!showResolved)}
                         className={`p-1.5 rounded border transition-all flex items-center justify-center shrink-0 ${showResolved ? 'bg-orange-500/10 border-orange-500/40 text-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.1)]' : 'bg-slate-950 border-slate-800 text-slate-600 hover:border-slate-700 hover:text-slate-400'}`}
-                        title={showResolved ? "解決済みを非表示" : "解決済みを表示"}
+                        title={showResolved ? "Hide resolved cases" : "Show resolved cases"}
                     >
                         <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center transition-all ${showResolved ? 'border-orange-400 bg-orange-400' : 'border-slate-700'}`}>
                             {showResolved && <span className="text-[9px] text-slate-900 font-black">✓</span>}
