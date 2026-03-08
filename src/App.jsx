@@ -7,6 +7,7 @@ import NewCaseModal from './components/NewCaseModal'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
 import * as dfmScripts from './utils/dfmScripts'
+import pkg from '../package.json'
 
 const App = () => {
   // 1. Initial State & Migration
@@ -35,6 +36,7 @@ const App = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false)
+  const [isLogoHovered, setIsLogoHovered] = useState(false)
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_settings')
     return saved ? JSON.parse(saved) : { prompt_template: 'Default prompt...' }
@@ -244,6 +246,7 @@ const App = () => {
                 connectionStatus={connectionStatus}
                 onReconnect={reconnect}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                onLogoHover={setIsLogoHovered}
             />
       <MainContent
         activeCase={activeCaseData}
@@ -288,6 +291,33 @@ const App = () => {
         sysTemplates={sysTemplates}
         setSysTemplates={setSysTemplates}
       />
+      
+      {/* GitHub Corner (Top-Left) */}
+      <a
+        href={pkg.homepage}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`github-corner transition-opacity duration-300 hover:opacity-100 ${isLogoHovered ? 'opacity-100' : 'opacity-5'}`}
+        aria-label="View source on GitHub"
+        title="View source on GitHub"
+        style={{
+          position: 'absolute',
+          width: '30px',
+          height: '30px',
+          display: 'inline-block',
+          clipPath: 'polygon(0% 0%, 100% 0%, 0% 100%)',
+          top: 0,
+          left: 0,
+          zIndex: 100,
+          textDecoration: 'none'
+        }}
+      >
+        <svg width="30" height="30" viewBox="0 0 21.147 21.147" xmlSpace="preserve" xmlns="http://www.w3.org/2000/svg" fill="#f97316" aria-hidden="true" focusable="false">
+          <g transform="rotate(-90 10.5735 10.5735)">
+            <path d="M21.147 0H0l9.535 9.535c.024-.025.1-.03.125-.059.258-.23.502-.48.737-.735-.116-.084-.234-.168-.338-.268-.284-.247-.509-.585-.537-.969-.05-.352.178-.652.223-.99.049-.225-.018-.45-.027-.675-.015-.072.03-.167.115-.142.243.091.37.36.402.604.064.354-.12.7-.047 1.054.068.407.423.699.792.843.18-.122.378-.231.597-.259.032-.013.116.008.116-.017-.39-.488-.72-1.073-.725-1.714-.013-.672.348-1.289.8-1.76.377-.44.928-.72 1.505-.763.071-.057.104-.17.164-.247.208-.274.472-.516.785-.665.078-.049.169-.091.229.006.265.28.39.659.494 1.021.04.115.038.253.099.355.344.213.678.445.959.738.316.3.604.63.827 1.005.048.098.108.176.227.173.427.102.877.225 1.212.525.032.035.088.078.073.132a2.064 2.064 0 0 1-.967 1.044c-.009.39-.147.774-.368 1.093a3.65 3.65 0 0 1-1.186 1.002 2.012 2.012 0 0 1-1.067.221c-.608-.029-1.148-.366-1.618-.726a1.283 1.283 0 0 1-.234.666c-.421.479-.896.909-1.322 1.383-.038.022-.029.093-.052.117l9.62 9.619z" />
+          </g>
+        </svg>
+      </a>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import pkg from '../../package.json'
 
-const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, onToggleResolveCase, connectionStatus, onReconnect, onOpenSettings }) => {
+const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, onToggleResolveCase, connectionStatus, onReconnect, onOpenSettings, onLogoHover }) => {
     const [search, setSearch] = useState('')
     const [showResolved, setShowResolved] = useState(false)
 
@@ -19,7 +19,11 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
 
     return (
         <div className="w-72 bg-slate-900 text-white h-screen flex flex-col border-r border-slate-800 shadow-2xl font-sans shrink-0">
-            <div className="p-5 bg-gradient-to-b from-slate-800 to-slate-900 font-black text-center text-orange-400 text-xl italic uppercase tracking-tighter border-b border-slate-800 relative select-none">
+            <div 
+                className="p-5 bg-gradient-to-b from-slate-800 to-slate-900 font-black text-center text-orange-400 text-xl italic uppercase tracking-tighter border-b border-slate-800 relative select-none"
+                onMouseEnter={() => onLogoHover(true)}
+                onMouseLeave={() => onLogoHover(false)}
+            >
                 DfM-Ninja
                 <span className="absolute bottom-2 right-2 text-[8px] text-slate-500 font-normal not-italic tracking-normal">
                     v{pkg.version}
