@@ -16,6 +16,7 @@ class DfmCase {
         this.stages = data.stages || [];
         this.createdAt = data.createdAt || null;
         this.updatedAt = data.updatedAt || null;
+        this.resolvedAt = data.resolvedAt || null;
 
         // Internal state for UI shortcuts (Persisted for seamless experience)
         this.activeStageId = data.activeStageId || (this.stages && this.stages.length > 0 ? this.stages[0].id : null);

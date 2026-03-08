@@ -137,87 +137,114 @@ const App = () => {
     setTemplates(newTemplates)
   }
 
-  const handleUpdateCase = (updatedCase) => {
-    const now = new Date().toISOString();
-    // Ensure we are dealing with the plain JSON for storage
-    const rawData = updatedCase instanceof DfmCase ? updatedCase.toJSON() : { ...updatedCase };
-    
-    rawData.updatedAt = now;
-    if (!rawData.createdAt) rawData.createdAt = now;
-
-    localStorage.setItem(`dfm_ninja_case_${rawData.id}`, JSON.stringify(rawData))
-
-    // Update state with instance to keep methods
-    const caseInstance = updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase, settings);
-    caseInstance.updatedAt = now;
-    if (!caseInstance.createdAt) caseInstance.createdAt = now;
-    
-    setActiveCaseData(caseInstance)
-
-    // Update index if title changed
-    const currentCaseInIndex = cases.find(c => c.id === rawData.id)
-    if (currentCaseInIndex && currentCaseInIndex.title !== rawData.title) {
-      setCases(cases.map(c => c.id === rawData.id ? { id: c.id, title: rawData.title } : c))
-    }
-  }
-
-  // 3. Initial Extraction & Global State Sync
-  useEffect(() => {
-    if (connectionStatus === 'connected') {
-      // Data extraction via RPC
-      execDfM(dfmScripts.extractCaseData).then(data => {
-        const { id, title } = data
-
-        // Merge with existing data if available
-        const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`)
-        const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] }
-
+    const handleUpdateCase = (updatedCase) => {
         const now = new Date().toISOString();
-        const mergedCaseData = {
-          ...existingData,
-          ...data,
-          createdAt: existingData.createdAt || now,
-          updatedAt: now
-        };
+        // Ensure we are dealing with the plain JSON for storage
+        const rawData = updatedCase instanceof DfmCase ? updatedCase.toJSON() : { ...updatedCase };
+        
+        rawData.updatedAt = now;
+        if (!rawData.createdAt) rawData.createdAt = now;
 
-        const mergedCase = new DfmCase(mergedCaseData, settings);
+        localStorage.setItem(`dfm_ninja_case_${rawData.id}`, JSON.stringify(rawData))
 
-        setCases(prev => {
-          if (prev.find(c => c.id === id)) return prev
-          return [...prev, { id, title }]
-        })
-        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(mergedCase.toJSON()))
-        setActiveCaseId(id)
-      }).catch(err => console.error('Initial RPC extraction failed', err))
+        // Update state with instance to keep methods
+        const caseInstance = updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase, settings);
+        caseInstance.updatedAt = now;
+        if (!caseInstance.createdAt) caseInstance.createdAt = now;
+        
+        setActiveCaseData(caseInstance)
+
+        // Update index if title or resolvedAt changed
+        setCases(prev => prev.map(c => 
+            c.id === rawData.id 
+                ? { id: c.id, title: rawData.title, resolvedAt: rawData.resolvedAt } 
+                : c
+        ));
     }
-  }, [connectionStatus])
 
-  // Synchronize current case globally for templates
-  window.currentCase = activeCaseData;
-  window.sysTemplates = sysTemplates;
+    // 3. Initial Extraction & Global State Sync
+    useEffect(() => {
+        if (connectionStatus === 'connected') {
+            // Data extraction via RPC
+            execDfM(dfmScripts.extractCaseData).then(data => {
+                const { id, title } = data
 
-  const handleDeleteCase = (id) => {
-    if (window.confirm(`Case ${id} を削除しますか？`)) {
-      setCases(prev => prev.filter(c => c.id !== id))
-      localStorage.removeItem(`dfm_ninja_case_${id}`)
-      if (activeCaseId === id) {
-        setActiveCaseId(null)
-      }
+                // Merge with existing data if available
+                const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`)
+                const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] }
+
+                const now = new Date().toISOString();
+                const mergedCaseData = {
+                    ...existingData,
+                    ...data,
+                    createdAt: existingData.createdAt || now,
+                    updatedAt: now
+                };
+
+                const mergedCase = new DfmCase(mergedCaseData, settings);
+
+                setCases(prev => {
+                    const existing = prev.find(c => c.id === id);
+                    if (existing) {
+                        return prev.map(c => c.id === id ? { id, title, resolvedAt: mergedCase.resolvedAt } : c);
+                    }
+                    return [...prev, { id, title, resolvedAt: mergedCase.resolvedAt }];
+                })
+                localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(mergedCase.toJSON()))
+                setActiveCaseId(id)
+            }).catch(err => console.error('Initial RPC extraction failed', err))
+        }
+    }, [connectionStatus])
+
+    // Synchronize current case globally for templates
+    window.currentCase = activeCaseData;
+    window.sysTemplates = sysTemplates;
+
+    const handleDeleteCase = (id) => {
+        if (window.confirm(`Case ${id} を削除しますか？`)) {
+            setCases(prev => prev.filter(c => c.id !== id))
+            localStorage.removeItem(`dfm_ninja_case_${id}`)
+            if (activeCaseId === id) {
+                setActiveCaseId(null)
+            }
+        }
     }
-  }
 
-  return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
-      <Sidebar
-        cases={cases}
-        activeCaseId={activeCaseId}
-        onSelectCase={setActiveCaseId}
-        onNewCase={() => setIsNewCaseModalOpen(true)}
-        onDeleteCase={handleDeleteCase}
-        connectionStatus={connectionStatus}
-        onReconnect={reconnect}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-      />
+    const handleToggleResolveCase = (id) => {
+        const saved = localStorage.getItem(`dfm_ninja_case_${id}`);
+        if (!saved) return;
+        
+        const data = JSON.parse(saved);
+        const now = new Date().toISOString();
+        const newResolvedAt = data.resolvedAt ? null : now;
+        
+        const updatedData = { ...data, resolvedAt: newResolvedAt, updatedAt: now };
+        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(updatedData));
+        
+        // Update index
+        setCases(prev => prev.map(c => 
+            c.id === id ? { ...c, resolvedAt: newResolvedAt } : c
+        ));
+        
+        // Update active case if it's the one being toggled
+        if (activeCaseId === id) {
+            setActiveCaseData(new DfmCase(updatedData, settings));
+        }
+    }
+
+    return (
+        <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
+            <Sidebar
+                cases={cases}
+                activeCaseId={activeCaseId}
+                onSelectCase={setActiveCaseId}
+                onNewCase={() => setIsNewCaseModalOpen(true)}
+                onDeleteCase={handleDeleteCase}
+                onToggleResolveCase={handleToggleResolveCase}
+                connectionStatus={connectionStatus}
+                onReconnect={reconnect}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+            />
       <MainContent
         activeCase={activeCaseData}
         onUpdateCase={handleUpdateCase}
