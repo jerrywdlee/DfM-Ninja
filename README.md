@@ -29,7 +29,17 @@ For a full list of rendering variables and how they resolve, please see **[Varia
    ```bash
    npm run dev
    ```
-4. Access the application at `http://localhost:5175`.
+4. Access the application at `http://localhost:5178`.
+
+### Custom Port
+You can specify a custom port using the `PORT` environment variable:
+```bash
+PORT=8888 npm run dev
+```
+Alternatively, use the Vite flag:
+```bash
+npm run dev -- --port 8888
+```
 
 ## Deployment & Release
 
