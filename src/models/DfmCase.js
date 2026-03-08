@@ -125,11 +125,12 @@ class DfmCase {
                 }
             }
 
-            // 1. Dynamic NC Date formatting
-            const ncMatch = k.match(/^(prevNC|currentNC|nextNC)(_XS|_S|_L|_XL)?$/);
+            // 1. Dynamic NC Date formatting (Support offset like nextNC+2_XL or currentNC-1)
+            const ncMatch = k.match(/^(prevNC|currentNC|nextNC)([+-]\d+)?(_XS|_S|_L|_XL)?$/);
             if (ncMatch) {
                 const type = ncMatch[1];
-                const suffix = ncMatch[2] || '';
+                const offset = parseInt(ncMatch[2]) || 0;
+                const suffix = ncMatch[3] || '';
 
                 let targetDate = null;
                 if (type === 'prevNC') {
@@ -153,6 +154,10 @@ class DfmCase {
                 }
 
                 if (targetDate) {
+                    // Apply offset if requested
+                    if (offset !== 0) {
+                        targetDate = calculateNcDate(targetDate, offset);
+                    }
                     return formatDynamicDate(targetDate, suffix);
                 } else {
                     return type === 'prevNC' ? '' : match; // Return empty string if prevNC is not available

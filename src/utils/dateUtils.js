@@ -13,16 +13,18 @@
  */
 export function calculateNcDate(startDate = new Date(), daySpan = 3) {
     const date = new Date(startDate);
-    let daysAdded = 0;
+    let daysMoved = 0;
+    const absSpan = Math.abs(daySpan);
+    const direction = daySpan >= 0 ? 1 : -1;
 
-    while (daysAdded < daySpan) {
-        // Increment by 1 day
-        date.setDate(date.getDate() + 1);
+    while (daysMoved < absSpan) {
+        // Move by 1 day
+        date.setDate(date.getDate() + direction);
 
         const dayOfWeek = date.getDay(); // 0: Sun, 6: Sat
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-        // Check for holiday (global JapaneseHolidays provided by samutake/japanese-holidays-js)
+        // Check for holiday
         let isHoliday = false;
         if (typeof window !== 'undefined' && window.JapaneseHolidays) {
             isHoliday = !!window.JapaneseHolidays.isHoliday(date);
@@ -31,7 +33,7 @@ export function calculateNcDate(startDate = new Date(), daySpan = 3) {
         }
 
         if (!isWeekend && !isHoliday) {
-            daysAdded++;
+            daysMoved++;
         }
     }
 
