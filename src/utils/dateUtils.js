@@ -82,3 +82,12 @@ export function formatDynamicDate(date, suffix) {
             return `${date.getFullYear()}-${pad(month)}-${pad(day)}`;
     }
 }
+/**
+ * Formats a date to YYYY-MM-DD in local time.
+ * Avoids the timezone shift issue of toISOString().
+ */
+export function formatDateIsoLocal(date) {
+    if (!date || isNaN(date.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}

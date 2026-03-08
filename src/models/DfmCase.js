@@ -148,7 +148,8 @@ class DfmCase {
                     if (this.activeStage && this.activeStage.nc) {
                         baseDate = new Date(this.activeStage.nc);
                     }
-                    targetDate = calculateNcDate(baseDate, 3);
+                    const adjDays = Number(this.activeStage?.adjDays) || 3;
+                    targetDate = calculateNcDate(baseDate, adjDays);
                 }
 
                 if (targetDate) {

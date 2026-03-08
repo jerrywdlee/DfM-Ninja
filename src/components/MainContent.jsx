@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import TemplateModal from './TemplateModal'
 import DfmCase from '../models/DfmCase'
-import { calculateNcDate } from '../utils/dateUtils'
+import { calculateNcDate, formatDateIsoLocal } from '../utils/dateUtils'
 
 const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle }) => {
     const containerRef = useRef(null);
@@ -86,18 +86,28 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                             value={stage.nc}
                             onChange={(e) => onUpdate({ ...stage, nc: e.target.value })}
                         />
-                        <button
-                            title="Next NC (3 business days later)"
-                            className="bg-slate-200 hover:bg-slate-300 px-2 py-0.5 mx-2 text-[10px] font-bold rounded-r transition-colors border-l border-white text-slate-600"
-                            onClick={() => {
-                                const current = stage.nc ? new Date(stage.nc) : new Date();
-                                const next = calculateNcDate(current, 3);
-                                const nextStr = next.toISOString().split('T')[0];
-                                onUpdate({ ...stage, nc: nextStr });
-                            }}
-                        >
-                            Next NC
-                        </button>
+                    <span className="text-slate-400 font-bold ml-2">Adj Days: </span>
+                    <input
+                        type="number"
+                        min="1"
+                        max="30"
+                        className="bg-slate-100 rounded px-2 py-0.5 text-xs w-12 text-center border-none focus:ring-1 focus:ring-orange-500 mr-2"
+                        value={stage.adjDays || 3}
+                        onChange={(e) => onUpdate({ ...stage, adjDays: parseInt(e.target.value) || 3 })}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                        title={`Next NC (${stage.adjDays || 3} business days later)`}
+                        className="bg-slate-200 hover:bg-slate-300 px-3 py-0.5 text-xs font-bold rounded transition-colors text-slate-600 flex items-center justify-center border border-slate-300 shadow-sm"
+                        onClick={() => {
+                            const current = stage.nc ? new Date(stage.nc) : new Date();
+                            const next = calculateNcDate(current, stage.adjDays || 3);
+                            const nextStr = formatDateIsoLocal(next);
+                            onUpdate({ ...stage, nc: nextStr });
+                        }}
+                    >
+                        ⏭️
+                    </button>
                     </div>
                 </div>
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -313,8 +323,8 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
     const handleSelectTemplate = (template) => {
         const uid = Date.now().toString();
         const d = new Date();
-        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
+        const today = formatDateIsoLocal(d);
+ 
         const baseName = template.name || 'New Stage';
         let maxCount = 0;
         let hasBaseName = false;
@@ -338,6 +348,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
             id: uid,
             name: newName,
             nc: today,
+            adjDays: 3,
             steps: (template.steps || []).map(step => ({
                 ...step,
                 html: window.ejs.render(step.html || '', {
