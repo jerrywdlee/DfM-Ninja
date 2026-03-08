@@ -62,7 +62,11 @@
             {{dfmCc}}
         </noscript>
         <noscript data-name="internalTitleText">
-            S{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{currentNC_L}} | Waiting TL | <回答済み>
+            {%_ if (!askResult.trim()) { -%}
+            P{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{currentNC_L}} | Troubleshooting | <追加質問QuickAck>
+            {%_ } else { -%}
+            S{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{currentNC_L}} | Waiting TL | <追加質問回答済み>
+            {%_ } -%}
         </noscript>
 
         <script>
@@ -95,7 +99,7 @@
                     else if (caseDataInitial) $dfmCc.val(caseDataInitial.render(dfmCcText));
 
                     if (activeStepInitial.internalTitle) $internalTitle.val(activeStepInitial.internalTitle);
-                    else if (caseDataInitial) $internalTitle.val(caseDataInitial.render(internalTitleText));
+                    else if (caseDataInitial) $internalTitle.val(caseDataInitial.render(internalTitleText).trim());
                 }
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
