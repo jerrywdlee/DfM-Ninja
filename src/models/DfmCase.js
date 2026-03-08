@@ -160,7 +160,7 @@ class DfmCase {
                     }
                     return formatDynamicDate(targetDate, suffix);
                 } else {
-                    return type === 'prevNC' ? '' : match; // Return empty string if prevNC is not available
+                    return match; // Return original tag if value is not available
                 }
             }
 

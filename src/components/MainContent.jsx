@@ -322,9 +322,18 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
 
     const handleSelectTemplate = (template) => {
         const uid = Date.now().toString();
-        const d = new Date();
-        const today = formatDateIsoLocal(d);
- 
+
+        // Determine initial NC date: use last stage's Next NC if available
+        let initialNc = formatDateIsoLocal(new Date());
+        if (activeCase.stages && activeCase.stages.length > 0) {
+            const lastStage = activeCase.stages[activeCase.stages.length - 1];
+            if (lastStage.nc) {
+                const baseDate = new Date(lastStage.nc);
+                const adjDays = Number(lastStage.adjDays) || 3;
+                initialNc = formatDateIsoLocal(calculateNcDate(baseDate, adjDays));
+            }
+        }
+
         const baseName = template.name || 'New Stage';
         let maxCount = 0;
         let hasBaseName = false;
@@ -347,7 +356,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         const newStage = {
             id: uid,
             name: newName,
-            nc: today,
+            nc: initialNc,
             adjDays: 3,
             steps: (template.steps || []).map(step => ({
                 ...step,
