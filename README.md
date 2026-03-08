@@ -29,7 +29,7 @@ For a full list of rendering variables and how they resolve, please see **[Varia
    ```bash
    npm run dev
    ```
-4. Access the application at `http://localhost:5178`.
+4. Access the application at `http://localhost:5178` (or `5179` if 5178 is in use).
 
 ### Custom Port
 You can specify a custom port using the `PORT` environment variable:
@@ -60,8 +60,11 @@ To create a formal release with a downloadable `dist.zip` on GitHub:
 This script automatically tags the current commit with the version number (e.g., `v0.1.5`) and pushes it to GitHub, triggering the release workflow.
 
 ## Built With
-- React 18
-- Vite
-- Tailwind CSS
+- React 19
+- Vite 7
+- Tailwind CSS 4
 - JS-YAML (for settings & templates parsing)
 - JSZip (for template bundle uploads)
+
+## License
+MIT License - see the [LICENSE](LICENSE) file for details.
