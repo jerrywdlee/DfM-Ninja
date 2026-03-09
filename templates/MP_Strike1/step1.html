@@ -286,10 +286,12 @@
                         })];
 
                         await navigator.clipboard.write(data);
-                        alert('メール文面をコピーしました！');
+                        // alert('メール文面をコピーしました！');
+                        window.showToast('メール文面をコピーしました！', 'success');
                     } catch (err) {
                         console.error('Failed to copy: ', err);
-                        alert('コピーに失敗しました。');
+                        // alert('コピーに失敗しました。');
+                        window.showToast('コピーに失敗しました。', 'error');
                     }
                 });
             })();
