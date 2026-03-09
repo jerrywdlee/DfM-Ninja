@@ -119,7 +119,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
 
             {isActive && (
                 <div className="p-4 bg-white border-t border-slate-100">
-                    <div className="flex mb-4 bg-slate-100 p-1 rounded-md overflow-x-auto">
+                    <div className="flex mb-4 bg-slate-100 p-1 rounded-md overflow-x-auto custom-scrollbar">
                         {(stage.steps && Array.isArray(stage.steps) ? stage.steps : []).map((step, idx) => {
                             const name = step.name;
                             const tabId = `step-${idx}`;
@@ -473,7 +473,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
     };
 
     return (
-        <div className="flex-1 overflow-y-auto bg-slate-100" onDoubleClick={handleDoubleClick}>
+        <div className="flex-1 overflow-y-auto bg-slate-100 custom-scrollbar" onDoubleClick={handleDoubleClick}>
             {/* Sticky Header Container */}
             <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-md border-b border-slate-200/60 px-6 py-4 mb-2">
                 <div className="max-w-4xl mx-auto">

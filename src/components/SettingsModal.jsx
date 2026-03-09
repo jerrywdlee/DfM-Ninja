@@ -303,7 +303,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                         <p className="text-xs text-slate-400">
                             Upload System Templates (.md format with YAML frontmatter).
                         </p>
-                        <div className="bg-slate-950 border border-slate-700 rounded-lg flex flex-col flex-1 overflow-y-auto min-h-0">
+                        <div className="bg-slate-950 border border-slate-700 rounded-lg flex flex-col flex-1 overflow-y-auto custom-scrollbar min-h-0">
                             {sysTemplates.map((t, index) => (
                                 <div 
                                     key={t.id} 
@@ -355,7 +355,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     </div>
 
                     {/* Data Backup Tab Content */}
-                    <div className={`flex-1 flex flex-col gap-6 overflow-y-auto min-h-0 ${activeTab === 'data' ? '' : 'hidden'}`}>
+                    <div className={`flex-1 flex flex-col gap-6 overflow-y-auto custom-scrollbar min-h-0 ${activeTab === 'data' ? '' : 'hidden'}`}>
                         <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
                             <h4 className="text-lg font-bold text-slate-200 mb-2">Export Data</h4>
                             <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">

@@ -24,16 +24,59 @@
   }
 }
 
-/* GitHub Corner Animation */
-.github-corner:hover .octo-arm {
-  animation: octocat-wave 560ms ease-in-out;
+/* Custom Scrollbars */
+@layer utilities {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  .custom-scrollbar:hover {
+    scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.2);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5) !important;
+    cursor: pointer;
+  }
 }
-@keyframes octocat-wave {
-  0%, 100% { transform: rotate(0); }
-  20%, 60% { transform: rotate(-25deg); }
-  40%, 80% { transform: rotate(10deg); }
+
+/* Global scrollbar override */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-@media (max-width: 500px) {
-  .github-corner:hover .octo-arm { animation: none; }
-  .github-corner .octo-arm { animation: octocat-wave 560ms ease-in-out; }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.15);
+}
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.4);
 }
