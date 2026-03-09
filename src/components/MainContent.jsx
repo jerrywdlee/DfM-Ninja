@@ -34,7 +34,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
         }
     }, [isActive, activeTab, stage.steps]);
 
-    const handleSaveStep = () => {
+    const handleSaveStep = (showNotification = false) => {
         if (!containerRef.current) return;
 
         const stepIndex = parseInt(activeTab.replace('step-', ''));
@@ -63,8 +63,8 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
         newSteps[stepIndex] = updatedStep;
         onUpdate({ ...stage, steps: newSteps });
 
-        // Show success toast
-        if (window.showToast) {
+        // Show success toast only when requested (manual save)
+        if (showNotification && window.showToast) {
             window.showToast('保存しました', 'success');
         }
     };
@@ -76,7 +76,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
         const handleGlobalKeyDown = (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
-                handleSaveStep();
+                handleSaveStep(true);
             }
         };
 
@@ -118,12 +118,15 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                     />
                     <button
                         title={`Next NC (${stage.adjDays || 3} business days later)`}
-                        className="bg-slate-200 hover:bg-slate-300 px-3 py-0.5 text-xs font-bold rounded transition-colors text-slate-600 flex items-center justify-center border border-slate-300 shadow-sm"
+                        className="bg-transparent hover:bg-slate-300 px-2 py-0.5 text-xs font-bold rounded transition-all text-slate-600 flex items-center justify-center border border-transparent hover:border-slate-300 hover:shadow-sm"
                         onClick={() => {
                             const current = stage.nc ? new Date(stage.nc) : new Date();
                             const next = calculateNcDate(current, stage.adjDays || 3);
                             const nextStr = formatDateIsoLocal(next);
                             onUpdate({ ...stage, nc: nextStr });
+                            if (window.showToast) {
+                                window.showToast(`Current NC => ${nextStr}`, 'info');
+                            }
                         }}
                     >
                         ⏭️
@@ -161,7 +164,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                             <div
                                 ref={containerRef}
                                 className="h-full w-full"
-                                onBlur={handleSaveStep}
+                                onBlur={() => handleSaveStep(false)}
                             />
                         ) : (
                             /* Default Fallback UI */
@@ -176,7 +179,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                     {Array.isArray(stage.steps) && (
                         <div className="mt-3 flex justify-end">
                             <button
-                                onClick={handleSaveStep}
+                                onClick={() => handleSaveStep(true)}
                                 className="px-6 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold border border-slate-200 shadow-sm transition-all active:scale-95 flex items-center gap-2"
                             >
                                 💾 保存
