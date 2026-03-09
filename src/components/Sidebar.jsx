@@ -86,7 +86,7 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                                     {c.resolvedAt && (
                                         <span className="text-[8px] bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded-sm border border-emerald-500/20 leading-none shrink-0 font-sans">🎯</span>
                                     )}
-                                    <span className="truncate text-[13px] tracking-tight">{c.id}</span>
+                                    <span className="truncate text-[16px] tracking-tight">{c.id}</span>
                                 </div>
                                 <div className="truncate text-[10px] text-slate-500 group-hover:text-slate-400 mt-0.5 transition-colors leading-tight">{c.title}</div>
                             </div>
