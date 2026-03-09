@@ -62,7 +62,27 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
         const newSteps = [...stage.steps];
         newSteps[stepIndex] = updatedStep;
         onUpdate({ ...stage, steps: newSteps });
+
+        // Show success toast
+        if (window.showToast) {
+            window.showToast('保存しました', 'success');
+        }
     };
+
+    // Shortcut for Save (Ctrl+S / Cmd+S)
+    useEffect(() => {
+        if (!isActive) return;
+
+        const handleGlobalKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleSaveStep();
+            }
+        };
+
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }, [isActive, activeTab, stage.steps]);
 
     return (
         <div className="mb-4 border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">

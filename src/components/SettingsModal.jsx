@@ -20,6 +20,21 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         }
     }, [isOpen]);
 
+    // Shortcut for Save (Ctrl+S / Cmd+S)
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleGlobalKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }, [isOpen, code]);
+
     if (!isOpen) return null
 
     const handleSave = () => {
@@ -27,11 +42,15 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
             const parsed = yaml.load(code) || {}
             setError(null)
             onSave(code, parsed)
+            if (showToast) {
+                showToast('設定を保存しました', 'success');
+            }
             onClose()
         } catch (e) {
             setError(e.message)
         }
     }
+
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0]

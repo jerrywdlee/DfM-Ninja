@@ -68,6 +68,15 @@ const App = () => {
     window.execDfM = execDfM;
     window.dfmScripts = dfmScripts;
     window.showToast = showToast;
+
+    // Global shortcut prevention (Ctrl+S / Cmd+S)
+    const preventSave = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', preventSave);
+    return () => window.removeEventListener('keydown', preventSave);
   }, [execDfM]);
 
   useEffect(() => {
@@ -238,6 +247,13 @@ const App = () => {
         // Update active case if it's the one being toggled
         if (activeCaseId === id) {
             setActiveCaseData(new DfmCase(updatedData, settings));
+        }
+
+        // Show Toast
+        if (newResolvedAt) {
+            showToast(`"${id}" Marked as Resolved`, 'success');
+        } else {
+            showToast(`"${id}" Marked as Unresolved`, 'info');
         }
     }
 
