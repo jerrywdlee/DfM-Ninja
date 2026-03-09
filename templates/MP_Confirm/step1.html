@@ -1,0 +1,135 @@
+<% const uid=new Date().getTime(); %>
+<div id="MP_Confirm_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
+
+    <!-- Action Buttons -->
+    <div class="absolute top-4 right-6 flex gap-1.5 focus-within:ring-0">
+        <button title="リセット"
+            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
+        <button title="レンダリング"
+            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-2 gap-6 mt-6">
+        <!-- Left Column -->
+        <div class="flex flex-col gap-4">
+            <!-- お客様からのご連絡 -->
+            <div class="flex flex-col">
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">お客様からのご連絡</h4>
+                </div>
+                <textarea name="custInfo" data-doubleclick="copy"
+                    class="w-full h-[150px] p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                    placeholder="追加で確認したい内容を入力してください..."></textarea>
+            </div>
+
+            <!-- Prompt -->
+            <div class="flex flex-col flex-1">
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Prompt</h4>
+                </div>
+                <textarea name="custInfoPrompt" data-doubleclick="copy"
+                    class="w-full h-full min-h-[250px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                    placeholder="LLM用のプロンプト..."></textarea>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="flex flex-col gap-4">
+            <!-- お客様への返事 -->
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">お客様への返事</h4>
+                </div>
+                <textarea name="replyContent" data-doubleclick="copy"
+                    class="w-full h-full min-h-[440px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                    placeholder="生成された回答内容..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Placeholders for noscript -->
+    <noscript data-name="custInfo"></noscript>
+    
+    <noscript data-name="custInfoPrompt">
+        お客様からのご連絡内容は以下です。
+        ```
+        {{custInfo}}
+        ```
+
+        お客様の連絡内容に対して、簡潔な返答（了承しましたの）メッセージを作成してください。
+        また、文面をPlain Textにし、Code Blockの中に出力してください。
+
+        - 半角英数字の前後に半角スペースはある
+        - お客様名が統一している
+        - 挨拶は不要（定型文あり）
+        - 感情表現は不要、ただしお客様を追及しようとする感覚はしないこと
+        - ケースと関連しない個人情報等は含まれていない
+        - お客様の文脈を考慮して返事する
+    </noscript>
+
+    <noscript data-name="replyContent"></noscript>
+
+    <script>
+        (function () {
+            const divId = '#MP_Confirm_step1-<%=uid%>';
+            const $scope = $(divId);
+            const $custInfo = $scope.find('textarea[name="custInfo"]');
+            const $custInfoPrompt = $scope.find('textarea[name="custInfoPrompt"]');
+            const $replyContent = $scope.find('textarea[name="replyContent"]');
+
+            const custInfoText = $scope.find('noscript[data-name="custInfo"]').text().trim().replace(/\n +/g, '\n');
+            const custInfoPromptText = $scope.find('noscript[data-name="custInfoPrompt"]').text().trim().replace(/\n +/g, '\n');
+            const replyContentText = $scope.find('noscript[data-name="replyContent"]').text().trim().replace(/\n +/g, '\n');
+
+            const caseDataInitial = window.currentCase;
+            const activeStepInitial = caseDataInitial?.activeStep;
+
+            // Load initial values
+            if (activeStepInitial && activeStepInitial.custInfo) {
+                $custInfo.val(activeStepInitial.custInfo);
+            } else if (caseDataInitial) {
+                $custInfo.val(custInfoText);
+            }
+
+            if (activeStepInitial && activeStepInitial.custInfoPrompt) {
+                $custInfoPrompt.val(activeStepInitial.custInfoPrompt);
+            } else if (caseDataInitial) {
+                $custInfoPrompt.val(caseDataInitial.render(custInfoPromptText));
+            }
+
+            if (activeStepInitial && activeStepInitial.replyContent) {
+                $replyContent.val(activeStepInitial.replyContent);
+            } else if (caseDataInitial) {
+                $replyContent.val(replyContentText);
+            }
+
+            // Rendering Logic
+            $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
+                const caseData = window.currentCase;
+                if (!caseData) return;
+
+                // 1. レンダリングボタンを押した瞬間の custInfo を activeStep に一時保存して render 内で解決できるようにする
+                if (caseData.activeStep) {
+                    caseData.activeStep.custInfo = $custInfo.val();
+                }
+
+                const promptVal = $custInfoPrompt.val();
+                const resultVal = $replyContent.val();
+
+                // 2. 他のテンプレート変数 ({{caseNum}}等) と、1で設定した {{custInfo}} を同時に解決
+                $custInfoPrompt.val(caseData.render(promptVal));
+                $replyContent.val(caseData.render(resultVal));
+            });
+
+            $scope.find('button[title="リセット"]').off('click').on('click', function () {
+                if (!confirm('リセットしますか？')) {
+                    return;
+                }
+                $custInfo.val(custInfoText);
+                $custInfoPrompt.val(custInfoPromptText);
+                $replyContent.val(replyContentText);
+            });
+        })();
+    </script>
+</div>

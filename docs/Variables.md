@@ -141,7 +141,7 @@ UI上で入力・保存された値も変数として利用可能です。
  ### 使用例
  ```html
  [状況]
- {% if (!!askResult.trim()) { %}
+ {% if (!!locals.askResult?.trim() ) { %}
    回答を生成しました。
  {% } else { %}
    調査中 (QuickAck) です。

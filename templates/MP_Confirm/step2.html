@@ -1,5 +1,5 @@
 <% const uid=new Date().getTime(); %>
-    <div id="MP_AddAsk_step2-<%=uid%>"
+    <div id="MP_Confirm_step2-<%=uid%>"
         class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
 
         <!-- Action Buttons -->
@@ -91,10 +91,10 @@
             お疲れ様です、 {{familyName}} です。
 
             TL review をお願いいたします。
-            追加質問に対する{%= !!locals.askResult?.trim()  ? '回答' : 'QuickAck' %}です。
+            お客様からの事務的連絡への返事です。
 
             [Next C]
-            {{currentNC_S}}（予定送信日: {{currentNC_S}}）
+            {{currentNC_S}}
 
             [お問い合わせ番号]
             {{caseNum}}
@@ -102,11 +102,8 @@
             [タイトル]
             {{caseTitle}}
 
-            [お問い合わせ内容]
-            {{custStatement}}
-
-            [追加質問]
-            {{askContent}}
+            [お客様からのご連絡]
+            {{custInfo}}
         </noscript>
 
         <noscript data-name="emailBody">
@@ -122,30 +119,21 @@
             [タイトル]
             {{caseTitle}}
 
-            [追加のお問い合わせ]
-            {{askContent}}
-
-            {% if (!locals.askResult?.trim() ) { %}
-            [追加のご連絡]
-            いただきましたお問い合わせにつきまして、調査・確認を進めております。
-            今しばらく、お待ちいただければと存じます。
-            {% } else { %}
-            [回答]
-            平素より弊社製品をご愛顧いただき、誠にありがとうございます。
-            お問い合わせいただいた件につきまして、以下に回答を記載いたします。
-
-            {{askResult}}
-
-            ご不明点がございましたら、お気軽にお申し付けください。
-            今後ともどうぞよろしくお願いいたします。
-            {% } %}
+            {%_ if (!locals.replyContent?.trim()) { -%}
+            ご連絡いただき、ありがとうございます。
+            
+            現在、回答についてご確認いただける旨、承知しました。
+            
+            本件につきましては、{{nextNC_XL}} に、あらためてこちらよりご連絡いたします。
+            
+            なお、進捗等がございましたら、共有いただけますと幸いです。
+            {%_ } else { -%}
+            [ご連絡]
+            {{replyContent}}
+            {%_ } -%}
 
             [次回ご連絡日程]
-            {%_ if (!locals.askResult?.trim() ) { -%}
             {{nextNC_XL}} を目途に改めてご連絡をさせて頂く予定でございます。
-            {%_ } else { -%}
-            ご連絡が無い場合でも、{{nextNC_XL}} を目途に改めてご連絡をさせて頂く予定でございます。
-            {%_ } %}
             引き続きどうぞよろしくお願いいたします。
 
             {{footerNormal}}
@@ -163,13 +151,13 @@
             @ さん、お疲れ様です。
             TL review をお願いします。
             [{{Lic_L}}] {{caseNum}} {{caseTitle}}
-            追加質問に対する{%= !!locals.askResult?.trim()  ? '回答' : 'QuickAck' %}です。
-            [Next C] {{currentNC_S}}（予定送信日: {{currentNC_S}}）
+            お客様からの事務的連絡への返事です。
+            [Next C] {{currentNC_S}}
         </noscript>
 
         <script>
             (function () {
-                const divId = '#MP_AddAsk_step2-<%=uid%>';
+                const divId = '#MP_Confirm_step2-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $emailHead = $scope.find('[name="emailHead"]');
                 const $emailBody = $scope.find('[name="emailBody"]');
