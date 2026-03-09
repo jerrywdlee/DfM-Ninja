@@ -84,9 +84,9 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                             >
                                 <div className={`font-mono text-[12px] font-bold flex items-center gap-1.5 ${activeCaseId === c.id ? 'text-orange-400' : 'text-slate-300 group-hover:text-white'}`}>
                                     {c.resolvedAt && (
-                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded-sm border border-emerald-500/20 leading-none shrink-0 font-sans">CL</span>
+                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded-sm border border-emerald-500/20 leading-none shrink-0 font-sans">🎯</span>
                                     )}
-                                    <span className="truncate tracking-tight">{c.id}</span>
+                                    <span className="truncate text-[13px] tracking-tight">{c.id}</span>
                                 </div>
                                 <div className="truncate text-[10px] text-slate-500 group-hover:text-slate-400 mt-0.5 transition-colors leading-tight">{c.title}</div>
                             </div>
@@ -96,17 +96,17 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                                         e.stopPropagation();
                                         onToggleResolveCase(c.id);
                                     }}
-                                    className={`p-1 rounded-sm text-[10px] font-bold transition-all active:scale-95 border ${c.resolvedAt ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20' : 'text-slate-600 hover:text-white hover:bg-slate-700 border-transparent opacity-0 group-hover:opacity-100'}`}
+                                    className={`p-1 rounded-md text-[16px] transition-all active:scale-90 border flex items-center justify-center w-7 h-7 ${c.resolvedAt ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20' : 'text-slate-500 hover:text-orange-400 hover:bg-slate-800 border-transparent opacity-0 group-hover:opacity-100'}`}
                                     title={c.resolvedAt ? `解決済み (${new Date(c.resolvedAt).toLocaleString()})` : "解決済みにする"}
                                 >
-                                    {c.resolvedAt ? '✅' : 'CL'}
+                                    {c.resolvedAt ? '✅' : '🎯'}
                                 </button>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onDeleteCase(c.id);
                                     }}
-                                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-600 hover:text-red-400 transition-all active:scale-90"
+                                    className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-[11px] text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-all active:scale-90 w-7 h-7 flex items-center justify-center"
                                     title="削除"
                                 >
                                     🗑️
