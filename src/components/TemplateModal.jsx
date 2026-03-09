@@ -2,16 +2,10 @@ import { useState, useRef } from 'react'
 import JSZip from 'jszip'
 import yaml from 'js-yaml'
 
-const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelete, onReorder }) => {
+const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelete, onReorder, showToast }) => {
     const fileInputRef = useRef(null)
-    const [actionMsg, setActionMsg] = useState(null)
 
     if (!isOpen) return null
-
-    const showMsg = (msg) => {
-        setActionMsg(msg)
-        setTimeout(() => setActionMsg(null), 3000)
-    }
 
     const handleMoveUp = (index) => {
         if (index === 0) return;
@@ -76,10 +70,10 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                     return
                 }
                 onUpload(templateData)
-                showMsg(`✅ "${templateData.id}" を上書きしました (v${newVer})`)
+                showToast(`"${templateData.id}" を上書きしました (v${newVer})`, 'success')
             } else {
                 onUpload(templateData)
-                showMsg(`✨ "${templateData.id}" を新しく追加しました (v${templateData.version})`)
+                showToast(`"${templateData.id}" を新しく追加しました (v${templateData.version})`, 'success')
             }
         } catch (err) {
             console.error(err)
@@ -92,11 +86,6 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl flex flex-col max-h-[85vh] relative">
-                {actionMsg && (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-emerald-600/95 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-xl shadow-emerald-900/50 z-[100] animate-fade-in-down whitespace-nowrap">
-                        {actionMsg}
-                    </div>
-                )}
                 <div className="p-4 border-b border-slate-800 flex items-center justify-between">
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         <span className="text-orange-500">📋</span> Template選択

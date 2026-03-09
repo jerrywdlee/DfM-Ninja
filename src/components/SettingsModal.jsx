@@ -2,11 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import yaml from 'js-yaml'
 import JSZip from 'jszip'
 
-const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates }) => {
+const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, showToast }) => {
     const [code, setCode] = useState(rawYaml || '')
     const [error, setError] = useState(null)
     const [activeTab, setActiveTab] = useState('yaml') // 'yaml', 'sysTemp', or 'data'
-    const [sysTempActionMsg, setSysTempActionMsg] = useState(null)
     const fileInputRef = useRef(null)
     const importInputRef = useRef(null)
 
@@ -22,11 +21,6 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     }, [isOpen]);
 
     if (!isOpen) return null
-
-    const showSysTempMsg = (msg) => {
-        setSysTempActionMsg(msg)
-        setTimeout(() => setSysTempActionMsg(null), 3000)
-    }
 
     const handleSave = () => {
         try {
@@ -89,13 +83,13 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     const updated = [...sysTemplates]
                     updated[existingIndex] = newTemp
                     setSysTemplates(updated)
-                    showSysTempMsg(`✅ "${newTemp.id}" を上書きしました (v${newVer})`)
+                    showToast(`"${newTemp.id}" を上書きしました (v${newVer})`, 'success')
                 } else {
                     setSysTemplates([...sysTemplates, newTemp])
-                    showSysTempMsg(`✨ "${newTemp.id}" を新しく追加しました (v${newTemp.version})`)
+                    showToast(`"${newTemp.id}" を新しく追加しました (v${newTemp.version})`, 'success')
                 }
             } catch (err) {
-                alert(`Error parsing Markdown/YAML:\n${err.message}`)
+                showToast(`MD/YAMLの解析に失敗しました: ${err.message}`, 'error')
             }
         }
         reader.readAsText(file)
@@ -240,11 +234,6 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh] relative">
-                {sysTempActionMsg && (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-emerald-600/95 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-xl shadow-emerald-900/50 z-[100] animate-fade-in-down whitespace-nowrap">
-                        {sysTempActionMsg}
-                    </div>
-                )}
                 <div className="p-4 border-b border-slate-800 flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -313,7 +302,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                                         e.stopPropagation()
                                         const textToCopy = `{{${t.id}}}`;
                                         navigator.clipboard.writeText(textToCopy).then(() => {
-                                            showSysTempMsg(`📋 コピーしました: ${textToCopy}`);
+                                            showToast(`コピーしました: ${textToCopy}`, 'info');
                                         });
                                     }}
                                     title="Double-click to copy ID as {{id}}"

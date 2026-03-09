@@ -169,7 +169,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
     )
 }
 
-const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate, onReorderTemplate }) => {
+const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate, onReorderTemplate, showToast }) => {
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
     // Global event listener for contenteditable elements
@@ -554,6 +554,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                 onUpload={onUploadTemplate}
                 onDelete={onDeleteTemplate}
                 onReorder={onReorderTemplate}
+                showToast={showToast}
             />
         </div>
     )

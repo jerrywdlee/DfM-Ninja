@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
 import SettingsModal from './components/SettingsModal'
 import TemplateModal from './components/TemplateModal'
 import NewCaseModal from './components/NewCaseModal'
+import ToastContainer from './components/ToastContainer'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
 import * as dfmScripts from './utils/dfmScripts'
@@ -34,7 +35,6 @@ const App = () => {
   const [activeCaseData, setActiveCaseData] = useState(null)
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false)
   const [isLogoHovered, setIsLogoHovered] = useState(false)
   const [settings, setSettings] = useState(() => {
@@ -52,6 +52,8 @@ const App = () => {
     const saved = localStorage.getItem('dfm_ninja_sys_templates')
     return saved ? JSON.parse(saved) : []
   })
+  const [toasts, setToasts] = useState([])
+  const toastResolvers = useRef(new Map())
 
   // 1.5. DfM Bridge
   const { connectionStatus, execDfM, reconnect } = useDfmBridge()
@@ -65,6 +67,7 @@ const App = () => {
   useEffect(() => {
     window.execDfM = execDfM;
     window.dfmScripts = dfmScripts;
+    window.showToast = showToast;
   }, [execDfM]);
 
   useEffect(() => {
@@ -137,6 +140,10 @@ const App = () => {
 
   const handleReorderTemplates = (newTemplates) => {
     setTemplates(newTemplates)
+  }
+
+  const handleDeleteTemplate = (id) => {
+    setTemplates(prev => prev.filter(t => t.id !== id));
   }
 
     const handleUpdateCase = (updatedCase) => {
@@ -234,6 +241,42 @@ const App = () => {
         }
     }
 
+    const removeToast = (id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+        if (toastResolvers.current.has(id)) {
+            toastResolvers.current.get(id)();
+            toastResolvers.current.delete(id);
+        }
+    };
+
+    const showToast = (msg, type = 'info', duration = 3000) => {
+        const id = Date.now();
+        
+        // Console logging
+        const logger = console[type] || console.log;
+        logger(`[Toast:${type}] ${msg}`);
+
+        return new Promise((resolve) => {
+            toastResolvers.current.set(id, resolve);
+            
+            setToasts(prev => {
+                const newToasts = [...prev, { id, msg, type, duration }];
+                if (newToasts.length > 3) {
+                    const removed = newToasts.shift();
+                    if (toastResolvers.current.has(removed.id)) {
+                        toastResolvers.current.get(removed.id)();
+                        toastResolvers.current.delete(removed.id);
+                    }
+                }
+                return newToasts;
+            });
+
+            if (duration > 0) {
+                setTimeout(() => removeToast(id), duration);
+            }
+        });
+    };
+
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
             <Sidebar
@@ -248,33 +291,17 @@ const App = () => {
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onLogoHover={setIsLogoHovered}
             />
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
       <MainContent
         activeCase={activeCaseData}
         onUpdateCase={handleUpdateCase}
         settings={settings}
         templates={templates}
         onUploadTemplate={handleUploadTemplate}
-        onDeleteTemplate={(id) => {
-          setTemplates(prev => prev.filter(t => t.id !== id))
-        }}
-        onReorderTemplate={handleReorderTemplates}
+        onDeleteTemplate={handleDeleteTemplate}
+        onReorderTemplate={setTemplates}
+        showToast={showToast}
       />
-        <TemplateModal
-          isOpen={isTemplateModalOpen}
-          onClose={() => setIsTemplateModalOpen(false)}
-          templates={templates}
-          onSelect={(template) => {
-            if (activeCaseData) {
-              const newCase = new DfmCase(activeCaseData.toJSON(), settings)
-              newCase.addStageFromTemplate(template)
-              handleUpdateCase(newCase)
-            }
-            setIsTemplateModalOpen(false)
-          }}
-          onUpload={handleUploadTemplate}
-          onDelete={(id) => setTemplates(templates.filter(t => t.id !== id))}
-          onReorder={handleReorderTemplates}
-        />
       <NewCaseModal
         isOpen={isNewCaseModalOpen}
         onClose={() => setIsNewCaseModalOpen(false)}
@@ -290,6 +317,7 @@ const App = () => {
         }}
         sysTemplates={sysTemplates}
         setSysTemplates={setSysTemplates}
+        showToast={showToast}
       />
       
       {/* GitHub Corner (Top-Left) */}
