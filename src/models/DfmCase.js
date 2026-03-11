@@ -1,4 +1,4 @@
-import { calculateNcDate, formatDynamicDate } from '../utils/dateUtils';
+import { calculateNcDate, formatDynamicDate, formatDateIsoLocal, isSameDate } from '../utils/dateUtils';
 
 class DfmCase {
     constructor(data = {}, settings = null) {
@@ -97,15 +97,8 @@ class DfmCase {
                 context.this = this;
 
                 // Add helper functions and flags for dates
-                context.isSameDate = (d1, d2) => {
-                    if (!d1 || !d2) return false;
-                    const date1 = new Date(d1);
-                    const date2 = new Date(d2);
-                    return date1.getFullYear() === date2.getFullYear() &&
-                           date1.getMonth() === date2.getMonth() &&
-                           date1.getDate() === date2.getDate();
-                };
-                context.isSendAtSameAsNC = context.isSameDate(stage?.nc, stage?.sendAt || stage?.nc);
+                context.isSameDate = isSameDate;
+                context.isSendAtSameAsNC = isSameDate(stage?.nc, stage?.sendAt || stage?.nc);
 
                 processedText = window.ejs.render(text, context, { openDelimiter: '{', closeDelimiter: '}' });
             } catch (e) {
