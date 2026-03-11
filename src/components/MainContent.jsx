@@ -90,53 +90,73 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                 className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${isActive ? 'bg-orange-100' : 'bg-slate-50 hover:bg-slate-100'}`}
                 onClick={onToggle}
             >
-                <div className="flex items-center gap-4 flex-1">
-                    <span className="text-slate-400">{isActive ? '▼' : '▶'}</span>
+                <div className="flex items-center gap-4 flex-1 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-slate-400 shrink-0 w-4">{isActive ? '▼' : '▶'}</span>
                     <input
-                        className="bg-transparent font-bold text-slate-700 border-none focus:ring-0 p-0"
+                        className="bg-transparent font-bold text-slate-700 border-none focus:ring-0 p-0 text-sm truncate min-w-[120px] w-auto"
                         value={stage.name}
                         onChange={(e) => onUpdate({ ...stage, name: e.target.value })}
-                        onClick={(e) => e.stopPropagation()}
                     />
-                    <span className="text-slate-400 font-bold">Current NC: </span>
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <input
-                            type="date"
-                            className="bg-slate-100 rounded-l px-2 py-0.5 text-xs w-32 text-center border-none focus:ring-1 focus:ring-orange-500"
-                            value={stage.nc}
-                            onChange={(e) => onUpdate({ ...stage, nc: e.target.value })}
-                        />
-                    <span className="text-slate-400 font-bold ml-2">Adj Days: </span>
-                    <input
-                        type="number"
-                        min="1"
-                        max="30"
-                        className="bg-slate-100 rounded px-2 py-0.5 text-xs w-12 text-center border-none focus:ring-1 focus:ring-orange-500 mr-2"
-                        value={stage.adjDays || 3}
-                        onChange={(e) => onUpdate({ ...stage, adjDays: parseInt(e.target.value) || 3 })}
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                    <button
-                        title={`Next NC (${stage.adjDays || 3} business days later)`}
-                        className="bg-transparent hover:bg-slate-300 px-2 py-0.5 text-xs font-bold rounded transition-all text-slate-600 flex items-center justify-center border border-transparent hover:border-slate-300 hover:shadow-sm"
-                        onClick={() => {
-                            const current = stage.nc ? new Date(stage.nc) : new Date();
-                            const next = calculateNcDate(current, stage.adjDays || 3);
-                            const nextStr = formatDateIsoLocal(next);
-                            onUpdate({ ...stage, nc: nextStr });
-                            if (window.showToast) {
-                                window.showToast(`Current NC => ${nextStr}`, 'info');
-                            }
-                        }}
-                    >
-                        ⏭️
-                    </button>
+                    
+                    <div className="flex items-center gap-4 ml-auto shrink-0">
+                        {/* Curt. NC */}
+                        <div className="flex items-center gap-1.5 group">
+                            <span className="text-slate-400 font-bold text-[10px] uppercase tracking-tight">Curt. NC</span>
+                            <input
+                                type="date"
+                                className="bg-slate-100 rounded px-2 py-0.5 text-[11px] w-[115px] text-center border border-transparent focus:border-orange-500 focus:ring-0"
+                                value={stage.nc}
+                                onChange={(e) => onUpdate({ ...stage, nc: e.target.value })}
+                            />
+                        </div>
+
+                        {/* Send At */}
+                        <div className="flex items-center gap-1.5 group">
+                            <span className="text-slate-400 font-bold text-[10px] uppercase tracking-tight text-orange-600/70">Send At</span>
+                            <input
+                                type="date"
+                                className="bg-slate-100 rounded px-2 py-0.5 text-[11px] w-[115px] text-center border border-transparent focus:border-orange-500 focus:ring-0"
+                                value={stage.sendAt || stage.nc}
+                                onChange={(e) => onUpdate({ ...stage, sendAt: e.target.value })}
+                            />
+                        </div>
+
+                        {/* Adj Days & Next Button */}
+                        <div className="flex items-center gap-1 bg-slate-100/80 rounded pl-2 pr-0.5 py-0.5 border border-slate-200/50">
+                            <input
+                                type="number"
+                                min="1"
+                                max="30"
+                                className="bg-transparent p-0 text-[11px] w-6 text-center border-none focus:ring-0 font-bold text-slate-600"
+                                value={stage.adjDays || 3}
+                                onChange={(e) => onUpdate({ ...stage, adjDays: parseInt(e.target.value) || 3 })}
+                            />
+                            <button
+                                title={`Increment both NC and Send At by ${stage.adjDays || 3} business days`}
+                                className="bg-transparent hover:bg-slate-300 w-7 h-6 rounded flex items-center justify-center text-[16px] transition-all hover:shadow-sm border border-transparent hover:border-slate-300/50"
+                                onClick={() => {
+                                    const ncBase = stage.nc ? new Date(stage.nc) : new Date();
+                                    const sendAtBase = stage.sendAt ? new Date(stage.sendAt) : ncBase;
+                                    
+                                    const nextNc = formatDateIsoLocal(calculateNcDate(ncBase, stage.adjDays || 3));
+                                    const nextSendAt = formatDateIsoLocal(calculateNcDate(sendAtBase, stage.adjDays || 3));
+                                    
+                                    onUpdate({ ...stage, nc: nextNc, sendAt: nextSendAt });
+                                    if (window.showToast) {
+                                        window.showToast(`Updated to NC: ${nextNc} / Send At: ${nextSendAt}`, 'info');
+                                    }
+                                }}
+                            >
+                                ⏭️
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={onMoveUp} className="p-1 hover:bg-slate-200 rounded">↑</button>
-                    <button onClick={onMoveDown} className="p-1 hover:bg-slate-200 rounded">↓</button>
-                    <button onClick={onDelete} className="p-1 hover:bg-red-100 text-red-500 rounded">×</button>
+                
+                <div className="flex items-center gap-1 ml-4 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={onMoveUp} title="Move Up" className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-orange-100 text-slate-500 hover:text-orange-600 rounded border border-slate-200/50 transition-colors">↑</button>
+                    <button onClick={onMoveDown} title="Move Down" className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-orange-100 text-slate-500 hover:text-orange-600 rounded border border-slate-200/50 transition-colors">↓</button>
+                    <button onClick={onDelete} title="Delete Stage" className="w-8 h-8 flex items-center justify-center hover:bg-red-50 text-slate-300 hover:text-red-500 rounded border border-transparent hover:border-red-100 transition-colors ml-1">×</button>
                 </div>
             </div>
 
@@ -346,12 +366,16 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
     const handleSelectTemplate = (template) => {
         const uid = Date.now().toString();
 
-        // Determine initial NC date: use last stage's Next NC if available
+        // Determine initial NC date: use last stage's Send At if available
         let initialNc = formatDateIsoLocal(new Date());
+        let lastSendAt = null;
+        
         if (activeCase.stages && activeCase.stages.length > 0) {
             const lastStage = activeCase.stages[activeCase.stages.length - 1];
-            if (lastStage.nc) {
-                const baseDate = new Date(lastStage.nc);
+            lastSendAt = lastStage.sendAt || lastStage.nc;
+            
+            if (lastSendAt) {
+                const baseDate = new Date(lastSendAt);
                 const adjDays = Number(lastStage.adjDays) || 3;
                 initialNc = formatDateIsoLocal(calculateNcDate(baseDate, adjDays));
             }
@@ -380,6 +404,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
             id: uid,
             name: newName,
             nc: initialNc,
+            sendAt: initialNc, // Default same as NC
             adjDays: 3,
             steps: (template.steps || []).map(step => ({
                 ...step,

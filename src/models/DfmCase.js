@@ -96,6 +96,17 @@ class DfmCase {
                 // Add 'this' to context so methods/getters are still accessible
                 context.this = this;
 
+                // Add helper functions and flags for dates
+                context.isSameDate = (d1, d2) => {
+                    if (!d1 || !d2) return false;
+                    const date1 = new Date(d1);
+                    const date2 = new Date(d2);
+                    return date1.getFullYear() === date2.getFullYear() &&
+                           date1.getMonth() === date2.getMonth() &&
+                           date1.getDate() === date2.getDate();
+                };
+                context.isSendAtSameAsNC = context.isSameDate(stage?.nc, stage?.sendAt || stage?.nc);
+
                 processedText = window.ejs.render(text, context, { openDelimiter: '{', closeDelimiter: '}' });
             } catch (e) {
                 console.error('EJS Render Error:', e);
@@ -126,8 +137,8 @@ class DfmCase {
                 }
             }
 
-            // 1. Dynamic NC Date formatting (Support offset like nextNC+2_XL or currentNC-1)
-            const ncMatch = k.match(/^(prevNC|currentNC|nextNC)([+-]\d+)?(_XS|_S|_L|_XL)?$/);
+            // 1. Dynamic NC/SendAt Date formatting (Support offset like nextNC+2_XL or sendAt-1)
+            const ncMatch = k.match(/^(prevNC|currentNC|nextNC|sendAt)([+-]\d+)?(_XS|_S|_L|_XL)?$/);
             if (ncMatch) {
                 const type = ncMatch[1];
                 const offset = parseInt(ncMatch[2]) || 0;
@@ -147,11 +158,18 @@ class DfmCase {
                     }
                 } else if (type === 'nextNC') {
                     let baseDate = new Date();
-                    if (this.activeStage && this.activeStage.nc) {
-                        baseDate = new Date(this.activeStage.nc);
+                    // Priority: sendAt -> nc -> current date
+                    if (this.activeStage && (this.activeStage.sendAt || this.activeStage.nc)) {
+                        baseDate = new Date(this.activeStage.sendAt || this.activeStage.nc);
                     }
                     const adjDays = Number(this.activeStage?.adjDays) || 3;
                     targetDate = calculateNcDate(baseDate, adjDays);
+                } else if (type === 'sendAt') {
+                    if (this.activeStage && (this.activeStage.sendAt || this.activeStage.nc)) {
+                        targetDate = new Date(this.activeStage.sendAt || this.activeStage.nc);
+                    } else {
+                        targetDate = new Date();
+                    }
                 }
 
                 if (targetDate) {
