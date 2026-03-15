@@ -8,6 +8,10 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
     const [connectionStatus, setConnectionStatus] = useState('disconnected')
     const rpcRequests = useRef({})
 
+    const getTargetOrigin = () => {
+        return localStorage.getItem('dfm_ninja_parent_domain') || '*';
+    };
+
     const execDfM = (executorFn, ...args) => {
         return new Promise((resolve, reject) => {
             if (!window.opener) {
@@ -24,7 +28,7 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
                 functionStr: executorFn.toString(),
                 args: args,
                 timestamp: timestamp
-            }, '*')
+            }, getTargetOrigin())
         })
     }
 
@@ -57,7 +61,7 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
 
         // Initial Connection Check
         if (window.opener) {
-            window.opener.postMessage({ type: 'PING' }, '*')
+            window.opener.postMessage({ type: 'PING' }, getTargetOrigin())
         }
 
         return () => window.removeEventListener('message', handleMessage)
@@ -66,7 +70,7 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
     const reconnect = () => {
         if (window.opener) {
             setConnectionStatus('checking...')
-            window.opener.postMessage({ type: 'PING' }, '*')
+            window.opener.postMessage({ type: 'PING' }, getTargetOrigin())
             setTimeout(() => {
                 // If no PONG arrived within 1s, mark as disconnected
                 // This is a simple heuristic.

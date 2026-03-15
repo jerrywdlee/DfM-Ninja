@@ -11,6 +11,27 @@ import * as dfmScripts from './utils/dfmScripts'
 import pkg from '../package.json'
 
 const App = () => {
+  // 0. Extract Parent Domain
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    let parentDomain = url.searchParams.get('parentDomain');
+    
+    if (!parentDomain && url.hash.includes('parentDomain=')) {
+        const hashParams = new URLSearchParams(url.hash.substring(1));
+        parentDomain = hashParams.get('parentDomain');
+        if (parentDomain) {
+            hashParams.delete('parentDomain');
+            url.hash = hashParams.toString();
+        }
+    }
+
+    if (parentDomain) {
+        localStorage.setItem('dfm_ninja_parent_domain', parentDomain);
+        url.searchParams.delete('parentDomain');
+        window.history.replaceState(null, '', url.toString());
+    }
+  }, []);
+
   // 1. Initial State & Migration
   const [cases, setCases] = useState(() => {
     // Migration: Split dfm_ninja_cases if it exists
