@@ -333,6 +333,8 @@ const App = () => {
         }}
         sysTemplates={sysTemplates}
         setSysTemplates={setSysTemplates}
+        templates={templates}
+        setTemplates={setTemplates}
         showToast={showToast}
       />
       

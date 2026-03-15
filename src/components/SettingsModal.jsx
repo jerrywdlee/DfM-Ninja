@@ -2,12 +2,13 @@ import { useState, useRef, useEffect } from 'react'
 import yaml from 'js-yaml'
 import JSZip from 'jszip'
 
-const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, showToast }) => {
+const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast }) => {
     const [code, setCode] = useState(rawYaml || '')
     const [error, setError] = useState(null)
     const [activeTab, setActiveTab] = useState('yaml') // 'yaml', 'sysTemp', or 'data'
     const fileInputRef = useRef(null)
     const importInputRef = useRef(null)
+    const importTemplatesRef = useRef(null)
 
     // Lock body scroll when modal is open
     useEffect(() => {
@@ -248,7 +249,126 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         } finally {
             e.target.value = '';
         }
-    };
+    }
+
+    const handleImportTemplates = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.name.endsWith('.zip')) {
+            alert('テンプレートの一括インポートは templates.zip を指定してください');
+            e.target.value = '';
+            return;
+        }
+
+        if (!confirm('テンプレートを一括インポート（上書き）します。よろしいですか？\n※ Settings.yml は上書きされません')) {
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            const masterZip = await JSZip.loadAsync(file);
+            let importedSysCount = 0;
+            let importedStageCount = 0;
+
+            const newSysTemplates = [...sysTemplates];
+            const newStageTemplates = [...templates];
+
+            for (const [filename, fileData] of Object.entries(masterZip.files)) {
+                if (!fileData.dir && filename.endsWith('.zip')) {
+                    const innerBuffer = await fileData.async('arraybuffer');
+                    const innerZip = await JSZip.loadAsync(innerBuffer);
+
+                    if (filename === 'Settings.zip') {
+                        // Extract Sys Temp from .md files
+                        for (const [innerName, innerData] of Object.entries(innerZip.files)) {
+                            if (!innerData.dir && innerName.endsWith('.md')) {
+                                const text = await innerData.async('string');
+                                const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+                                if (match) {
+                                    try {
+                                        const data = yaml.load(match[1]) || {};
+                                        if (data.id) {
+                                            const newTemp = {
+                                                id: data.id,
+                                                title: data.title || data.id,
+                                                version: data.version || '1.0.0',
+                                                renderIf: data.renderIf,
+                                                content: match[2]
+                                            };
+                                            const existingIndex = newSysTemplates.findIndex(t => t.id === newTemp.id);
+                                            if (existingIndex !== -1) {
+                                                newSysTemplates[existingIndex] = newTemp;
+                                            } else {
+                                                newSysTemplates.push(newTemp);
+                                            }
+                                            importedSysCount++;
+                                        }
+                                    } catch (err) {
+                                        console.error('Failed to parse md frontmatter:', innerName, err);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Stage template
+                        const confFileKeys = Object.keys(innerZip.files).filter(k => /conf\.yml$/i.test(k));
+                        if (confFileKeys.length > 0) {
+                            const confFile = innerZip.files[confFileKeys[0]];
+                            const confText = await confFile.async('string');
+                            const config = yaml.load(confText);
+
+                            const richSteps = [];
+                            if (config.steps) {
+                                for (let i = 0; i < config.steps.length; i++) {
+                                    const stepNum = i + 1;
+                                    const htmlRegex = new RegExp(`step${stepNum}\\.html$`, 'i');
+                                    const htmlFileKeys = Object.keys(innerZip.files).filter(k => htmlRegex.test(k));
+                                    let html = '';
+                                    if (htmlFileKeys.length > 0) {
+                                        html = await innerZip.files[htmlFileKeys[0]].async('string');
+                                    }
+                                    richSteps.push({ ...config.steps[i], html });
+                                }
+                            }
+
+                            const templateId = config.id || config.name || filename.replace('.zip', '');
+                            const templateData = {
+                                id: templateId,
+                                name: config.name || templateId,
+                                version: config.version || '1.0.0',
+                                description: config.description || '',
+                                steps: richSteps
+                            };
+
+                            const existingIndex = newStageTemplates.findIndex(t => t.id === templateData.id);
+                            if (existingIndex !== -1) {
+                                newStageTemplates[existingIndex] = templateData;
+                            } else {
+                                newStageTemplates.push(templateData);
+                            }
+                            importedStageCount++;
+                        }
+                    }
+                }
+            }
+
+            setSysTemplates(newSysTemplates);
+            setTemplates(newStageTemplates);
+
+            if (showToast) {
+                showToast(`Sys Temp: ${importedSysCount}件、Stage Template: ${importedStageCount}件 をインポートしました。`, 'success');
+            } else {
+                alert(`Sys Temp: ${importedSysCount}件、Stage Template: ${importedStageCount}件 をインポートしました。`);
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert('テンプレートの取り込みに失敗しました: ' + err.message);
+        } finally {
+            e.target.value = '';
+        }
+    };;
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -396,6 +516,26 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                                 className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-emerald-900/20 transition-all active:scale-95 flex items-center gap-2"
                             >
                                 📥 Import Cases
+                            </button>
+                        </div>
+
+                        <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
+                            <h4 className="text-lg font-bold text-slate-200 mb-2">Import Templates</h4>
+                            <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
+                                `templates.zip` を取り込み、Sys Temp. および Stage Templates を一括で上書き更新します（Settings.ymlは上書きされません）。
+                            </p>
+                            <input 
+                                type="file" 
+                                accept=".zip"
+                                ref={importTemplatesRef}
+                                onChange={handleImportTemplates}
+                                className="hidden"
+                            />
+                            <button
+                                onClick={() => importTemplatesRef.current?.click()}
+                                className="px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-teal-900/20 transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                📥 Import Templates
                             </button>
                         </div>
 
