@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
 import SettingsModal from './components/SettingsModal'
@@ -196,7 +196,6 @@ const App = () => {
                     ...existingData,
                     ...data,
                     createdAt: existingData.createdAt || now,
-                    updatedAt: now
                 };
 
                 const mergedCase = new DfmCase(mergedCaseData, settings);
@@ -209,10 +208,115 @@ const App = () => {
                     return [...prev, { id, title, resolvedAt: mergedCase.resolvedAt }];
                 })
                 localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(mergedCase.toJSON()))
-                setActiveCaseId(id)
+                // Only set active if hash doesn't dictate otherwise or currently empty
+                if (!window.location.hash || window.location.hash.length <= 1) {
+                   setActiveCaseId(id)
+                }
             }).catch(err => console.error('Initial RPC extraction failed', err))
         }
     }, [connectionStatus])
+
+    // 4. Hash Routing
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash.substring(1); // remove '#'
+            if (!hash) return;
+
+            const params = new URLSearchParams(hash);
+            const caseId = params.get('caseId');
+            const stageId = params.get('stageId');
+            const stepId = params.get('stepId');
+
+            if (!caseId) return;
+
+            const savedRaw = localStorage.getItem(`dfm_ninja_case_${caseId}`);
+            if (!savedRaw) {
+                showToast(`Error: Case "${caseId}" not found.`, 'error');
+                setActiveCaseId(null);
+                window.location.hash = '';
+                return;
+            }
+
+            const caseData = JSON.parse(savedRaw);
+            let needsUpdate = false;
+            
+            if (stageId) {
+                const stageIndex = caseData.stages.findIndex(s => String(s.id) === String(stageId));
+                if (stageIndex === -1) {
+                    showToast(`Error: Stage "${stageId}" not found in Case "${caseId}".`, 'error');
+                    caseData.activeStageId = null;
+                    caseData.activeStepId = null;
+                    needsUpdate = true;
+                } else {
+                    const actualStage = caseData.stages[stageIndex];
+                    caseData.activeStageId = actualStage.id;
+
+                    if (stepId) {
+                        let actualStepIndex = -1;
+                        if (actualStage.steps && actualStage.steps.length > 0) {
+                            if (stepId.startsWith('step-')) {
+                                const idx = parseInt(stepId.replace('step-', ''), 10);
+                                if (!isNaN(idx) && idx >= 0 && idx < actualStage.steps.length) {
+                                    actualStepIndex = idx;
+                                }
+                            } else {
+                                actualStepIndex = actualStage.steps.findIndex(s => String(s.id) === String(stepId));
+                            }
+                        }
+
+                        if (actualStepIndex === -1 && stepId !== 'llm' && actualStage.steps && actualStage.steps.length > 0) {
+                            showToast(`Error: Step "${stepId}" not found in Stage "${stageId}".`, 'error');
+                            caseData.activeStepId = 'step-0';
+                            needsUpdate = true;
+                        } else if (actualStepIndex !== -1 || stepId === 'llm') {
+                            caseData.activeStepId = stepId;
+                        }
+                    }
+                }
+            }
+            
+            if (needsUpdate) {
+                localStorage.setItem(`dfm_ninja_case_${caseId}`, JSON.stringify(caseData));
+            }
+
+            // Always update state to trigger re-render
+            setActiveCaseId(caseId);
+            setActiveCaseData(new DfmCase(caseData, settings));
+        };
+
+        // Run once on mount to handle initial deep link
+        handleHashChange();
+
+        // Listen for subsequent hash changes
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []); // Empty dependency array ensures it only runs on mount and listens cleanly
+
+    // Update Hash when internal active state changes
+    useEffect(() => {
+        if (!activeCaseData) {
+            if (window.location.hash) {
+                // To avoid clearing hash if we just started app and haven't processed yet
+                // we only clear if we explicitly set activeCaseData to null
+            }
+            return;
+        }
+        
+        const params = new URLSearchParams();
+        params.set('caseId', activeCaseData.id);
+        if (activeCaseData.activeStageId) {
+            params.set('stageId', activeCaseData.activeStageId);
+            if (activeCaseData.activeStepId) {
+                params.set('stepId', activeCaseData.activeStepId);
+            }
+        }
+        
+        const newHash = `#${params.toString()}`;
+        if (window.location.hash !== newHash) {
+            // Use replaceState to avoid cluttering history when just clicking around inside the app
+            window.history.replaceState(null, '', newHash);
+        }
+    }, [activeCaseData]);
 
     // Synchronize current case globally for templates
     window.currentCase = activeCaseData;
