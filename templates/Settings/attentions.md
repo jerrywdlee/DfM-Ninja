@@ -1,8 +1,8 @@
 ---
 id: attentions
 title: 留意事項 - Pro 契約
-version: 1.0.0
-renderIf: "this.Lic === 'Pro'"
+version: 1.0.1
+# renderIf: "this.Lic === 'Pro'"
 ---
 [対応に関するご留意事項]
 本 SR はプロフェッショナル サポートのご契約によりお問い合わせいただいております。

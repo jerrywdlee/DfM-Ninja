@@ -1,6 +1,6 @@
 id: MP_Confirm
 name: お客様からの連絡の返信
-version: 0.0.5
+version: 0.0.6
 description: ""
 steps:
     - name: LLM連携

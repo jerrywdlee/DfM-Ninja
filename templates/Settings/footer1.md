@@ -1,9 +1,8 @@
 ---
 id: footerNormal
 title: Footer - 通常
-version: 1.0.1
+version: 1.0.2
 ---
-{{attentions}}
 下記が、本お問い合わせの対応メンバーとなります。    
 対応中のご質問やご連絡にあたっては、本メールに全員返信いただくか、担当までお電話ください。  
   
