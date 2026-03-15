@@ -40,14 +40,15 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     }, [isOpen, code]);
 
     // Set bookmarklet href directly on DOM to bypass React's javascript: security block
+    // Must depend on isOpen so it re-runs after the anchor is rendered (modal visible)
     useEffect(() => {
-        if (!bookmarkletAnchorRef.current) return;
+        if (!isOpen || !bookmarkletAnchorRef.current) return;
         const origin = window.location.origin;
         const pathname = window.location.pathname.replace(/\/$/, '');
         const ninja_path = `${origin}${pathname}`;
         const href = `javascript:${bookmarkletCode}`.replace(/\$\{DFM_NINJA_PATH\}/g, ninja_path);
         bookmarkletAnchorRef.current.setAttribute('href', href);
-    }, []);
+    }, [isOpen]);
 
     if (!isOpen) return null
 
