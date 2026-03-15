@@ -31,6 +31,19 @@ For a full list of rendering variables and how they resolve, please see **[Varia
    ```
 4. Access the application at `http://localhost:5178` (or `5179` if 5178 is in use).
 
+> [!NOTE]
+> **初回セットアップについて**
+>
+> `src/utils/bookmarkletCode.js` は **自動生成ファイル** のため `.gitignore` に含まれています。
+> `npm run dev` または `npm run build` 実行時に Vite プラグイン (`bookmarkletPlugin`) が自動的に生成します。
+>
+> 手動で生成したい場合は以下を実行してください：
+> ```bash
+> npm run build:bookmarklet
+> ```
+> スクリプトのソースは `src/utils/dfmBookmarklet.js` です。このファイルのみ Git 管理してください。
+
+
 ### Custom Port
 You can specify a custom port using the `PORT` environment variable:
 ```bash

@@ -27,3 +27,4 @@ tmp/*
 
 .env
 *.zip
+src/utils/bookmarkletCode.js

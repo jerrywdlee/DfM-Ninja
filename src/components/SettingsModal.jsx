@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import yaml from 'js-yaml'
 import JSZip from 'jszip'
+import { bookmarkletCode } from '../utils/bookmarkletCode'
 
 const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast }) => {
     const [code, setCode] = useState(rawYaml || '')
     const [error, setError] = useState(null)
-    const [activeTab, setActiveTab] = useState('yaml') // 'yaml', 'sysTemp', or 'data'
+    const [activeTab, setActiveTab] = useState('usage') // 'usage', 'yaml', 'sysTemp', or 'data'
     const fileInputRef = useRef(null)
     const importInputRef = useRef(null)
     const importTemplatesRef = useRef(null)
@@ -384,6 +385,12 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     {/* Tabs */}
                     <div className="flex bg-slate-950/50 rounded-lg p-1 w-fit border border-slate-800">
                         <button
+                            className={`px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${activeTab === 'usage' ? 'bg-slate-800 text-orange-400 shadow-sm' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
+                            onClick={() => setActiveTab('usage')}
+                        >
+                            🥷 Usage
+                        </button>
+                        <button
                             className={`px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${activeTab === 'yaml' ? 'bg-slate-800 text-orange-400 shadow-sm' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
                             onClick={() => setActiveTab('yaml')}
                         >
@@ -405,6 +412,26 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                 </div>
 
                 <div className="p-6 flex-1 overflow-hidden flex flex-col gap-4 min-h-0">
+                {/* Usage Tab Content */}
+                    <div className={`flex-1 flex flex-col gap-4 min-h-0 ${activeTab === 'usage' ? 'flex' : 'hidden'}`}>
+                        <div className="text-xs text-slate-400 space-y-1">
+                            <p>以下のBookmarkletをブラウザのブックマークバーに登録して使用します。</p>
+                            <p className="text-slate-500">URL欄にコピペするか、新しいブックマークを作成してURL欄に貼り付けてください。</p>
+                        </div>
+                        <textarea
+                            readOnly
+                            className="flex-1 font-mono text-[11px] bg-slate-950 text-emerald-400 rounded-lg p-3 resize-none border border-slate-800 focus:outline-none leading-relaxed"
+                            value={(() => {
+                                const origin = window.location.origin;
+                                const pathname = window.location.pathname.replace(/\/$/, '');
+                                const ninja_path = `${origin}${pathname}`;
+                                return `javascript:${bookmarkletCode}`.replace(/\$\{DFM_NINJA_PATH\}/g, ninja_path);
+                            })()}
+                            onClick={(e) => { e.target.select(); }}
+                        />
+                        <p className="text-[10px] text-slate-600">クリックで全選択できます。</p>
+                    </div>
+
                     {/* YAML Tab Content */}
                     <div className={`flex-1 flex flex-col gap-4 min-h-0 ${activeTab === 'yaml' ? 'flex' : 'hidden'}`}>
                         <p className="text-xs text-slate-400">
