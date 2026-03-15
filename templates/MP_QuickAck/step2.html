@@ -91,7 +91,7 @@
             お疲れ様です、 {{familyName}} です。
 
             TL review をお願いいたします。
-            QuickACKです。 (SLA: {{SLA}})
+            QuickACKです。 (SLA: {{SLA}}){%= !isSendAtSameAsNC ? '（予定送信日: {{sendAt_S}}）' : '' %}
 
             [Next C]
             {{nextNC_S}}
@@ -150,7 +150,7 @@
             @ さん、お疲れ様です。
             TL review をお願いします。
             [{{Lic_L}}] {{caseNum}} {{caseTitle}}
-            QuickACKです。 (SLA: {{SLA}})
+            QuickACKです。 (SLA: {{SLA}}){%= !isSendAtSameAsNC ? '（予定送信日: {{sendAt_S}}）' : '' %}
         </noscript>
 
         <script>

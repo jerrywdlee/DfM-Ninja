@@ -90,15 +90,16 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                 className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${isActive ? 'bg-orange-100' : 'bg-slate-50 hover:bg-slate-100'}`}
                 onClick={onToggle}
             >
-                <div className="flex items-center gap-4 flex-1 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-4 flex-1 overflow-hidden">
                     <span className="text-slate-400 shrink-0 w-4">{isActive ? '▼' : '▶'}</span>
                     <input
                         className="bg-transparent font-bold text-slate-700 border-none focus:ring-0 p-0 text-sm truncate min-w-[120px] w-auto"
                         value={stage.name}
                         onChange={(e) => onUpdate({ ...stage, name: e.target.value })}
+                        onClick={(e) => e.stopPropagation()}
                     />
                     
-                    <div className="flex items-center gap-4 ml-auto shrink-0">
+                    <div className="flex items-center gap-4 ml-auto shrink-0" onClick={(e) => e.stopPropagation()}>
                         {/* Curt. NC */}
                         <div className="flex items-center gap-1.5 group">
                             <span className="text-slate-400 font-bold text-[10px] uppercase tracking-tight">Curt. NC</span>

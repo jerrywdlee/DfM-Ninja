@@ -95,10 +95,10 @@
             Strike2 になります。
 
             [対応履歴]
-            {{stageLog}}
+            {{stageLog_Dot}}
 
             [Next C]
-            {{currentNC_S}}（予定送信日: {{currentNC_S}}）
+            {{currentNC_S}}{%= !isSendAtSameAsNC ? '（予定送信日: {{sendAt_S}}）' : '' %}
 
             [お問い合わせ番号]
             {{caseNum}}
@@ -151,7 +151,7 @@
             TL review をお願いします。
             [{{Lic_L}}] {{caseNum}} {{caseTitle}}
             Strike2 になります。
-            [Next C] {{currentNC_S}}（予定送信日: {{currentNC_S}}）
+            [Next C] {{currentNC_S}}{%= !isSendAtSameAsNC ? '（予定送信日: {{sendAt_S}}）' : '' %}
         </noscript>
 
         <script>

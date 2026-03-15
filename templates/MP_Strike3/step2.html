@@ -91,7 +91,7 @@
             お疲れ様です、 {{familyName}} です。
 
             TL review をお願いいたします。
-            Closeメール（{{closeType_Str}}）です。
+            Closeメール（{{closeType_Str}}）です。{%= !isSendAtSameAsNC ? '（予定送信日: {{sendAt_S}}）' : '' %}
             
             [対応履歴]
             {{stageLog_Dot}}
@@ -167,7 +167,7 @@
             @ さん、お疲れ様です。
             TL review をお願いします。
             [{{Lic_L}}] {{caseNum}} {{caseTitle}}
-            Closeメール（{{closeType_Str}}）です。
+            Closeメール（{{closeType_Str}}）です。{%= !isSendAtSameAsNC ? '（予定送信日: {{sendAt_S}}）' : '' %}
         </noscript>
 
         <script>
