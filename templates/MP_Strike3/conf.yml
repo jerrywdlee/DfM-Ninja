@@ -1,6 +1,6 @@
 id: MP_Strike3
 name: Strike3 / Close
-version: 0.0.8
+version: 0.0.9
 description: ""
 steps:
     - name: ケースノート

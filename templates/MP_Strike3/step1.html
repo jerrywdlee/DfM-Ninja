@@ -24,14 +24,14 @@
                         placeholder="Copilot用のプロンプト..."></textarea>
                 </div>
 
-                <!-- Case Summary Result -->
-                <div class="flex flex-col flex-1">
+                <!-- SCR Prompt -->
+                <div class="flex flex-col flex-1 mt-4">
                     <div class="flex items-center justify-between mb-2 px-1">
-                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Case Summary Result</h4>
+                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">S.C.R. Prompt <span class="text-[11px] font-normal text-emerald-700/70">(メールのCopilotにて)</span></h4>
                     </div>
-                    <textarea name="caseSummaryResult" data-doubleclick="copy"
+                    <textarea name="scrPrompt" data-doubleclick="copy"
                         class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                        placeholder="サマリー結果..."></textarea>
+                        placeholder="Symptom、Cause、Resolutionを生成するためのプロンプト..."></textarea>
                 </div>
             </div>
 
@@ -64,33 +64,60 @@
         </div>
 
         <noscript data-name="caseSummaryPrompt">
-            メール文面およびメタデータを基づいて、
-            下記のスタイルでこのケースの CASE SUMMARY を生成してください
+            # 指示
+            提供されたメール文面とメタデータを分析し、以下のフォーマットに従って「CASE SUMMARY」を作成してください。
+            
+            # 重要
+            出力結果を簡単にコピーできるよう、**必ず全体を単一のコードブロック（```text 〜 ```）で囲んだプレーンテキスト**として出力してください。
 
-            生成された文面はPlain Textとして、コードブロックの中に入れてください。
-
-            ```
+            # フォーマット
+            ```text
             +++++++++++++++++++++++++++
 
             CASE SUMMARY
 
             [Scope Agreement]
+            (お客様と合意したサポート範囲を簡潔に記載)
 
             [Troubleshooting]
-            ①
-            ②
-            ③
+            ① (実施したトラブルシューティングステップを箇条書きで記載)
+            ② 
+            ③ 
 
             [Case Status]
+            (現在のケースの解決状況を簡潔に記載)
 
             [Next Action]
+            (次に行うべきアクションや今後の予定があれば簡潔に記載)
 
             +++++++++++++++++++++++++++
             ```
         </noscript>
 
-        <noscript data-name="caseSummaryResult"></noscript>
+        <noscript data-name="scrPrompt">
+            # 指示
+            提供されたメール文面とメタデータを分析し、以下のフォーマットに従って「Symptom、Cause、Resolution」を作成してください。
 
+            # 重要
+            - 各項目（Symptom、Cause、Resolution）ごとに、**それぞれ独立した単一のコードブロック（```text 〜 ```）で囲んだプレーンテキスト**として出力してください。
+            - 各項目の内容は、それぞれ **150〜200文字程度** に要約して記載してください。
+
+            # フォーマット
+            Symptom（事象）：
+            ```text
+            (お客様からの申告をもとに、150〜200文字程度で簡潔に要約して記載)
+            ```
+
+            Cause（原因）：
+            ```text
+            (調査内容から判明した根本原因を、150〜200文字程度で簡潔に要約して記載)
+            ```
+
+            Resolution（解決策）：
+            ```text
+            (提供した解決策や回避策を、150〜200文字程度で簡潔に要約して記載)
+            ```
+        </noscript>
         <noscript data-name="closeRequest">
             @ さん
             お疲れ様です。ケースクローズの確認をお願いします。
@@ -115,12 +142,12 @@
                 const divId = '#MP_Strike3_step1-<%=uid%>';
                 const $scope = $(divId);
                 const $caseSummaryPrompt = $scope.find('textarea[name="caseSummaryPrompt"]');
-                const $caseSummaryResult = $scope.find('textarea[name="caseSummaryResult"]');
+                const $scrPrompt = $scope.find('textarea[name="scrPrompt"]');
                 const $closeRequest = $scope.find('textarea[name="closeRequest"]');
                 const $closeTypeRadios = $scope.find('input[name="closeType"]');
 
                 const caseSummaryPromptText = $scope.find('noscript[data-name="caseSummaryPrompt"]').text().trim().replace(/\n +/g, '\n');
-                const caseSummaryResultText = $scope.find('noscript[data-name="caseSummaryResult"]').text().trim().replace(/\n +/g, '\n');
+                const scrPromptText = $scope.find('noscript[data-name="scrPrompt"]').text().trim().replace(/\n +/g, '\n');
                 const closeRequestText = $scope.find('noscript[data-name="closeRequest"]').text().trim().replace(/\n +/g, '\n');
 
                 const caseDataInitial = window.currentCase;
@@ -133,10 +160,10 @@
                     $caseSummaryPrompt.val(caseDataInitial.render(caseSummaryPromptText));
                 }
                 
-                if (activeStepInitial && activeStepInitial.caseSummaryResult) {
-                    $caseSummaryResult.val(activeStepInitial.caseSummaryResult);
+                if (activeStepInitial && activeStepInitial.scrPrompt) {
+                    $scrPrompt.val(activeStepInitial.scrPrompt);
                 } else if (caseDataInitial) {
-                    $caseSummaryResult.val(caseDataInitial.render(caseSummaryResultText));
+                    $scrPrompt.val(caseDataInitial.render(scrPromptText));
                 }
 
                 if (activeStepInitial && activeStepInitial.closeRequest) {
@@ -160,11 +187,11 @@
                     }
 
                     const promptVal = $caseSummaryPrompt.val();
-                    const resultVal = $caseSummaryResult.val();
+                    const scrPromptVal = $scrPrompt.val();
                     const closeVal = $closeRequest.val();
 
                     $caseSummaryPrompt.val(caseData.render(promptVal));
-                    $caseSummaryResult.val(caseData.render(resultVal));
+                    $scrPrompt.val(caseData.render(scrPromptVal));
                     $closeRequest.val(caseData.render(closeVal));
                 });
 
@@ -174,7 +201,7 @@
                     }
 
                     $caseSummaryPrompt.val(caseSummaryPromptText);
-                    $caseSummaryResult.val(caseSummaryResultText);
+                    $scrPrompt.val(scrPromptText);
                     $closeRequest.val(closeRequestText);
 
                     $scope.find('input[name="closeType"][value="strike3"]').prop('checked', true);

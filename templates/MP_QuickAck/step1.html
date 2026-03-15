@@ -25,21 +25,22 @@
             </div>
         </div>
         <noscript data-name="prompt">
-            # Role: Expert Technical Support Engineer
-            # Task: Analyze customer statement and draft a clear "Understanding/Recognition" text.
+            # 役割: 熟練のテクニカルサポートエンジニア
+            # タスク: お客様の申告内容を分析し、明確な「認識合わせ」の文章を作成すること。
             
-            # Context (Customer Statement):
+            # 背景情報（お客様の申告内容）:
             """
             {{custStatement}}
             """
 
-            # Instructions:
-            1. Analyze the core issue and technical context from the statement.
-            2. Draft a concise "Recognition/Alignment" (認識合わせ) text in Japanese.
-            3. The output MUST be formatted as a "Plan Text" within a single Code Block.
-            4. Focus on clarity and brevity. Avoid redundant opening/closing remarks.
+            # 指示:
+            1. 申告内容から中核となる事象と技術的な背景を分析してください。
+            2. 簡潔な「認識合わせ」の文章を日本語で作成してください。
+            3. 出力内容は単一のコードブロック内に「プレーンテキスト」としてフォーマットしてください。
+            4. 明確さと簡潔さを重視し、不要な挨拶等は省き、なるべく簡潔に事象等をまとめてください。
+            5. お客様の文面にある特定の人物名、メールアドレス、URL等はそのまま復唱せず、「該当担当者」「該当メールアドレス」「所定のURL」などの表現に置き換えてください。
 
-            # Output Example:
+            # 出力例:
             ```
             本お問い合わせにつきましては、以下の内容として認識しております。
             ・[具体事象]
