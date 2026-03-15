@@ -10,6 +10,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     const fileInputRef = useRef(null)
     const importInputRef = useRef(null)
     const importTemplatesRef = useRef(null)
+    const bookmarkletAnchorRef = useRef(null)
 
     // Lock body scroll when modal is open
     useEffect(() => {
@@ -36,6 +37,16 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         window.addEventListener('keydown', handleGlobalKeyDown);
         return () => window.removeEventListener('keydown', handleGlobalKeyDown);
     }, [isOpen, code]);
+
+    // Set bookmarklet href directly on DOM to bypass React's javascript: security block
+    useEffect(() => {
+        if (!bookmarkletAnchorRef.current) return;
+        const origin = window.location.origin;
+        const pathname = window.location.pathname.replace(/\/$/, '');
+        const ninja_path = `${origin}${pathname}`;
+        const href = `javascript:${bookmarkletCode}`.replace(/\$\{DFM_NINJA_PATH\}/g, ninja_path);
+        bookmarkletAnchorRef.current.setAttribute('href', href);
+    }, []);
 
     if (!isOpen) return null
 
@@ -413,23 +424,38 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
 
                 <div className="p-6 flex-1 overflow-hidden flex flex-col gap-4 min-h-0">
                 {/* Usage Tab Content */}
-                    <div className={`flex-1 flex flex-col gap-4 min-h-0 ${activeTab === 'usage' ? 'flex' : 'hidden'}`}>
-                        <div className="text-xs text-slate-400 space-y-1">
-                            <p>以下のBookmarkletをブラウザのブックマークバーに登録して使用します。</p>
-                            <p className="text-slate-500">URL欄にコピペするか、新しいブックマークを作成してURL欄に貼り付けてください。</p>
+                    <div className={`flex-1 flex flex-col gap-6 items-center justify-center min-h-0 ${activeTab === 'usage' ? 'flex' : 'hidden'}`}>
+                        <div className="text-center space-y-2">
+                            <p className="text-sm text-slate-300 font-semibold">以下のボタンをブラウザの<span className="text-orange-400">ブックマークバーへドラッグ</span>してインストール</p>
+                            <p className="text-xs text-slate-500">ブックマークバーが非表示の場合は <kbd className="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700">Ctrl+Shift+B</kbd> / <kbd className="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700">⌘+Shift+B</kbd> で表示できます</p>
                         </div>
-                        <textarea
-                            readOnly
-                            className="flex-1 font-mono text-[11px] bg-slate-950 text-emerald-400 rounded-lg p-3 resize-none border border-slate-800 focus:outline-none leading-relaxed"
-                            value={(() => {
-                                const origin = window.location.origin;
-                                const pathname = window.location.pathname.replace(/\/$/, '');
-                                const ninja_path = `${origin}${pathname}`;
-                                return `javascript:${bookmarkletCode}`.replace(/\$\{DFM_NINJA_PATH\}/g, ninja_path);
-                            })()}
-                            onClick={(e) => { e.target.select(); }}
+
+                        {/* Draggable bookmarklet anchor */}
+                        <a
+                            ref={bookmarkletAnchorRef}
+                            draggable
+                            onClick={(e) => {
+                                e.preventDefault();
+                                alert('このリンクをブックマークバーへドラッグしてインストールしてください。\nここでクリックしても動作しません。');
+                            }}
+                            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-xl font-black text-white shadow-2xl shadow-orange-900/30 border-2 border-orange-500/40 select-none cursor-grab active:cursor-grabbing"
+                            style={{ background: 'linear-gradient(135deg, #92400e 0%, #b45309 40%, #d97706 100%)' }}
+                            title="ブックマークバーへドラッグしてインストール"
+                        >
+                            🥷 DfM-Ninja
+                        </a>
+
+                        <img
+                            src="install-bookmarklet.png"
+                            alt="ブックマークバーへドラッグしてインストールする手順"
+                            className="w-full max-w-sm rounded-xl opacity-75 select-none pointer-events-none"
+                            draggable={false}
                         />
-                        <p className="text-[10px] text-slate-600">クリックで全選択できます。</p>
+
+                        <p className="text-[11px] text-slate-600 flex items-center gap-1.5">
+                            <span className="text-slate-500">↑</span>
+                            このボタンをそのままブックマークバーへドラッグ＆ドロップしてください
+                        </p>
                     </div>
 
                     {/* YAML Tab Content */}
@@ -608,12 +634,14 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                         >
                             Cancel
                         </button>
-                        <button
-                            onClick={handleSave}
-                            className="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-orange-900/20 transition-all active:scale-95"
-                        >
-                            Save Changes
-                        </button>
+                        {activeTab === 'yaml' && (
+                            <button
+                                onClick={handleSave}
+                                className="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-orange-900/20 transition-all active:scale-95"
+                            >
+                                Save Changes
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
