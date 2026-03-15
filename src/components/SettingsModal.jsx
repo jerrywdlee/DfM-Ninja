@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import yaml from 'js-yaml'
 import JSZip from 'jszip'
 import { bookmarkletCode } from '../utils/bookmarkletCode'
+import installBookmarkletImg from '/install-bookmarklet.png'
 
 const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast }) => {
     const [code, setCode] = useState(rawYaml || '')
@@ -446,7 +447,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                         </a>
 
                         <img
-                            src="install-bookmarklet.png"
+                            src={installBookmarkletImg}
                             alt="ブックマークバーへドラッグしてインストールする手順"
                             className="w-full max-w-sm rounded-xl opacity-75 select-none pointer-events-none"
                             draggable={false}
