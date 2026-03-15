@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import pkg from '../../package.json'
 
-const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, onToggleResolveCase, connectionStatus, onReconnect, onOpenSettings, onLogoHover }) => {
+const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, onToggleResolveCase, connectionStatus, onReconnect, onExtractCase, onOpenSettings, onLogoHover }) => {
     const [search, setSearch] = useState('')
     const [showResolved, setShowResolved] = useState(false)
 
@@ -35,12 +35,21 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                     <span className={`w-1.5 h-1.5 rounded-full ${connectionStatus === 'connected' ? 'bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]' : 'bg-red-500 animate-pulse'}`}></span>
                     {connectionStatus}
                 </span>
-                <button
-                    onClick={onReconnect}
-                    className="hover:text-orange-400 transition-colors cursor-pointer flex items-center gap-1"
-                >
-                    <span className="text-[11px]">🔄</span> Reconnect
-                </button>
+                {connectionStatus === 'connected' ? (
+                    <button
+                        onClick={onExtractCase}
+                        className="hover:text-emerald-400 transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                        <span className="text-[11px]">📟</span> Extract Case
+                    </button>
+                ) : (
+                    <button
+                        onClick={onReconnect}
+                        className="hover:text-orange-400 transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                        <span className="text-[11px]">🔄</span> Reconnect
+                    </button>
+                )}
             </div>
 
             <div className="p-3 bg-slate-900/50 border-b border-slate-800/30">

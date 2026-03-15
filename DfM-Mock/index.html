@@ -33,6 +33,8 @@
             border-radius: 4px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
 </head>
 
 <body>
@@ -40,7 +42,7 @@
         <div style="display: grid; grid-template-cols: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Case Number:</label><br />
-                <input id="caseNumInput" type="text" value="4201180000000042"
+                <input id="caseNumInput" type="text" value=""
                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div>
@@ -49,8 +51,8 @@
                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div>
-                <label style="font-size: 0.8rem; color: #666;">Assigned To:</label><br />
-                <input id="assignedToInput" type="text" value="Demo Agent"
+                <label style="font-size: 0.8rem; color: #666;">SLA:</label><br />
+                <input id="SLAInput" type="text" value=""
                     style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div>
@@ -79,8 +81,46 @@
     </div>
 
     <script>
+        // Randomize Case Number (16-digit) and SLA on page load
+        (function initRandom() {
+            // 16-digit number: first digit != 0
+            const caseNum = String(Math.floor(1 + Math.random() * 9)) +
+                Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join('');
+            document.getElementById('caseNumInput').value = caseNum;
+
+            const r = () => Math.floor(Math.random() * 59) + 1;
+            const slaOptions = [
+                `${Math.floor(Math.random()*6)+1}d ${Math.floor(Math.random()*23)+1}h ${r()}m ${r()}s`,
+                `${Math.floor(Math.random()*23)+1}h ${r()}m ${r()}s`,
+                `${r()}m ${r()}s`,
+                '',
+            ];
+            document.getElementById('SLAInput').value = slaOptions[Math.floor(Math.random() * slaOptions.length)];
+        })();
+
+        function extractData() {
+            const caseNum = document.getElementById('caseNumInput').value;
+            const caseTitle = document.getElementById('caseTitleInput').value;
+            const SLA = document.getElementById('SLAInput').value;
+            const severity = document.getElementById('severityInput').value;
+            const custStatement = document.getElementById('custStatementInput').value;
+            const email = document.getElementById('emailInput').value;
+            const phoneNum = document.getElementById('phoneNumInput').value;
+            return {
+                caseNum,
+                caseTitle,
+                SLA,
+                severity,
+                custStatement,
+                email,
+                phoneNum,
+                sampledAt: new Date().toISOString(),
+            };
+        }
+
         function runBookmarklet() {
-            const spaUrl = "http://localhost:5175";
+            const parentDomain = window.location.origin;
+            const spaUrl = `http://localhost:5175/DfM-Ninja/#parentDomain=${parentDomain}`;
             const ninjaWindow = window.open(spaUrl, "DfMNinja");
 
             // Extract data from inputs
@@ -100,13 +140,25 @@
         }
 
         window.addEventListener("message", (event) => {
-            if (event.origin !== "http://localhost:5175") return;
-            console.log("Received command from Ninja:", event.data);
+            // if (event.origin !== "http://localhost:5175") return;
+            console.log("Received command from Ninja:", event.data, event.origin);
 
             // RPC Request Handler for Mock
             if (event.data.type === "RPC_REQUEST") {
                 const { functionStr, timestamp, args } = event.data;
                 try {
+                    if (functionStr.match(/headerBodyContainer/)) {
+                        console.log("headerBodyContainer");
+
+                        const result = extractData();
+                        event.source.postMessage({
+                            type: "RPC_RESPONSE",
+                            timestamp: timestamp,
+                            data: result
+                        }, event.origin);
+                        return;
+                    }
+
                     const executor = eval('(' + functionStr + ')');
                     // 万が一 args が無い時も空の配列として扱う
                     const result = executor(...(args || []));

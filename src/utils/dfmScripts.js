@@ -7,31 +7,93 @@
  * Extracts the current Case Number and Title from the DfM page.
  */
 export const extractCaseData = () => {
-    const getVal = (id, selector, fallback) => {
-        const el = document.getElementById(id) || document.querySelector(selector);
-        if (!el) return fallback;
-        return el.value || el.innerText || fallback;
-    };
+    const formStatusInfo = () => {
+        const $infoArea = $('#headerBodyContainer [data-id="headerContainer"]').next();
+
+        const res = {
+            caseNum: '', servName: '', severity: '', statusReason: '',
+            sampledAt: (new Date()).toISOString(),
+        };
+
+        const $columns = $infoArea.find('[data-preview_orientation="column"]');
+
+        let text = $($columns[0]).text();
+        let match = text.match(/^(\d+)\ \|(.*?)Case/);
+        if (match && match[1] && match[2]) {
+            res.caseNum = match[1].trim();
+            res.servName = match[2].trim();
+        }
+
+        text = $($columns[1]).text();
+        match = text.match(/^(.+?)Severity/);
+        if (match && match[1]) {
+            res.severity = match[1].trim();
+        }
+
+        text = $($columns[2]).text();
+        match = text.match(/^(.+?)Status/);
+        if (match && match[1]) {
+            res.statusReason = match[1].trim();
+        }
+
+        return res;
+    }
+
+    const isDenied = () => {
+        const $contactInfo = $('[aria-label="Contact information"]');
+        const errMsg = $('[id*="component-error-text"]').text();
+        const res = errMsg.match(/Access\ Is\ Denied/i);
+
+        return !!(res && $contactInfo.length === 0);
+    }
+
+    const $headerCon = $('#headerBodyContainer');
+    const caseTitle = $headerCon.find('[data-id="header_title"]').attr('title');
+    const assignedTo = $headerCon.find('[href*="onesupport.crm.dynamics.com"]').text().trim();
+
+    const statusInfo = formStatusInfo();
+
+    const $restrictedInfo = $('[aria-label="Restricted information"]');
+    const custStatement = $restrictedInfo.find('textarea[aria-label="Customer Statement"]').val();
+
+    const internalTitle = $('[aria-label="Internal title"]').val();
+
+    if (isDenied()) {
+        return {
+            caseTitle, assignedTo, internalTitle, custStatement, ...statusInfo,
+            error: 'Access Is Denied',
+        }
+    }
+
+    const $contactInfo = $('[aria-label="Contact information"]');
+    const phoneNum = $contactInfo.find('[data-id$=phone-text-input]').val();
+    const email = $contactInfo.find('[aria-label=Email]').val();
+    const contactMethod = $contactInfo.find('[aria-label="Preferred method of contact"]').val();
+
+
+
+    let emailCcList = $('[aria-label="Email CC list"]').val().trim();
+
+    const $SLA = $('[aria-label*="IR"][aria-label*="SLA"][aria-label*="In Progress"]').next();
+    const SLA = $SLA.text() ? $SLA.text() : 'Met';
+
+    if (emailCcList) {
+        emailCcList = emailCcList.split(/;/);
+    } else {
+        emailCcList = [];
+    }
+
+    if (isDenied() && !email) {
+        return {
+            caseTitle, assignedTo, internalTitle, custStatement, ...statusInfo,
+            error: 'Access Is Denied',
+        }
+    }
 
     return {
-        id: getVal('caseNumInput', '.case-id-selector', '4201180000000041'),
-        title: getVal('caseTitleInput', '.case-title-selector', 'Case from RPC'),
-        caseNum: getVal('caseNumInput', '.case-id-selector', '4201180000000041'),
-        caseTitle: getVal('caseTitleInput', '.case-title-selector', 'Case from RPC'),
-        assignedTo: getVal('assignedToInput', '.assigned-to', ''),
-        internalTitle: getVal('internalTitleInput', '.internal-title', ''),
-        custStatement: getVal('custStatementInput', '.cust-statement', ''),
-        phoneNum: getVal('phoneNumInput', '.phone-num', ''),
-        email: getVal('emailInput', '.email', ''),
-        contactMethod: getVal('contactMethodInput', '.contact-method', ''),
-        severity: getVal('severityInput', '.severity', ''),
-        statusReason: getVal('statusReasonInput', '.status-reason', ''),
-        servName: getVal('servNameInput', '.serv-name', ''),
-        lastUpdatedAt: getVal('lastUpdatedAtInput', '.last-updated-at', ''),
-        SLA: getVal('SLAInput', '.sla', ''),
-        emailCcList: getVal('emailCcListInput', '.email-cc-list', '').split(',').map(s => s.trim()).filter(Boolean),
-        extractedAt: new Date().toISOString()
-    };
+        caseTitle, assignedTo, internalTitle, custStatement,
+        phoneNum, email, emailCcList, contactMethod, SLA, ...statusInfo,
+    }
 };
 
 /**

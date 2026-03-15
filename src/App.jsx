@@ -201,43 +201,7 @@ const App = () => {
         ));
     }
 
-    // 3. Initial Extraction & Global State Sync
-    useEffect(() => {
-        if (connectionStatus === 'connected') {
-            // Data extraction via RPC
-            execDfM(dfmScripts.extractCaseData).then(data => {
-                const { id, title } = data
-
-                // Merge with existing data if available
-                const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`)
-                const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] }
-
-                const now = new Date().toISOString();
-                const mergedCaseData = {
-                    ...existingData,
-                    ...data,
-                    createdAt: existingData.createdAt || now,
-                };
-
-                const mergedCase = new DfmCase(mergedCaseData, settings);
-
-                setCases(prev => {
-                    const existing = prev.find(c => c.id === id);
-                    if (existing) {
-                        return prev.map(c => c.id === id ? { id, title, resolvedAt: mergedCase.resolvedAt } : c);
-                    }
-                    return [...prev, { id, title, resolvedAt: mergedCase.resolvedAt }];
-                })
-                localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(mergedCase.toJSON()))
-                // Only set active if hash doesn't dictate otherwise or currently empty
-                if (!window.location.hash || window.location.hash.length <= 1) {
-                   setActiveCaseId(id)
-                }
-            }).catch(err => console.error('Initial RPC extraction failed', err))
-        }
-    }, [connectionStatus])
-
-    // 4. Hash Routing
+    // 3. Hash Routing
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.substring(1); // remove '#'
@@ -418,6 +382,63 @@ const App = () => {
         });
     };
 
+    const handleExtractCase = async () => {
+        try {
+            const data = await execDfM(dfmScripts.extractCaseData);
+            const id = data.caseNum;
+            if (!id) {
+                showToast('caseNumが取得できませんでした。ページを確認してください。', 'error');
+                return;
+            }
+            const title = data.caseTitle || data.title || 'New Case';
+            const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`);
+
+            const now = new Date().toISOString();
+
+            if (existingRaw) {
+                const doMerge = window.confirm(`Case "${id}" は既に存在します。最新データで更新しますか？`);
+                if (doMerge) {
+                    const existingData = JSON.parse(existingRaw);
+                    const mergedData = {
+                        ...existingData,
+                        ...data,
+                        id,
+                        title,
+                        createdAt: existingData.createdAt || now,
+                        updatedAt: now,
+                    };
+                    const updatedCase = new DfmCase(mergedData, settings);
+                    localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(updatedCase.toJSON()));
+                    setCases(prev => prev.map(c => c.id === id ? { ...c, title } : c));
+                    setActiveCaseId(id);
+                    showToast(`Case "${id}" を更新しました。`, 'success');
+                } else {
+                    setActiveCaseId(id);
+                    showToast(`Case "${id}" を更新せず開きました。`, 'warning');
+                }
+            } else {
+                const newData = {
+                    ...data,
+                    id,
+                    title,
+                    createdAt: now,
+                    updatedAt: now,
+                    stages: [],
+                };
+                const newCase = new DfmCase(newData, settings);
+                localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(newCase.toJSON()));
+                setCases(prev => {
+                    const exists = prev.some(c => c.id === id);
+                    return exists ? prev.map(c => c.id === id ? { ...c, title } : c) : [...prev, { id, title }];
+                });
+                setActiveCaseId(id);
+                showToast(`Case "${id}" を作成しました。`, 'success');
+            }
+        } catch (err) {
+            showToast(`ケースの取得に失敗しました: ${err.message}`, 'error');
+        }
+    };
+
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
             <Sidebar
@@ -429,6 +450,7 @@ const App = () => {
                 onToggleResolveCase={handleToggleResolveCase}
                 connectionStatus={connectionStatus}
                 onReconnect={reconnect}
+                onExtractCase={handleExtractCase}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onLogoHover={setIsLogoHovered}
             />
