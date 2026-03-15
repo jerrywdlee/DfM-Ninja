@@ -62,6 +62,41 @@ class DfmCase {
     }
 
     /**
+     * Compute target time from sampledAt and SLA time
+     */
+    getFormattedSLA() {
+        if (!this.SLA || !this.sampledAt) return 'Met';
+        const slaStrClean = String(this.SLA).trim();
+        const isValidFormat = /^(\d+\s*[dhms]\s*)+$/i.test(slaStrClean);
+        if (!isValidFormat) return 'Met';
+
+        const dMatch = slaStrClean.match(/(\d+)\s*d/i);
+        const hMatch = slaStrClean.match(/(\d+)\s*h/i);
+        const mMatch = slaStrClean.match(/(\d+)\s*m/i);
+        const sMatch = slaStrClean.match(/(\d+)\s*s/i);
+
+        const d = dMatch ? parseInt(dMatch[1], 10) : 0;
+        const h = hMatch ? parseInt(hMatch[1], 10) : 0;
+        const m = mMatch ? parseInt(mMatch[1], 10) : 0;
+        const s = sMatch ? parseInt(sMatch[1], 10) : 0;
+
+        if (d === 0 && h === 0 && m === 0 && s === 0) return 'Met';
+
+        const sampledDate = new Date(this.sampledAt);
+        if (isNaN(sampledDate.getTime())) return 'Met';
+
+        const totalMs = (d * 24 * 60 * 60 + h * 60 * 60 + m * 60 + s) * 1000;
+        const targetDate = new Date(sampledDate.getTime() + totalMs);
+
+        const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(targetDate.getDate()).padStart(2, '0');
+        const HH = String(targetDate.getHours()).padStart(2, '0');
+        const MM = String(targetDate.getMinutes()).padStart(2, '0');
+
+        return `${mm}/${dd} ${HH}:${MM}`;
+    }
+
+    /**
      * Render a string by replacing {{key}} with values from:
      * 0. System Templates (recursive)
      * 1. Dynamic NC Date formatting (prevNC, currentNC, nextNC)
@@ -99,6 +134,10 @@ class DfmCase {
                 // Add helper functions and flags for dates
                 context.isSameDate = isSameDate;
                 context.isSendAtSameAsNC = isSameDate(stage?.nc, stage?.sendAt || stage?.nc);
+
+                // Add formatted SLA variables
+                context.slaOrg = this.SLA || '';
+                context.SLA = this.getFormattedSLA();
 
                 processedText = window.ejs.render(text, context, { openDelimiter: '{', closeDelimiter: '}' });
             } catch (e) {
@@ -206,13 +245,14 @@ class DfmCase {
                 const prefix = suffix === '_Dot' ? '・' : (suffix === '_Dash' ? '- ' : '');
                 const previousStages = this.stages.slice(0, activeIndex);
                 const logLines = previousStages.map(stage => {
-                    if (!stage.nc) return `${prefix}MM/DD ${stage.name}`; // Fallback
-                    const ncDate = new Date(stage.nc);
-                    const mm = String(ncDate.getMonth() + 1).padStart(2, '0');
-                    const dd = String(ncDate.getDate()).padStart(2, '0');
+                    const targetDateStr = stage.sendAt || stage.nc;
+                    if (!targetDateStr) return `${prefix}MM/DD ${stage.name}`; // Fallback
+                    const targetDate = new Date(targetDateStr);
+                    const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+                    const dd = String(targetDate.getDate()).padStart(2, '0');
                     return `${prefix}${mm}/${dd} ${stage.name}`;
                 });
-                
+
                 return logLines.join('\n');
             }
 
@@ -252,9 +292,12 @@ class DfmCase {
                     const firstStage = this.stages[0];
                     const activeStage = this.activeStage || this.stages[this.stages.length - 1];
                     
-                    if (firstStage.nc && activeStage.nc) {
-                        const firstDate = new Date(firstStage.nc);
-                        const activeDate = new Date(activeStage.nc);
+                    if ((firstStage.sendAt || firstStage.nc) && (activeStage.sendAt || activeStage.nc)) {
+                        const firstDateStr = firstStage.sendAt || firstStage.nc;
+                        const activeDateStr = activeStage.sendAt || activeStage.nc;
+                        
+                        const firstDate = new Date(firstDateStr);
+                        const activeDate = new Date(activeDateStr);
                         
                         // Calculate difference in days (simple calculation, non-business days)
                         const diffTime = Math.abs(activeDate - firstDate);
@@ -352,7 +395,9 @@ class DfmCase {
             }
 
             // 4. Check DfmCase
-            if (this[k] !== undefined && typeof this[k] !== 'function') return (k === 'SLA' && !this[k]) ? 'Met' : this[k];
+            if (k === 'slaOrg') return this.SLA || '';
+            if (k === 'SLA') return this.getFormattedSLA();
+            if (this[k] !== undefined && typeof this[k] !== 'function') return this[k];
 
             // 5. Check injected Settings
             if (this.settings && this.settings[k] !== undefined) return this.settings[k];
