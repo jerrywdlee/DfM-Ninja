@@ -277,12 +277,15 @@ class DfmCase {
 
                 if (closeType === null) closeType = 'strike3'; // default to strike3
                 const isApprove = (closeType === 'customerApprove');
+                const isMistaken = (closeType === 'mistakenTicket');
 
                 if (k === 'closeType_Str') {
-                    return isApprove ? 'お客様承認' : 'Strike3';
+                    if (isApprove) return 'お客様承認';
+                    if (isMistaken) return '誤起票';
+                    return 'Strike3';
                 }
                 if (k === 'closeType_YN') {
-                    return isApprove ? 'Y' : 'N';
+                    return (isApprove || isMistaken) ? 'Y' : 'N';
                 }
             }
 
