@@ -116,7 +116,7 @@
                     else $emailBody.html(autoLink(rendered));
 
                     $dfmCc.val(caseData.render($dfmCc.val()));
-                    $internalTitle.val(caseData.render($internalTitle.val()));
+                    $internalTitle.val(caseData.render($internalTitle.val()).trim());
                 });
 
                 // Dummy actions for now

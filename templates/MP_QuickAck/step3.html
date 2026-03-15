@@ -95,7 +95,7 @@
                     else if (caseDataInitial) $dfmCc.val(caseDataInitial.render(dfmCcText));
 
                     if (activeStepInitial.internalTitle) $internalTitle.val(activeStepInitial.internalTitle);
-                    else if (caseDataInitial) $internalTitle.val(caseDataInitial.render(internalTitleText));
+                    else if (caseDataInitial) $internalTitle.val(caseDataInitial.render(internalTitleText).trim());
                 }
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
@@ -116,7 +116,7 @@
                     else $emailBody.html(autoLink(rendered));
 
                     $dfmCc.val(caseData.render($dfmCc.val()));
-                    $internalTitle.val(caseData.render($internalTitle.val()));
+                    $internalTitle.val(caseData.render($internalTitle.val().trim()));
                 });
 
                 // Dummy actions for now
