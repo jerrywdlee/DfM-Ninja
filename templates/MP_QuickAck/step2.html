@@ -253,7 +253,7 @@
                     $scope.find('input[name="emailCc"]').val(emailCcText);
                 });
 
-                $scope.find('button[title="メール作成"]').off('click').on('click', function () {
+                $scope.find('button[title="メール作成"]').off('click').on('click', async function () {
                     const emailHead = $scope.find('textarea[name="emailHead"]').val();
                     const emailBody = $scope.find('textarea[name="emailBody"]').val();
                     const emailTo = $scope.find('input[name="emailTo"]').val();
@@ -263,7 +263,31 @@
                     const separator = '\n\n========================================\n\n';
                     const emailContent = `${emailHead}${separator}${emailBody}`;
                     const emailUrl = `mailto:${emailTo}?cc=${emailCc}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailContent)}`;
-                    window.open(emailUrl, '_blank');
+                    
+                    // mailtoの文字数制限(1MB)対策
+                    if (emailUrl.length > 1000000) {
+                        let emailContentHTML = emailContent.replace(/\r?\n|\r/g, '<br>');
+                        try {
+                            const blobHTML = new Blob([emailContentHTML], { type: 'text/html' });
+                            const blobText = new Blob([emailContent], { type: 'text/plain' });
+                            const data = [new ClipboardItem({
+                                'text/html': blobHTML,
+                                'text/plain': blobText
+                            })];
+                            await navigator.clipboard.write(data);
+                            window.showToast('メールURLが長すぎるため、文面をリッチテキストとして直接コピーしました', 'success');
+                        } catch (err) {
+                            try {
+                                await navigator.clipboard.writeText(emailContent);
+                                window.showToast('メールURLが長すぎるため、文面をプレーンテキストとして直接コピーしました', 'success');
+                            } catch (err2) {
+                                console.error('Failed to copy: ', err2);
+                                window.showToast('メールURLが長すぎ、さらにコピーにも失敗しました', 'error');
+                            }
+                        }
+                    } else {
+                        window.open(emailUrl, '_blank');
+                    }
                 });
             })();
         </script>
