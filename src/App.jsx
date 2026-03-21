@@ -86,6 +86,10 @@ const App = () => {
 
   // Expose bridge and scripts to global window for templates
   useEffect(() => {
+    window.dfmConnectionStatus = connectionStatus;
+  }, [connectionStatus]);
+
+  useEffect(() => {
     window.execDfM = execDfM;
     window.dfmScripts = dfmScripts;
     window.showToast = showToast;

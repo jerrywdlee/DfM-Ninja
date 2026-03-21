@@ -33,6 +33,9 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
     }
 
     useEffect(() => {
+        let pingIntervalId;
+        let pongTimeoutId;
+
         const handleMessage = (event) => {
             // Security: Origin check
             // For now we allow '*' in postMessage for development flexibility, 
@@ -53,18 +56,34 @@ export function useDfmBridge(spaUrl = "http://localhost:5175") {
 
             // 2. Handle System Pings/Pongs
             if (type === 'PONG') {
+                if (pongTimeoutId) clearTimeout(pongTimeoutId);
                 setConnectionStatus('connected')
+            }
+        }
+
+        const checkConnection = () => {
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({ type: 'PING' }, getTargetOrigin())
+                // If no PONG is received within 2s, mark as disconnected
+                pongTimeoutId = setTimeout(() => {
+                    setConnectionStatus('disconnected')
+                }, 2000)
+            } else {
+                setConnectionStatus('disconnected')
             }
         }
 
         window.addEventListener('message', handleMessage)
 
-        // Initial Connection Check
-        if (window.opener) {
-            window.opener.postMessage({ type: 'PING' }, getTargetOrigin())
-        }
+        // Initial Connection Check and Periodic Polling
+        checkConnection()
+        pingIntervalId = setInterval(checkConnection, 30000)
 
-        return () => window.removeEventListener('message', handleMessage)
+        return () => {
+            window.removeEventListener('message', handleMessage)
+            clearInterval(pingIntervalId)
+            if (pongTimeoutId) clearTimeout(pongTimeoutId)
+        }
     }, [])
 
     const reconnect = () => {
