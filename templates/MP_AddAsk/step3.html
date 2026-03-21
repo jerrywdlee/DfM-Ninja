@@ -23,18 +23,18 @@
             <!-- Right Side: Actions & CC -->
             <div class="flex flex-col gap-6 pt-8">
 
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-wrap gap-2.5">
                     <button title="Highlight Case TTL Num"
-                        class="w-full py-2.5 px-4 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95">
-                        Highlight Case TTL Num
+                        class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                        💡 TTL Num
                     </button>
-                    <button title="Highlight CC List"
-                        class="w-full py-2.5 px-4 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95">
-                        Highlight CC List
+                    <button title="Highlight To CC List"
+                        class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                        💡 To/CC
                     </button>
                     <button title="Auto Checkbox"
-                        class="w-full py-2.5 px-4 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95">
-                        Auto Checkbox
+                        class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                        Auto ✅
                     </button>
                 </div>
 
@@ -136,14 +136,15 @@
                     }
                 });
 
-                $scope.find('button[title="Highlight CC List"]').off('click').on('click', function () {
+                $scope.find('button[title="Highlight To CC List"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
-                    console.log("Highlight CC List clicked");
+                    console.log("Highlight To CC List clicked");
                     if (window.execDfM && window.dfmScripts) {
-                        const ccList = (caseData.emailCcList || []).map(s => s.trim()).filter(Boolean);
-                        window.execDfM(window.dfmScripts.highlightKeywords, ccList)
-                            .then(() => console.log('Highlighted CC List'))
+                        const toCcList = (caseData.emailCcList || []).map(s => s.trim()).filter(Boolean);
+                        if (caseData.email) toCcList.push(caseData.email);
+                        window.execDfM(window.dfmScripts.highlightKeywords, toCcList)
+                            .then(() => console.log('Highlighted To CC List'))
                             .catch(e => console.error(e));
                     }
                 });

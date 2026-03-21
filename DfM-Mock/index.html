@@ -39,41 +39,46 @@
 
 <body>
     <div class="case-header">
-        <div style="display: grid; grid-template-cols: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Case Number:</label><br />
-                <input id="caseNumInput" type="text" value=""
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <div id="caseNumInput" contenteditable="true"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; min-height: 34px;"></div>
             </div>
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Case Title:</label><br />
-                <input id="caseTitleInput" type="text" value="テスト用のお問い合わせについて"
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <div id="caseTitleInput" contenteditable="true"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; min-height: 34px;">テスト用のお問い合わせについて</div>
             </div>
             <div>
                 <label style="font-size: 0.8rem; color: #666;">SLA:</label><br />
-                <input id="SLAInput" type="text" value=""
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <div id="SLAInput" contenteditable="true"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; min-height: 34px;"></div>
             </div>
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Severity:</label><br />
-                <input id="severityInput" type="text" value="B"
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <div id="severityInput" contenteditable="true"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; min-height: 34px;">B</div>
             </div>
             <div style="grid-column: span 2;">
                 <label style="font-size: 0.8rem; color: #666;">Customer Statement:</label><br />
-                <textarea id="custStatementInput"
-                    style="width: 100%; height: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">これはテスト用のお問い合わせコンテンツです：　フランスおよびイタリアの首都を教えてください</textarea>
+                <div id="custStatementInput" contenteditable="true"
+                    style="width: 100%; height: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; overflow-y: auto;">これはテスト用のお問い合わせコンテンツです：　フランスおよびイタリアの首都を教えてください</div>
             </div>
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Email:</label><br />
-                <input id="emailInput" type="text" value="demo.customer@example.com"
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <div id="emailInput" contenteditable="true"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; min-height: 34px;">demo.customer@example.com</div>
             </div>
             <div>
                 <label style="font-size: 0.8rem; color: #666;">Phone:</label><br />
-                <input id="phoneNumInput" type="text" value="+81-09012345678"
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <div id="phoneNumInput" contenteditable="true"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; min-height: 34px;">+81-09012345678</div>
+            </div>
+            <div style="grid-column: span 2;">
+                <label style="font-size: 0.8rem; color: #666;">CC:</label><br />
+                <div id="ccInput" contenteditable="true"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; background: white; min-height: 34px;"></div>
             </div>
         </div>
         <p>This is a dummy DfM page to test the Bookmarklet and communication.</p>
@@ -86,7 +91,7 @@
             // 16-digit number: first digit != 0
             const caseNum = String(Math.floor(1 + Math.random() * 9)) +
                 Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join('');
-            document.getElementById('caseNumInput').value = caseNum;
+            document.getElementById('caseNumInput').innerText = caseNum;
 
             const r = () => Math.floor(Math.random() * 59) + 1;
             const slaOptions = [
@@ -95,17 +100,27 @@
                 `${r()}m ${r()}s`,
                 '',
             ];
-            document.getElementById('SLAInput').value = slaOptions[Math.floor(Math.random() * slaOptions.length)];
+            document.getElementById('SLAInput').innerText = slaOptions[Math.floor(Math.random() * slaOptions.length)];
+
+            // Generate 0-3 random CC emails
+            const ccCount = Math.floor(Math.random() * 4);
+            const ccList = [];
+            for (let i = 0; i < ccCount; i++) {
+                ccList.push(`demo.user.${Math.floor(Math.random() * 10000)}@example.com`);
+            }
+            document.getElementById('ccInput').innerText = ccList.join(';');
         })();
 
         function extractData() {
-            const caseNum = document.getElementById('caseNumInput').value;
-            const caseTitle = document.getElementById('caseTitleInput').value;
-            const SLA = document.getElementById('SLAInput').value;
-            const severity = document.getElementById('severityInput').value;
-            const custStatement = document.getElementById('custStatementInput').value;
-            const email = document.getElementById('emailInput').value;
-            const phoneNum = document.getElementById('phoneNumInput').value;
+            const caseNum = document.getElementById('caseNumInput').innerText;
+            const caseTitle = document.getElementById('caseTitleInput').innerText;
+            const SLA = document.getElementById('SLAInput').innerText;
+            const severity = document.getElementById('severityInput').innerText;
+            const custStatement = document.getElementById('custStatementInput').innerText;
+            const email = document.getElementById('emailInput').innerText;
+            const phoneNum = document.getElementById('phoneNumInput').innerText;
+            const ccStr = document.getElementById('ccInput').innerText.trim();
+            const emailCcList = ccStr ? ccStr.split(/;/).map(s => s.trim()).filter(Boolean) : [];
             return {
                 caseNum,
                 caseTitle,
@@ -114,6 +129,7 @@
                 custStatement,
                 email,
                 phoneNum,
+                emailCcList,
                 sampledAt: new Date().toISOString(),
             };
         }
@@ -124,8 +140,8 @@
             const ninjaWindow = window.open(spaUrl, "DfMNinja");
 
             // Extract data from inputs
-            const caseNum = document.getElementById('caseNumInput').value;
-            const caseTitle = document.getElementById('caseTitleInput').value;
+            const caseNum = document.getElementById('caseNumInput').innerText;
+            const caseTitle = document.getElementById('caseTitleInput').innerText;
 
             const caseData = {
                 id: caseNum,
