@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import yaml from 'js-yaml'
 import JSZip from 'jszip'
+import { getCaseDb, saveCaseDb, deleteCaseDb } from '../utils/db'
 import { bookmarkletCode } from '../utils/bookmarkletCode'
 import installBookmarkletImg from '/install-bookmarklet.png'
 
@@ -154,12 +155,12 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
             }
 
             const zip = new JSZip();
-            index.forEach(item => {
-                const caseDataStr = localStorage.getItem(`dfm_ninja_case_${item.id}`);
-                if (caseDataStr) {
-                    zip.file(`MetaData_${item.id}.json`, caseDataStr);
+            for (const item of index) {
+                const caseData = await getCaseDb(item.id);
+                if (caseData) {
+                    zip.file(`MetaData_${item.id}.json`, JSON.stringify(caseData));
                 }
-            });
+            }
 
             const content = await zip.generateAsync({ type: 'blob' });
             
@@ -182,7 +183,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         }
     };
 
-    const handleResetCases = () => {
+    const handleResetCases = async () => {
         if (!confirm('本当にすべてのケースを削除しますか？\n（※テンプレートや設定は保持されます）\n\nこの操作は元に戻せません。')) {
             return;
         }
@@ -191,9 +192,9 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         if (indexStr) {
             try {
                 const index = JSON.parse(indexStr);
-                index.forEach(item => {
-                    localStorage.removeItem(`dfm_ninja_case_${item.id}`);
-                });
+                for (const item of index) {
+                    await deleteCaseDb(item.id);
+                }
             } catch(e) {}
         }
         
@@ -238,7 +239,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     const title = caseData.title || caseData.caseTitle || 'Imported Case';
                     
                     if (id) {
-                        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(caseData));
+                        await saveCaseDb(id, caseData);
                         
                         // Update index
                         const existingIdx = index.findIndex(item => item.id === id);

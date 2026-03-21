@@ -9,8 +9,62 @@ import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
 import * as dfmScripts from './utils/dfmScripts'
 import pkg from '../package.json'
+import JSZip from 'jszip'
+import { getCaseDb, saveCaseDb, deleteCaseDb } from './utils/db'
 
 const App = () => {
+  const [isMigrating, setIsMigrating] = useState(true);
+
+  useEffect(() => {
+    const migrateLegacyData = async () => {
+      try {
+        const legacyKeys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('dfm_ninja_case_') && key !== 'dfm_ninja_case_index') {
+            legacyKeys.push(key);
+          }
+        }
+        
+        if (legacyKeys.length === 0) {
+          setIsMigrating(false);
+          return;
+        }
+
+        const zip = new JSZip();
+        legacyKeys.forEach(k => {
+          const data = localStorage.getItem(k);
+          const id = k.replace('dfm_ninja_case_', '');
+          zip.file(`MetaData_${id}.json`, data);
+        });
+
+        const content = await zip.generateAsync({ type: 'blob' });
+        
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const filename = `DfM-Ninja_Backup_${yyyy}${mm}${dd}.zip`;
+
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        legacyKeys.forEach(k => localStorage.removeItem(k));
+        
+        alert('ストレージシステムをIndexedDBにアップグレードしました。バックアップ(ZIP)をダウンロードしましたので、右上の歯車アイコンの「Settings > Backup > Import Cases」から再度インポートしてください。');
+      } catch (err) {
+        console.error('Migration failed:', err);
+      } finally {
+        setIsMigrating(false);
+      }
+    };
+    migrateLegacyData();
+  }, []);
+
   // 0. Extract Parent Domain
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -105,14 +159,17 @@ const App = () => {
   }, [execDfM]);
 
   useEffect(() => {
+    let mounted = true;
     if (activeCaseId) {
-      const saved = localStorage.getItem(`dfm_ninja_case_${activeCaseId}`)
-      if (saved) {
-        setActiveCaseData(new DfmCase(JSON.parse(saved), settings))
-      }
+      getCaseDb(activeCaseId).then(saved => {
+        if (mounted && saved) {
+          setActiveCaseData(new DfmCase(saved, settings))
+        }
+      }).catch(console.error);
     } else {
       setActiveCaseData(null)
     }
+    return () => { mounted = false; };
   }, [activeCaseId, settings])
 
   useEffect(() => {
@@ -122,12 +179,11 @@ const App = () => {
     localStorage.setItem('dfm_ninja_sys_templates', JSON.stringify(sysTemplates))
   }, [settings, rawYaml, templates, sysTemplates])
 
-  const handleCreateOrUpdateCase = (jsonData) => {
+  const handleCreateOrUpdateCase = async (jsonData) => {
     const id = jsonData.caseNum || jsonData.id;
     const title = jsonData.caseTitle || jsonData.title || 'New Case';
 
-    const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`);
-    const existingData = existingRaw ? JSON.parse(existingRaw) : { stages: [] };
+    const existingData = await getCaseDb(id) || { stages: [] };
 
     const now = new Date().toISOString();
     const mergedData = {
@@ -142,7 +198,7 @@ const App = () => {
     const newCase = new DfmCase(mergedData, settings);
 
     // Save full data
-    localStorage.setItem(`dfm_ninja_case_${newCase.id}`, JSON.stringify(newCase.toJSON()));
+    await saveCaseDb(newCase.id, newCase.toJSON());
 
     // Update Index
     setCases(prev => {
@@ -180,7 +236,7 @@ const App = () => {
     setTemplates(prev => prev.filter(t => t.id !== id));
   }
 
-    const handleUpdateCase = (updatedCase) => {
+    const handleUpdateCase = async (updatedCase) => {
         const now = new Date().toISOString();
         // Ensure we are dealing with the plain JSON for storage
         const rawData = updatedCase instanceof DfmCase ? updatedCase.toJSON() : { ...updatedCase };
@@ -188,7 +244,7 @@ const App = () => {
         rawData.updatedAt = now;
         if (!rawData.createdAt) rawData.createdAt = now;
 
-        localStorage.setItem(`dfm_ninja_case_${rawData.id}`, JSON.stringify(rawData))
+        await saveCaseDb(rawData.id, rawData);
 
         // Update state with instance to keep methods
         const caseInstance = updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase, settings);
@@ -207,7 +263,7 @@ const App = () => {
 
     // 3. Hash Routing
     useEffect(() => {
-        const handleHashChange = () => {
+        const handleHashChange = async () => {
             const hash = window.location.hash.substring(1); // remove '#'
             if (!hash) return;
 
@@ -218,15 +274,14 @@ const App = () => {
 
             if (!caseId) return;
 
-            const savedRaw = localStorage.getItem(`dfm_ninja_case_${caseId}`);
-            if (!savedRaw) {
+            const caseData = await getCaseDb(caseId);
+            if (!caseData) {
                 showToast(`Error: Case "${caseId}" not found.`, 'error');
                 setActiveCaseId(null);
                 window.location.hash = '';
                 return;
             }
 
-            const caseData = JSON.parse(savedRaw);
             let needsUpdate = false;
             
             if (stageId) {
@@ -265,7 +320,7 @@ const App = () => {
             }
             
             if (needsUpdate) {
-                localStorage.setItem(`dfm_ninja_case_${caseId}`, JSON.stringify(caseData));
+                await saveCaseDb(caseId, caseData);
             }
 
             // Always update state to trigger re-render
@@ -311,26 +366,25 @@ const App = () => {
     window.currentCase = activeCaseData;
     window.sysTemplates = sysTemplates;
 
-    const handleDeleteCase = (id) => {
+    const handleDeleteCase = async (id) => {
         if (window.confirm(`Case ${id} を削除しますか？`)) {
             setCases(prev => prev.filter(c => c.id !== id))
-            localStorage.removeItem(`dfm_ninja_case_${id}`)
+            await deleteCaseDb(id);
             if (activeCaseId === id) {
                 setActiveCaseId(null)
             }
         }
     }
 
-    const handleToggleResolveCase = (id) => {
-        const saved = localStorage.getItem(`dfm_ninja_case_${id}`);
-        if (!saved) return;
+    const handleToggleResolveCase = async (id) => {
+        const data = await getCaseDb(id);
+        if (!data) return;
         
-        const data = JSON.parse(saved);
         const now = new Date().toISOString();
         const newResolvedAt = data.resolvedAt ? null : now;
         
         const updatedData = { ...data, resolvedAt: newResolvedAt, updatedAt: now };
-        localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(updatedData));
+        await saveCaseDb(id, updatedData);
         
         // Update index
         setCases(prev => prev.map(c => 
@@ -395,14 +449,13 @@ const App = () => {
                 return;
             }
             const title = data.caseTitle || data.title || 'New Case';
-            const existingRaw = localStorage.getItem(`dfm_ninja_case_${id}`);
+            const existingData = await getCaseDb(id);
 
             const now = new Date().toISOString();
 
-            if (existingRaw) {
+            if (existingData) {
                 const doMerge = window.confirm(`Case "${id}" は既に存在します。最新データで更新しますか？`);
                 if (doMerge) {
-                    const existingData = JSON.parse(existingRaw);
                     const mergedData = {
                         ...existingData,
                         ...data,
@@ -412,7 +465,7 @@ const App = () => {
                         updatedAt: now,
                     };
                     const updatedCase = new DfmCase(mergedData, settings);
-                    localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(updatedCase.toJSON()));
+                    await saveCaseDb(id, updatedCase.toJSON());
                     setCases(prev => prev.map(c => c.id === id ? { ...c, title } : c));
                     setActiveCaseId(id);
                     showToast(`Case "${id}" を更新しました。`, 'success');
@@ -430,7 +483,7 @@ const App = () => {
                     stages: [],
                 };
                 const newCase = new DfmCase(newData, settings);
-                localStorage.setItem(`dfm_ninja_case_${id}`, JSON.stringify(newCase.toJSON()));
+                await saveCaseDb(id, newCase.toJSON());
                 setCases(prev => {
                     const exists = prev.some(c => c.id === id);
                     return exists ? prev.map(c => c.id === id ? { ...c, title } : c) : [...prev, { id, title }];
@@ -442,6 +495,10 @@ const App = () => {
             showToast(`ケースの取得に失敗しました: ${err.message}`, 'error');
         }
     };
+
+    if (isMigrating) {
+        return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-500 font-bold text-lg">Migrating Legacy Data...</div>;
+    }
 
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
