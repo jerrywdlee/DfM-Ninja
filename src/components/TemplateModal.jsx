@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import JSZip from 'jszip'
 import yaml from 'js-yaml'
+import LZString from 'lz-string'
 
 const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelete, onReorder, showToast }) => {
     const fileInputRef = useRef(null)
@@ -48,8 +49,9 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                 let html = ''
                 if (htmlFile) {
                     html = await htmlFile.async('string')
+                    html = LZString.compressToUTF16(html)
                 }
-                return { ...step, html }
+                return { ...step, html, format: 'lz' }
             }))
 
             const templateData = {

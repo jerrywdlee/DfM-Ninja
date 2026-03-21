@@ -1,7 +1,7 @@
 {
   "name": "dfm-ninja",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "type": "module",
   "homepage": "https://github.com/jerrywdlee/DfM-Ninja",
@@ -27,6 +27,7 @@
     "idb-keyval": "^6.2.2",
     "js-yaml": "^4.1.1",
     "jszip": "^3.10.1",
+    "lz-string": "^1.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.2.0"

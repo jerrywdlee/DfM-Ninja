@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import yaml from 'js-yaml'
 import JSZip from 'jszip'
+import LZString from 'lz-string'
 import { getCaseDb, saveCaseDb, deleteCaseDb } from '../utils/db'
 import { bookmarkletCode } from '../utils/bookmarkletCode'
 import installBookmarkletImg from '/install-bookmarklet.png'
@@ -342,8 +343,9 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                                     let html = '';
                                     if (htmlFileKeys.length > 0) {
                                         html = await innerZip.files[htmlFileKeys[0]].async('string');
+                                        html = LZString.compressToUTF16(html);
                                     }
-                                    richSteps.push({ ...config.steps[i], html });
+                                    richSteps.push({ ...config.steps[i], html, format: 'lz' });
                                 }
                             }
 

@@ -121,7 +121,22 @@ const App = () => {
   })
   const [templates, setTemplates] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_templates')
-    return saved ? JSON.parse(saved) : []
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        const hasLegacyHtml = parsed.some(t => t.steps && t.steps.some(s => s.html && s.format !== 'lz'));
+        if (hasLegacyHtml) {
+            alert('テンプレートのフォーマットが更新されました。現在登録されている一部のテンプレートは互換性がないため非表示になります。お手数ですが、最新の templates.zip を再度 Import してください。');
+            const valid = parsed.filter(t => !t.steps || !t.steps.some(s => s.html && s.format !== 'lz'));
+            localStorage.setItem('dfm_ninja_templates', JSON.stringify(valid));
+            return valid;
+        }
+        return parsed
+      } catch (e) {
+        return []
+      }
+    }
+    return []
   })
   const [sysTemplates, setSysTemplates] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_sys_templates')

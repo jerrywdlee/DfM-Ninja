@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import TemplateModal from './TemplateModal'
 import DfmCase from '../models/DfmCase'
 import { calculateNcDate, formatDateIsoLocal } from '../utils/dateUtils'
+import LZString from 'lz-string'
 
 const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle }) => {
     const containerRef = useRef(null);
@@ -13,8 +14,16 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
         if (isActive && containerRef.current) {
             if (renderedTabRef.current !== activeTab || !containerRef.current.innerHTML.trim()) {
                 const stepIndex = parseInt(activeTab.replace('step-', ''));
-                const htmlContent = stage.steps[stepIndex]?.html || '<div class="p-10 text-center text-slate-400">No content for this step</div>';
+                let htmlContent = stage.steps[stepIndex]?.html || '<div class="p-10 text-center text-slate-400">No content for this step</div>';
                 
+                if (stage.steps[stepIndex]?.format === 'lz' && htmlContent) {
+                    try {
+                        htmlContent = LZString.decompressFromUTF16(htmlContent) || htmlContent;
+                    } catch (e) {
+                        console.error('Failed to decompress HTML', e);
+                    }
+                }
+
                 containerRef.current.innerHTML = htmlContent;
                 renderedTabRef.current = activeTab;
 
@@ -407,13 +416,35 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
             nc: initialNc,
             sendAt: initialNc, // Default same as NC
             adjDays: 3,
-            steps: (template.steps || []).map(step => ({
-                ...step,
-                html: window.ejs.render(step.html || '', {
-                    uid: uid,
-                    currentCase: window.currentCase
-                })
-            }))
+            steps: (template.steps || []).map(step => {
+                let rawHtml = step.html || '';
+                
+                if (step.format === 'lz' && rawHtml) {
+                    try {
+                        rawHtml = LZString.decompressFromUTF16(rawHtml) || rawHtml;
+                    } catch (e) {
+                        console.error('Failed to decompress HTML', e);
+                    }
+                }
+                
+                let parsedHtml = rawHtml;
+                if (window.ejs && rawHtml) {
+                    try {
+                        parsedHtml = window.ejs.render(rawHtml, {
+                            uid: uid,
+                            currentCase: window.currentCase
+                        });
+                    } catch (e) {
+                        console.error('EJS render failed on new stage', e);
+                    }
+                }
+
+                return {
+                    ...step,
+                    html: LZString.compressToUTF16(parsedHtml),
+                    format: 'lz'
+                };
+            })
         }
 
         const updatedCase = new DfmCase(activeCase, settings)
