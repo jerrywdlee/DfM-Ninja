@@ -55,6 +55,22 @@
                 placeholder="FoooBarFoooBarFoooBar" />
         </div>
 
+        <dialog id="MP_Answer_step3-<%=uid%>-dialog" class="m-auto p-0 rounded-2xl shadow-xl border border-emerald-200 backdrop:bg-slate-800/40 w-[420px] max-w-full focus:outline-none overflow-hidden text-slate-700">
+            <!-- Header -->
+            <div class="dialog-header flex justify-between items-center px-5 py-3 bg-emerald-100/80 border-b border-emerald-200">
+                <span class="title font-bold text-sm text-emerald-900 tracking-wider"></span>
+                <form method="dialog">
+                    <button class="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-200/50 p-1 rounded-lg transition-colors flex items-center justify-center focus:outline-none">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </form>
+            </div>
+            <!-- Content -->
+            <div class="dialog-content flex flex-col gap-4 p-5 bg-emerald-50/30" id="MP_Answer_step3-<%=uid%>-dialog-content">
+                <!-- injected via JS -->
+            </div>
+        </dialog>
+
         <noscript data-name="emailBodyText">
             {{emailBody}}
         </noscript>
@@ -133,9 +149,61 @@
 
                 $scope.find('button[title="Highlight To CC List"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
+                    const dialogId = '#MP_Answer_step3-<%=uid%>-dialog';
+                    const dialog = $(dialogId)[0];
+                    const $dialogContent = $scope.find('.dialog-content');
+                    const btnTitle = $(this).attr('title') || 'Mailing List';
+                    
+                    $(dialog).find('.dialog-header .title').text(btnTitle);
+
                     if (!caseData) return;
+
+                    let html = '';
+                    
+                    // To
+                    html += `
+                        <div class="flex flex-col gap-1.5 mt-0">
+                            <span class="text-[11px] font-black text-emerald-800 tracking-widest opacity-80 pl-1">To:</span>
+                            <div class="m-0">
+                                <input type="text" readonly data-doubleclick="copy" value="${caseData.email || '--'}"
+                                    class="w-full p-2.5 text-xs font-mono border border-emerald-200 rounded-lg bg-emerald-50/50 shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all text-slate-700 ${!caseData.email ? 'opacity-50' : 'cursor-copy'}" />
+                            </div>
+                        </div>
+                    `;
+
+                    // CC
+                    const ccList = (caseData.emailCcList || []).map(s => s.trim()).filter(Boolean);
+                    html += `
+                        <div class="flex flex-col gap-1.5 mt-2">
+                            <span class="text-[11px] font-black text-emerald-800 tracking-widest opacity-80 pl-1">CC:</span>
+                    `;
+                    
+                    if (ccList.length > 0) {
+                        html += '<div class="flex flex-col gap-2">';
+                        ccList.forEach(cc => {
+                            html += `
+                                <div class="m-0">
+                                    <input type="text" readonly data-doubleclick="copy" value="${cc}"
+                                        class="w-full p-2.5 text-xs font-mono border border-emerald-200 rounded-lg bg-emerald-50/50 shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all text-slate-700 cursor-copy" />
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                    } else {
+                        html += `
+                            <div class="m-0">
+                                <input type="text" disabled value="--" class="w-full p-2.5 text-xs font-mono border border-emerald-200 rounded-lg bg-slate-50 shadow-sm focus:outline-none transition-all text-slate-400 opacity-50 cursor-not-allowed" />
+                            </div>
+                        `;
+                    }
+                    html += `</div>`;
+
+                    $dialogContent.html(html);
+
+                    dialog.showModal();
+
                     if (window.execDfM && window.dfmScripts) {
-                        const toCcList = (caseData.emailCcList || []).map(s => s.trim()).filter(Boolean);
+                        const toCcList = [...ccList];
                         if (caseData.email) toCcList.push(caseData.email);
                         window.execDfM(window.dfmScripts.highlightKeywords, toCcList)
                             .then(() => window.showToast('Highlighted To CC List', 'info'))
