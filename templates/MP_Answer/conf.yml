@@ -1,6 +1,6 @@
 id: MP_Answer
 name: 本回答
-version: 0.0.24
+version: 0.0.25
 description: ""
 steps:
     - name: LLM連携

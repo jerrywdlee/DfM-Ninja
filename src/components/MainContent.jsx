@@ -155,9 +155,9 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                 </div>
                 
                 <div className="flex items-center gap-1 ml-4 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={onMoveUp} title="Move Up" className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-orange-100 text-slate-500 hover:text-orange-600 rounded border border-slate-200/50 transition-colors">↑</button>
-                    <button onClick={onMoveDown} title="Move Down" className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-orange-100 text-slate-500 hover:text-orange-600 rounded border border-slate-200/50 transition-colors">↓</button>
-                    <button onClick={onDelete} title="Delete Stage" className="w-8 h-8 flex items-center justify-center hover:bg-red-50 text-slate-300 hover:text-red-500 rounded border border-transparent hover:border-red-100 transition-colors ml-1">×</button>
+                    <button onClick={onMoveUp} title="Move Up" className="w-8 h-8 flex items-center justify-center bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded border border-transparent hover:border-slate-200 transition-colors">↑</button>
+                    <button onClick={onMoveDown} title="Move Down" className="w-8 h-8 flex items-center justify-center bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded border border-transparent hover:border-slate-200 transition-colors">↓</button>
+                    <button onClick={onDelete} title="Delete Stage" className="w-8 h-8 flex items-center justify-center bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded border border-transparent hover:border-red-200 transition-colors ml-1">×</button>
                 </div>
             </div>
 

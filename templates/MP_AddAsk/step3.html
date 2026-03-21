@@ -30,7 +30,7 @@
                     </button>
                     <button title="Highlight To CC List"
                         class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
-                        💡 To/CC
+                        💡 To CC
                     </button>
                     <button title="Auto Checkbox"
                         class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
@@ -63,9 +63,9 @@
         </noscript>
         <noscript data-name="internalTitleText">
             {%_ if (!locals.askResult?.trim() ) { -%}
-            P{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{currentNC_L}} | Troubleshooting | <追加質問QuickAck>
+            P{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{sendAt_L}} | Troubleshooting | <追加質問QuickAck>
             {%_ } else { -%}
-            S{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{currentNC_L}} | Waiting TL | <追加質問回答済み>
+            S{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{sendAt_L}} | Waiting TL | <追加質問回答済み>
             {%_ } -%}
         </noscript>
 

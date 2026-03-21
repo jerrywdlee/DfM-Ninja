@@ -170,7 +170,7 @@ class DfmCase {
             }
 
             // 1. Dynamic NC/SendAt Date formatting (Support offset like nextNC+2_XL or sendAt-1)
-            const ncMatch = k.match(/^(prevNC|currentNC|nextNC|sendAt)([+-]\d+)?(_XS|_S|_L|_XL)?$/);
+            const ncMatch = k.match(/^(prevNC|prevSendAt|currentNC|nextNC|sendAt)([+-]\d+)?(_XS|_S|_L|_XL)?$/);
             if (ncMatch) {
                 const type = ncMatch[1];
                 const offset = parseInt(ncMatch[2]) || 0;
@@ -181,6 +181,16 @@ class DfmCase {
                     const idx = this.stages.findIndex(s => s.id === this.activeStageId);
                     if (idx > 0 && this.stages[idx - 1].nc) {
                         targetDate = new Date(this.stages[idx - 1].nc);
+                    }
+                } else if (type === 'prevSendAt') {
+                    const idx = this.stages.findIndex(s => s.id === this.activeStageId);
+                    if (idx > 0) {
+                        const prevStage = this.stages[idx - 1];
+                        if (prevStage.sendAt) {
+                            targetDate = new Date(prevStage.sendAt);
+                        } else if (prevStage.nc) {
+                            targetDate = new Date(prevStage.nc);
+                        }
                     }
                 } else if (type === 'currentNC') {
                     if (this.activeStage && this.activeStage.nc) {
