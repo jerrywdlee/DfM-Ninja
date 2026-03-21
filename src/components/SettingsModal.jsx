@@ -14,6 +14,42 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     const importInputRef = useRef(null)
     const importTemplatesRef = useRef(null)
     const bookmarkletAnchorRef = useRef(null)
+    const [storageUsage, setStorageUsage] = useState({ local: 0, idb: 0, quota: 0 })
+
+    useEffect(() => {
+        if (isOpen && activeTab === 'data') {
+            const calculateUsage = async () => {
+                let local = 0;
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    local += (key.length + value.length) * 2;
+                }
+
+                let idb = 0;
+                let quota = 0;
+                if (navigator.storage && navigator.storage.estimate) {
+                    try {
+                        const estimate = await navigator.storage.estimate();
+                        idb = estimate.usage || 0;
+                        quota = estimate.quota || 0;
+                    } catch (e) {
+                        console.error('Failed to estimate storage', e);
+                    }
+                }
+                setStorageUsage({ local, idb, quota });
+            };
+            calculateUsage();
+        }
+    }, [isOpen, activeTab]);
+
+    const formatBytes = (bytes) => {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
 
     // Lock body scroll when modal is open
     useEffect(() => {
@@ -542,6 +578,23 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
 
                     {/* Data Backup Tab Content */}
                     <div className={`flex-1 flex flex-col gap-6 overflow-y-auto custom-scrollbar min-h-0 ${activeTab === 'data' ? '' : 'hidden'}`}>
+                        {/* Storage Usage Section */}
+                        <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
+                            <h4 className="text-lg font-bold text-slate-200 mb-2">Storage Usage</h4>
+                            <div className="flex gap-4 mt-4">
+                                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col items-center justify-center">
+                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">LocalStorage</span>
+                                    <span className="text-2xl font-black text-orange-400">{formatBytes(storageUsage.local)}</span>
+                                    <span className="text-[10px] text-slate-600 mt-1">~5 MB Limit</span>
+                                </div>
+                                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col items-center justify-center">
+                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">IndexedDB / Other</span>
+                                    <span className="text-2xl font-black text-emerald-400">{formatBytes(storageUsage.idb)}</span>
+                                    <span className="text-[10px] text-slate-600 mt-1">Quota: {formatBytes(storageUsage.quota)}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
                             <h4 className="text-lg font-bold text-slate-200 mb-2">Export Data</h4>
                             <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
