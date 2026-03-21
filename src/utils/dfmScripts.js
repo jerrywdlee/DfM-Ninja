@@ -132,3 +132,21 @@ export const highlightKeywords = (args) => {
 
     CSS.highlights.set("search-results", new Highlight(...ranges));
 };
+
+/**
+ * Checks all checkboxes inside #racEmailCheckList
+ */
+export const autoCheckbox = () => {
+    const $checkboxes = $('#racEmailCheckList input[type=checkbox]');
+    if ($checkboxes.length === 0) {
+        return false;
+    }
+    $checkboxes.each((i, e) => {
+        if (!$(e).prop('checked')) {
+            $(e).prop('checked', true);
+            // Optional: trigger change event if DOM needs to react
+            $(e).trigger('change');
+        }
+    });
+    return true;
+};

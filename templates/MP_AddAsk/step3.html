@@ -127,30 +127,32 @@
                 $scope.find('button[title="Highlight Case TTL Num"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
-                    console.log("Highlight Case TTL Num clicked");
                     if (window.execDfM && window.dfmScripts) {
                         const keywords = [caseData.caseNum, caseData.caseTitle].filter(Boolean);
                         window.execDfM(window.dfmScripts.highlightKeywords, keywords)
-                            .then(() => console.log('Highlighted TTL and Num'))
-                            .catch(e => console.error(e));
+                            .then(() => window.showToast('Highlighted Case TTL Num', 'info'))
+                            .catch(e => window.showToast('Highlight Case TTL Num failed', 'error'));
                     }
                 });
 
                 $scope.find('button[title="Highlight To CC List"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
-                    console.log("Highlight To CC List clicked");
                     if (window.execDfM && window.dfmScripts) {
                         const toCcList = (caseData.emailCcList || []).map(s => s.trim()).filter(Boolean);
                         if (caseData.email) toCcList.push(caseData.email);
                         window.execDfM(window.dfmScripts.highlightKeywords, toCcList)
-                            .then(() => console.log('Highlighted To CC List'))
-                            .catch(e => console.error(e));
+                            .then(() => window.showToast('Highlighted To CC List', 'info'))
+                            .catch(e => window.showToast('Highlight To CC List failed', 'error'));
                     }
                 });
 
                 $scope.find('button[title="Auto Checkbox"]').off('click').on('click', function () {
-                    console.log("Auto Checkbox clicked");
+                    if (window.execDfM && window.dfmScripts) {
+                        window.execDfM(window.dfmScripts.autoCheckbox)
+                            .then(() => window.showToast('Auto Checkbox clicked', 'info'))
+                            .catch(e => window.showToast('Auto Checkbox failed', 'error'));
+                    }
                 });
 
             })();
