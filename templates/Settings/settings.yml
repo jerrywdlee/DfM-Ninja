@@ -1,35 +1,11 @@
 TeamName: SCIM Messaging Protection
 CompanyName: 日本FooBar株式会社
 SectionName: Security ＆ Compliance サポート
-Editor: # 自分の情報
-  nameWithKana: Demo Agent (デモ エージェント) # フルネーム
-  familyName: Agent # 苗字・呼称
-  extNum: 1234 5678 # 内線番号
-  email: v-demoagent@example.org
-  ttl: 担当エンジニア # 肩書き
-CoEditors: # チーム内の情報
-  -
-    nameWithKana: Demo Leader (デモ リーダー) # フルネーム
-    familyName: Leader # 苗字・呼称
-    extNum: 2234 5679 # 内線番号
-    email: v-demoleader@example.org
-    ttl: チーム リーダー
-  -
-    nameWithKana: Demo Coeditor1 (デモ CoEditor1) # フルネーム
-    familyName: Coeditor1 # 苗字・呼称
-    extNum: 2234 5680 # 内線番号
-    email: v-democoeditor1@example.org
-    ttl: 担当エンジニア
-  -
-    nameWithKana: Demo Manager (デモ マネージャー) # フルネーム
-    familyName: Leader # 苗字・呼称
-    email: v-demomanager@example.org
-    ttl: チーム マネージャー
 MailList:
-  to:
+  to: # 確認メールの宛名はこの順(自分を除外)
     - v-demoagent@example.org
     - v-demoleader@example.org
-  cc:
+  cc: # 確認メールのCC
     - v-demoleader@example.org
     - check@example.org
   ccDfM: # Footerのリストもこの順
@@ -37,4 +13,78 @@ MailList:
     - v-demoleader@example.org
     - v-demomanager@example.org
     - check@example.org
+Editor: # 自分の情報
+  nameWithKana: Demo Agent (デモ エージェント) # フルネーム
+  familyName: Agent # 苗字
+  extNum: 1234 5678 # 内線番号
+  email: v-demoagent@example.org
+  ttl: 担当エンジニア # 肩書き
+CoEditors: # チーム内の情報
+  -
+    nameWithKana: Demo Leader (デモ リーダー) # フルネーム
+    familyName: Leader # 苗字
+    extNum: 2234 5679 # 内線番号
+    email: v-demoleader@example.org
+    ttl: チーム リーダー
+  -
+    nameWithKana: Demo Coeditor1 (デモ CoEditor1) # フルネーム
+    familyName: Coeditor1 # 苗字
+    extNum: 2234 5680 # 内線番号
+    email: v-democoeditor1@example.org
+    ttl: 担当エンジニア
+  -
+    nameWithKana: Demo Agent (デモ エージェント) # フルネーム
+    familyName: Agent # 苗字
+    extNum: 1234 5678 # 内線番号
+    email: v-demoagent@example.org
+    ttl: 担当エンジニア # 肩書き
+  -
+    nameWithKana: Demo Manager (デモ マネージャー) # フルネーム
+    familyName: Leader # 苗字
+    email: v-demomanager@example.org
+    ttl: チーム マネージャー
+UrlList: # Sys Temp. で使うURL
+  # Attentions URL 1
+  - https://cssjpn.github.io/professional.html#primaryR4
+  # Footer URLs
+  - https://privacy.example.org/ja-jp/privacystatement
+  - https://www.example.org/ja-jp/trust-center/privacy/gdpr-overview
+  # HolidayNotice URLs
+  - https://www.example.com/ja-jp/example-unified
+  - https://partner.example.com/ja-jp/support/example-services-premier-support
+  - https://support.example.com/ja-jp/topic/575821bc-17bb-7484-4935-334c5437639f
+  - https://partner.example.com/ja-jp/training/technical-presales-deployment-services
+  - https://azure.example.com/ja-jp/support/plans
+  - https://cssjpn.github.io/
 
+Holidays: # 社内休業日リスト
+  # 書き方は3種類：
+  #
+  #   1. "YYYY/MM/DD"  絶対年指定（その年のみ有効）
+  #      例: "2025/12/28"  -- 2025年のみ有効な特別休業日
+  #
+  #   2. "+0/MM/DD"   今年起算の相対指定（+0 = 今年）
+  #      例: "+0/12/29"   -- 毎年 今年の12月29日
+  #
+  #   3. "+N/MM/DD"   N年後起算（+1 = 翌年, +2 = 翌々年, 最大+9）
+  #      例: "+1/01/01"   -- 毎年 翌年の1月1日（年末年始の年またぎ用）
+  #
+  # ★★★ 大型連休の運用ルール ★★★
+  #
+  #   「大型連休 10日前通知（isNearHoliday）」機能は、
+  #   このリストで連続する日付の塊（クラスター）を自動検出します。
+  #   週末の自動補完は行わないため、
+  #   大型連休に含まれる週末・祝日も含め、すべての日付を明示的に記載してください。
+  #
+  #   例：年末年始が「12/27(土)〜1/4(日)」の場合
+  #     → "+0/12/27", "+0/12/28", "+0/12/29", ..., "+1/01/04" を全部列挙する
+  #
+  # ---- 年末年始の設定例 ----
+  - "+0/12/29"  # 今年 12月29日
+  - "+0/12/30"  # 今年 12月30日
+  - "+0/12/31"  # 今年 12月31日
+  - "+1/01/01"  # 翌年 1月1日（元日）
+  - "+1/01/02"  # 翌年 1月2日
+  - "+1/01/03"  # 翌年 1月3日
+  # ---- 年またぎの特別対応 例 ----
+  # - "2025/12/28"  # 2025年限定の特別休業日（絶対年指定）

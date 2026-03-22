@@ -125,8 +125,32 @@ Settings の `Editor`, `CoEditors`, `MailList` の設定を組み合わせて、
 | `mailTo` | `MailList.to` のリストをカンマ区切りで結合 |
 | `mailCc` | `MailList.cc` のリストをカンマ区切りで結合 |
 | `dfmCc` | `MailList.ccDfM` のリストをカンマ区切りで結合 |
-| `mailToNames` | `MailList.to` に含まれるメールアドレスを `CoEditors` から検索し、「苗字＋さん」形式でカンマ区切りにした文字列 |
+| `mailToNames` | `MailList.to` に含まれるメールアドレスを `CoEditors` から検索し、「苗字＋さん」形式でカンマ区切りにした文字列（`Editor` 自身のメールは除外） |
 | `agentAndLeaders`| `MailList.ccDfM` に含まれるメンバーの役職、フルネーム、内線番号、メールアドレスを改行区切りのリストテキストとして出力 |
+
+### Holidays（社内休業日リスト）
+
+`settings.yml` の `Holidays` リストで定義します。`calculateNcDate` による営業日計算で参照されます。
+
+**日付の記法は以下の3種類に対応しています：**
+
+| 書き方 | 意味 | 例 |
+|---|---|---|
+| `"YYYY/MM/DD"` | 絶対年指定（その年のみ有効） | `"2025/12/28"` → 2025年12月28日のみ |
+| `"+0/MM/DD"` | 今年の MM/DD（相対・毎年） | `"+0/12/31"` → 今年の12月31日 |
+| `"+N/MM/DD"` | N年後の MM/DD（N は 1〜9）| `"+1/01/03"` → **翌年**の1月3日（年またぎ用） |
+
+> [!TIP]
+> 年末年始のように月日が年をまたぐ場合は `+0/` と `+1/` を組み合わせて使います。年を毎年書き直す必要がなくなります。
+
+```yaml
+Holidays:
+  - "+0/12/29"   # 今年12月29日
+  - "+0/12/31"   # 今年12月31日
+  - "+1/01/01"   # 翌年1月1日（元日）
+  - "+1/01/03"   # 翌年1月3日
+  - "2025/12/28" # 2025年限定の特別休業日
+```
 
 ---
 
@@ -153,7 +177,18 @@ UI上で入力・保存された値も変数として利用可能です。
  1.  **Case プロパティ**: `caseNum`, `Lic`, `assignedTo` 等
  2.  **Active Stage プロパティ**: 現在のステージの `name`, `nc` 等
  3.  **Active Stage 内の全 Step の入力値**: `askContent`, `askResult`, `closeType` 等（全ステップの最新保存値がマージされます）
- 
+ 4.  **設定データ**: `settings` — YAML の設定オブジェクト全体（`settings.UrlList[0]` 等で参照可能）
+ 5.  **ヘルパー関数・フラグ**:
+
+| 変数/関数 | 型 | 内容 |
+|---|---|---|
+| `isSameDate(d1, d2)` | `function` | 2つの日付が同一日かどうか |
+| `isSendAtSameAsNC` | `boolean` | 現在のStageのSendAtとNCが同一日かどうか |
+| `slaOrg` | `string` | 元のSLAの生の値 |
+| `SLA` | `string` | フォーマット済みのSLA |
+| `isNearHoliday` | `boolean` | **現在StageのsendAt（またはNC）** が、`settings.Holidays` で定義された大型連休の **10日前以内** であれば `true` |
+| `isNearHolidayCluster(days, minDays)` | `function` | 日数と最小クラスターサイズを指定して同様の判定を行う関数版 |
+
  ※ クラスのメソッドや Getter にアクセスしたい場合は、`this` 変数（例: `{%= this.activeStage.name %}`）を使用してください。
  
  ### 使用例
@@ -167,6 +202,14 @@ UI上で入力・保存された値も変数として利用可能です。
  
  [ライセンス]
  {%= Lic === 'Pro' ? 'Professional' : 'Unified' %}
+ 
+ [年末年始などの大型連休前の通知 (settings.Holidays を設定している場合)]
+ {%_ if (isNearHoliday) { -%}
+ {{holidayNotice}}
+ {%_ } -%}
+
+ [URLを UrlList から参照]
+ {%= settings.UrlList[1] || '' %}
  ```
  
  ---

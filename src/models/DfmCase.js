@@ -1,4 +1,4 @@
-import { calculateNcDate, formatDynamicDate, formatDateIsoLocal, isSameDate } from '../utils/dateUtils';
+import { calculateNcDate, formatDynamicDate, formatDateIsoLocal, isSameDate, isNearMajorHolidayCluster } from '../utils/dateUtils';
 
 class DfmCase {
     constructor(data = {}, settings = null) {
@@ -109,9 +109,9 @@ class DfmCase {
         if (!text) return '';
         if (depth > 5) return text; // Prevent infinite recursion
 
-        // 0. EJS Evaluation (First step)
+        // 0. EJS Evaluation (runs at every recursion depth)
         let processedText = text;
-        if (depth === 0 && window.ejs) {
+        if (window.ejs) {
             try {
                 // Construct context: Case Data + Stage Data + All Steps Data
                 const context = { ...this.toJSON() };
@@ -135,9 +135,22 @@ class DfmCase {
                 context.isSameDate = isSameDate;
                 context.isSendAtSameAsNC = isSameDate(stage?.nc, stage?.sendAt || stage?.nc);
 
+                // Inject major holiday proximity flag
+                // Uses current stage's sendAt (or currentNC) as the reference date
+                const holidays = this.settings?.Holidays || [];
+                const holidayRefDate = stage?.sendAt
+                    ? new Date(stage.sendAt)
+                    : stage?.nc ? new Date(stage.nc) : new Date();
+                context.isNearHoliday = isNearMajorHolidayCluster(holidayRefDate, holidays);
+                context.isNearHolidayCluster = (days, minDays) =>
+                    isNearMajorHolidayCluster(holidayRefDate, holidays, { warningDaysBefore: days, minClusterDays: minDays });
+
                 // Add formatted SLA variables
                 context.slaOrg = this.SLA || '';
                 context.SLA = this.getFormattedSLA();
+
+                // Inject settings for EJS evaluation
+                context.settings = this.settings || {};
 
                 processedText = window.ejs.render(text, context, { openDelimiter: '{', closeDelimiter: '}' });
             } catch (e) {
@@ -205,7 +218,7 @@ class DfmCase {
                         baseDate = new Date(this.activeStage.sendAt || this.activeStage.nc);
                     }
                     const adjDays = Number(this.activeStage?.adjDays) || 3;
-                    targetDate = calculateNcDate(baseDate, adjDays);
+                    targetDate = calculateNcDate(baseDate, adjDays, this.settings?.Holidays);
                 } else if (type === 'sendAt') {
                     if (this.activeStage && (this.activeStage.sendAt || this.activeStage.nc)) {
                         targetDate = new Date(this.activeStage.sendAt || this.activeStage.nc);
@@ -217,7 +230,7 @@ class DfmCase {
                 if (targetDate) {
                     // Apply offset if requested
                     if (offset !== 0) {
-                        targetDate = calculateNcDate(targetDate, offset);
+                        targetDate = calculateNcDate(targetDate, offset, this.settings?.Holidays);
                     }
                     return formatDynamicDate(targetDate, suffix);
                 } else {
@@ -347,10 +360,14 @@ class DfmCase {
                 if (k === 'mailToNames') {
                     const toList = this.settings.MailList?.to || [];
                     const coEditors = this.settings.CoEditors || [];
-                    const names = toList.map(email => {
-                        const person = coEditors.find(e => e.email === email);
-                        return person && person.familyName ? `${person.familyName}さん` : null;
-                    }).filter(Boolean);
+                    const editorEmail = this.settings.Editor?.email;
+                    const names = toList
+                        .filter(email => email !== editorEmail)
+                        .map(email => {
+                            const person = coEditors.find(e => e.email === email);
+                            return person && person.familyName ? `${person.familyName}さん` : null;
+                        })
+                        .filter(Boolean);
                     return names.length > 0 ? names.join('、') : match;
                 }
                 if (k === 'agentAndLeaders') {

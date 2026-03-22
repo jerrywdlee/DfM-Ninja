@@ -4,7 +4,7 @@ import DfmCase from '../models/DfmCase'
 import { calculateNcDate, formatDateIsoLocal } from '../utils/dateUtils'
 import LZString from 'lz-string'
 
-const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle, onOpenVariables }) => {
+const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle, onOpenVariables, settings }) => {
     const containerRef = useRef(null);
     const renderedTabRef = useRef(null);
     const activeTab = activeStepId || 'step-0';
@@ -148,8 +148,8 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                                     const ncBase = stage.nc ? new Date(stage.nc) : new Date();
                                     const sendAtBase = stage.sendAt ? new Date(stage.sendAt) : ncBase;
                                     
-                                    const nextNc = formatDateIsoLocal(calculateNcDate(ncBase, stage.adjDays || 3));
-                                    const nextSendAt = formatDateIsoLocal(calculateNcDate(sendAtBase, stage.adjDays || 3));
+                                    const nextNc = formatDateIsoLocal(calculateNcDate(ncBase, stage.adjDays || 3, settings?.Holidays));
+                                    const nextSendAt = formatDateIsoLocal(calculateNcDate(sendAtBase, stage.adjDays || 3, settings?.Holidays));
                                     
                                     onUpdate({ ...stage, nc: nextNc, sendAt: nextSendAt });
                                     if (window.showToast) {
@@ -397,7 +397,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
             if (lastSendAt) {
                 const baseDate = new Date(lastSendAt);
                 const adjDays = Number(lastStage.adjDays) || 3;
-                initialNc = formatDateIsoLocal(calculateNcDate(baseDate, adjDays));
+                initialNc = formatDateIsoLocal(calculateNcDate(baseDate, adjDays, settings?.Holidays));
             }
         }
 
@@ -625,6 +625,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                                 onUpdateCase(updated)
                             }}
                             onOpenVariables={onOpenVariables}
+                            settings={settings}
                         />
                     ))}
                 </div>

@@ -1,9 +1,9 @@
 ---
-id: footerHoliday
-title: Footer - 年末年始
-version: 1.0.2
+id: footerNormal
+title: Footer - 通常
+version: 1.0.4
 ---
-下記が、本お問い合わせの対応メンバーとなります。  
+下記が、本お問い合わせの対応メンバーとなります。    
 対応中のご質問やご連絡にあたっては、本メールに全員返信いただくか、担当までお電話ください。  
 -------------------------------------
 {{agentAndLeaders}}
@@ -13,7 +13,9 @@ version: 1.0.2
 弊社電話システムはセキュリティポリシーの関係上、お客様からいただいたお電話の着信履歴が残らないことから、折り返しのご連絡ができない場合がございます。
 お手数ですが、お急ぎの場合は改めてお電話いただくか、メールにてご返信くださいますようお願い申し上げます。
 
+{%_ if (locals.isNearHoliday) { -%}
 {{holidayNotice}}
+{%_ } -%}
 
 ------------------------------------------------------ 
 個人情報保護の取り扱いについて 
@@ -23,8 +25,8 @@ version: 1.0.2
 ご理解くださいますようお願いいたします。 
 
 サポートでの個人情報の取り扱い、および一般データ保護規則 (GDPR) に関する内容については、次の URL をご覧ください。 
-https://privacy.example.org/ja-jp/privacystatement  
-https://www.example.org/ja-jp/trust-center/privacy/gdpr-overview 
+{%= settings.UrlList[1] || '' %}
+{%= settings.UrlList[2] || '' %}
 
 {{CompanyName}}
 {{SectionName}}

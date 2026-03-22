@@ -17,6 +17,8 @@ In addition to standard variable replacement, it supports **EJS (Embedded JavaSc
 Users can construct custom "Stages" by uploading `.zip` templates containing custom HTML and YAML configuration, mapping natively to the tabbed interface. HTML contents are automatically compressed via `lz-string` to save storage space.
  
 A built-in **Variables List Modal** allows users to easily reference, construct, and copy dynamic variables or stage-specific inputs directly from the UI.
+
+In addition, templates have access to a rich EJS context including `settings` (the full YAML config), `isNearHoliday` (a flag indicating whether the current stage's send date falls within 10 days before a major holiday cluster as configured in `settings.Holidays`), and other date helpers.
  
 For a full list of rendering variables and how they resolve, please see **[Variables Reference](docs/Variables.md)**.
 
