@@ -282,9 +282,9 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                         // Update index
                         const existingIdx = index.findIndex(item => item.id === id);
                         if (existingIdx >= 0) {
-                            index[existingIdx] = { id, title };
+                            index[existingIdx] = { id, title, resolvedAt: caseData.resolvedAt };
                         } else {
-                            index.push({ id, title });
+                            index.push({ id, title, resolvedAt: caseData.resolvedAt });
                         }
                         importedCount++;
                     }
