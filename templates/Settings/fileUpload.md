@@ -1,7 +1,7 @@
 ---
 id: fileUpload
 title: ファイル添付用
-version: 1.0.0
+version: 1.0.1
 variables:
   - fileUploadUrl
 ---
