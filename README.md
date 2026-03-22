@@ -4,7 +4,7 @@ DfM-Ninja is a premium, frontend-only SPA (Single Page Application) designed to 
 
 ## Overview
 
-The application is built with **React** and **Vite**, using **Tailwind CSS** for styling. It runs entirely in the browser and persists data using `localStorage`, requiring no backend server. Cases can be backed up in bulk or exported individually as JSON (`MetaData_<caseNum>.json`) via the UI.
+The application is built with **React** and **Vite**, using **Tailwind CSS** for styling. It runs entirely in the browser and persists data using **IndexedDB** (with automatic migration from legacy `localStorage`), requiring no backend server. Cases can be backed up in bulk or exported individually as JSON (`MetaData_<caseNum>.json`) via the UI.
 
 It uses a Bookmarklet script (found in `tmp/bookmarklet.js`) injected into the DfM (Dynamics 365) page to extract case metadata and communicate with the DfM-Ninja SPA via `postMessage`.
 
@@ -14,7 +14,9 @@ DfM-Ninja features a robust templating engine that automatically resolves variab
  
 In addition to standard variable replacement, it supports **EJS (Embedded JavaScript)** for complex logic (e.g., conditional blocks, formatting) within templates using custom `{% %}` and `{%= %}` delimiters.
  
-Users can construct custom "Stages" by uploading `.zip` templates containing custom HTML and YAML configuration, mapping natively to the tabbed interface.
+Users can construct custom "Stages" by uploading `.zip` templates containing custom HTML and YAML configuration, mapping natively to the tabbed interface. HTML contents are automatically compressed via `lz-string` to save storage space.
+ 
+A built-in **Variables List Modal** allows users to easily reference, construct, and copy dynamic variables or stage-specific inputs directly from the UI.
  
 For a full list of rendering variables and how they resolve, please see **[Variables Reference](docs/Variables.md)**.
 
@@ -78,6 +80,8 @@ This script automatically tags the current commit with the version number (e.g.,
 - Tailwind CSS 4
 - JS-YAML (for settings & templates parsing)
 - JSZip (for template bundle uploads)
+- idb-keyval (for robust IndexedDB storage)
+- lz-string (for HTML template compression)
 
 ## License
 MIT License - see the [LICENSE](LICENSE) file for details.
