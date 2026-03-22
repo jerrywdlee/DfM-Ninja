@@ -140,6 +140,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     title: data.title || data.id,
                     version: data.version || '1.0.0',
                     renderIf: data.renderIf,
+                    variables: data.variables || [],
                     content: content
                 }
 
@@ -346,6 +347,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                                                 title: data.title || data.id,
                                                 version: data.version || '1.0.0',
                                                 renderIf: data.renderIf,
+                                                variables: data.variables || [],
                                                 content: match[2]
                                             };
                                             const existingIndex = newSysTemplates.findIndex(t => t.id === newTemp.id);

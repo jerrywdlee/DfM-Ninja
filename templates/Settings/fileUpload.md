@@ -2,6 +2,8 @@
 id: fileUpload
 title: ファイル添付用
 version: 1.0.0
+variables:
+  - fileUploadUrl
 ---
 ======================================================== 
 Data Transfer Management (DTM) アップロード サイトのご案内 

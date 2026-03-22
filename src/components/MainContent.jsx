@@ -4,7 +4,7 @@ import DfmCase from '../models/DfmCase'
 import { calculateNcDate, formatDateIsoLocal } from '../utils/dateUtils'
 import LZString from 'lz-string'
 
-const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle }) => {
+const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle, onOpenVariables }) => {
     const containerRef = useRef(null);
     const renderedTabRef = useRef(null);
     const activeTab = activeStepId || 'step-0';
@@ -102,7 +102,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                 <div className="flex items-center gap-4 flex-1 overflow-hidden">
                     <span className="text-slate-400 shrink-0 w-4">{isActive ? '▼' : '▶'}</span>
                     <input
-                        className="bg-transparent font-bold text-slate-700 border-none focus:ring-0 p-0 text-sm truncate min-w-[120px] w-auto"
+                        className="bg-transparent font-bold text-slate-700 border-none focus:ring-0 p-0 text-sm truncate min-w-[130px] sm:min-w-[150px] w-auto"
                         value={stage.name}
                         onChange={(e) => onUpdate({ ...stage, name: e.target.value })}
                         onClick={(e) => e.stopPropagation()}
@@ -164,9 +164,19 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                 </div>
                 
                 <div className="flex items-center gap-1 ml-4 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (onOpenVariables) onOpenVariables();
+                        }} 
+                        title="Extract Variables" 
+                        className={`w-8 h-8 flex items-center justify-center bg-transparent rounded border transition-colors ${isActive ? 'hover:bg-emerald-50 text-emerald-600 hover:border-emerald-200 cursor-pointer border-transparent' : 'opacity-0 pointer-events-none border-transparent'}`}
+                    >
+                        🔰
+                    </button>
                     <button onClick={onMoveUp} title="Move Up" className="w-8 h-8 flex items-center justify-center bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded border border-transparent hover:border-slate-200 transition-colors">↑</button>
                     <button onClick={onMoveDown} title="Move Down" className="w-8 h-8 flex items-center justify-center bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded border border-transparent hover:border-slate-200 transition-colors">↓</button>
-                    <button onClick={onDelete} title="Delete Stage" className="w-8 h-8 flex items-center justify-center bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded border border-transparent hover:border-red-200 transition-colors ml-1">×</button>
+                    <button onClick={onDelete} title="Delete Stage" className="w-8 h-8 flex items-center justify-center bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded border border-transparent hover:border-red-200 transition-colors">×</button>
                 </div>
             </div>
 
@@ -222,7 +232,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
     )
 }
 
-const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate, onReorderTemplate, showToast }) => {
+const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTemplate, onDeleteTemplate, onReorderTemplate, showToast, onOpenVariables }) => {
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
     // Global event listener for contenteditable elements
@@ -614,6 +624,7 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                                 updated.activeStepId = stepId
                                 onUpdateCase(updated)
                             }}
+                            onOpenVariables={onOpenVariables}
                         />
                     ))}
                 </div>
