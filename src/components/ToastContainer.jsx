@@ -17,7 +17,7 @@ const Toast = ({ toast, onRemove }) => {
 
   return (
     <div
-      className={`${bgColor} text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 min-w-[280px] max-w-[400px] animate-[slide-in-right_0.6s_ease-out] relative group border border-white/10 opacity-90`}
+      className={`${bgColor} text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 min-w-[280px] max-w-xl animate-[slide-in-right_0.6s_ease-out] relative group border border-white/10 opacity-90`}
     >
       <span className="text-lg shrink-0">{icon}</span>
       <div className="flex-1 min-w-0 pr-4">

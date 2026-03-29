@@ -4,6 +4,7 @@ import JSZip from 'jszip'
 import LZString from 'lz-string'
 import { getCaseDb, saveCaseDb, deleteCaseDb } from '../utils/db'
 import { bookmarkletCode } from '../utils/bookmarkletCode'
+import { parseHolidayDate } from '../utils/dateUtils'
 import installBookmarkletImg from '/install-bookmarklet.png'
 
 const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast }) => {
@@ -93,6 +94,17 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     const handleSave = () => {
         try {
             const parsed = yaml.load(code) || {}
+            
+            // Validate Holidays format
+            if (Array.isArray(parsed.Holidays)) {
+                for (let i = 0; i < parsed.Holidays.length; i++) {
+                    const item = parsed.Holidays[i];
+                    if (!parseHolidayDate(item)) {
+                        throw new Error(`Holidays の記法エラー： "${item}" は正しい日付フォーマット("YYYY/MM/DD" または "+N/MM/DD")ではありません。`);
+                    }
+                }
+            }
+
             setError(null)
             onSave(code, parsed)
             if (showToast) {
@@ -101,6 +113,9 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
             onClose()
         } catch (e) {
             setError(e.message)
+            if (showToast) {
+                showToast(`保存エラー: ${e.message}`, 'error')
+            }
         }
     }
 
