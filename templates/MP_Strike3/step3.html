@@ -44,6 +44,16 @@
                         class="w-full p-3 text-xs font-mono border border-emerald-200 rounded-lg bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all"
                         placeholder="FoooBarFoooBarFoooBar" />
                 </div>
+                <div class="flex flex-col mt-4">
+                    <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80 mb-2">Current Action:</h4>
+                    <select name="currentAction"
+                        class="w-full p-2.5 text-xs font-mono border border-emerald-200 rounded-lg bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all cursor-pointer">
+                        <option value="Troubleshooting">Troubleshooting</option>
+                        <option value="Pending customer information">Pending customer information</option>
+                        <option value="Waiting TL">Waiting TL</option>
+                        <option value="Ready to close" selected>Ready to close</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -78,7 +88,7 @@
             {{dfmCc}}
         </noscript>
         <noscript data-name="internalTitleText">
-            S{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | SE | Green | PI: N/A | SE: {{currentNC_L}} | Ready to close | <Ready to Close>
+            {{Status}}{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | {{Actor}} | Green | PI: N/A | SE: {{currentNC_L}} | {{currentAction}} | <Ready to Close>
         </noscript>
 
         <script>
@@ -88,6 +98,7 @@
                 const $emailBody = $scope.find('[name="emailBodyFinal"]');
                 const $dfmCc = $scope.find('input[name="dfmCc"]');
                 const $internalTitle = $scope.find('input[name="internalTitle"]');
+                const $currentAction = $scope.find('select[name="currentAction"]');
 
                 const caseDataInitial = window.currentCase;
                 const autoLink = window.autoLinkUrls || ((text) => text);
@@ -112,6 +123,8 @@
 
                     if (activeStepInitial.internalTitle) $internalTitle.val(activeStepInitial.internalTitle);
                     else if (caseDataInitial) $internalTitle.val(caseDataInitial.render(internalTitleText).trim());
+
+                    if (activeStepInitial.currentAction) $currentAction.val(activeStepInitial.currentAction);
                 }
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
@@ -120,11 +133,13 @@
                     else $emailBody.html(autoLink(emailBodyText));
                     $dfmCc.val(dfmCcText);
                     $internalTitle.val(internalTitleText);
+                    $currentAction.val('Ready to close');
                 });
 
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
+                    if (caseData.activeStep) caseData.activeStep.currentAction = $currentAction.val();
 
                     const currentBody = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
                     const rendered = caseData.render(currentBody);

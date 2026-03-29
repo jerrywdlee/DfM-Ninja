@@ -62,6 +62,20 @@ class DfmCase {
     }
 
     /**
+     * Get the active stage with all step variables merged (read-only, not persisted).
+     * Useful for templates that need to access variables from other steps in the same stage.
+     */
+    get activeStageContext() {
+        const stage = this.activeStage;
+        if (!stage) return null;
+        const merged = { ...stage };
+        if (Array.isArray(stage.steps)) {
+            stage.steps.forEach(s => Object.assign(merged, s));
+        }
+        return merged;
+    }
+
+    /**
      * Compute target time from sampledAt and SLA time
      */
     getFormattedSLA() {
@@ -148,6 +162,29 @@ class DfmCase {
                 // Add formatted SLA variables
                 context.slaOrg = this.SLA || '';
                 context.SLA = this.getFormattedSLA();
+
+                // Inject currentAction mappings for Status and Actor
+                let currentActionVal = context.currentAction;
+                if (!currentActionVal && stage && Array.isArray(stage.steps)) {
+                    for (let i = stage.steps.length - 1; i >= 0; i--) {
+                        if (stage.steps[i].currentAction) {
+                            currentActionVal = stage.steps[i].currentAction;
+                            break;
+                        }
+                    }
+                }
+                if (currentActionVal) {
+                    const actionMappings = {
+                        'Troubleshooting': { Status: 'P', Actor: 'SE' },
+                        'Pending customer information': { Status: 'W', Actor: 'CX' },
+                        'Waiting TL': { Status: 'S', Actor: 'CX' },
+                        'Ready to close': { Status: 'C', Actor: 'SE' }
+                    };
+                    if (actionMappings[currentActionVal]) {
+                        context.Status = actionMappings[currentActionVal].Status;
+                        context.Actor = actionMappings[currentActionVal].Actor;
+                    }
+                }
 
                 // Inject settings for EJS evaluation
                 context.settings = this.settings || {};
@@ -312,7 +349,35 @@ class DfmCase {
                 }
             }
 
-            // 2.7. Resolution Date variations
+            // 2.7. Current Action mapping to Status & Actor
+            if (k === 'Status' || k === 'Actor') {
+                let currentAction = null;
+                const step = this.activeStep;
+                if (step && step.currentAction) {
+                    currentAction = step.currentAction;
+                } else if (this.activeStage && Array.isArray(this.activeStage.steps)) {
+                    for (let i = this.activeStage.steps.length - 1; i >= 0; i--) {
+                        if (this.activeStage.steps[i].currentAction) {
+                            currentAction = this.activeStage.steps[i].currentAction;
+                            break;
+                        }
+                    }
+                }
+
+                if (currentAction) {
+                    const mappings = {
+                        'Troubleshooting': { Status: 'P', Actor: 'SE' },
+                        'Pending customer information': { Status: 'W', Actor: 'CX' },
+                        'Waiting TL': { Status: 'S', Actor: 'CX' },
+                        'Ready to close': { Status: 'C', Actor: 'SE' }
+                    };
+                    if (mappings[currentAction] && mappings[currentAction][k]) {
+                        return mappings[currentAction][k];
+                    }
+                }
+            }
+
+            // 2.8. Resolution Date variations
             if (k === 'resolutionDays' || k === 'isResolvedWithin14Days_YN') {
                 if (this.stages && this.stages.length > 0) {
                     const firstStage = this.stages[0];
