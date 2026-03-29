@@ -261,14 +261,12 @@ const App = () => {
         rawData.updatedAt = now;
         if (!rawData.createdAt) rawData.createdAt = now;
 
-        await saveCaseDb(rawData.id, rawData);
-
-        // Update state with instance to keep methods
+        // Update state with instance synchronously to keep IME snappy
         const caseInstance = updatedCase instanceof DfmCase ? updatedCase : new DfmCase(updatedCase, settings);
         caseInstance.updatedAt = now;
         if (!caseInstance.createdAt) caseInstance.createdAt = now;
         
-        setActiveCaseData(caseInstance)
+        setActiveCaseData(caseInstance);
 
         // Update index if title or resolvedAt changed
         setCases(prev => prev.map(c => 
@@ -276,6 +274,9 @@ const App = () => {
                 ? { id: c.id, title: rawData.title, resolvedAt: rawData.resolvedAt } 
                 : c
         ));
+
+        // Save asynchronously without blocking the UI
+        saveCaseDb(rawData.id, rawData).catch(e => console.error("Case save failed", e));
     }
 
     // 3. Hash Routing

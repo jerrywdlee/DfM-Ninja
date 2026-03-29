@@ -104,6 +104,7 @@ const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMove
                     <input
                         className="bg-transparent font-bold text-slate-700 border-none focus:ring-0 p-0 text-sm truncate min-w-[130px] sm:min-w-[150px] w-auto"
                         value={stage.name}
+                        data-doubleclick="copy"
                         onChange={(e) => onUpdate({ ...stage, name: e.target.value })}
                         onClick={(e) => e.stopPropagation()}
                     />
