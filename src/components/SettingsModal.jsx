@@ -112,6 +112,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
             }
             onClose()
         } catch (e) {
+            console.error(e);
             setError(e.message)
             if (showToast) {
                 showToast(`保存エラー: ${e.message}`, 'error')
@@ -177,6 +178,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     showToast(`"${newTemp.id}" を新しく追加しました (v${newTemp.version})`, 'success')
                 }
             } catch (err) {
+                console.error(err);
                 showToast(`MD/YAMLの解析に失敗しました: ${err.message}`, 'error')
             }
         }

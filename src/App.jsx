@@ -516,6 +516,7 @@ const App = () => {
                 showToast(`Case "${id}" を作成しました。`, 'success');
             }
         } catch (err) {
+            console.error(err);
             showToast(`ケースの取得に失敗しました: ${err.message}`, 'error');
         }
     };
