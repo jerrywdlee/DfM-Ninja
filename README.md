@@ -81,6 +81,44 @@ Alternatively, use the Vite flag:
 npm run dev -- --port 8888
 ```
 
+## ローカル（オフライン）使用について
+
+DfM-Ninja はサーバーなしで `file:///` からも起動できるオフライン版を生成できます。
+
+### ビルド方法
+
+```bash
+npm run build:local
+```
+
+通常の `npm run build` と違い、以下の処理が追加されます：
+
+1. **相対パスビルド** — Vite の `base="./"` で全アセットのパスを相対化
+2. **CDN スクリプトのローカル化** — jQuery / EJS / japanese-holidays を `dist/vendor/` にダウンロードし、`index.html` の参照を書き換え
+3. **dist.zip の生成** — `dist/` フォルダ全体を `dist.zip` にパッケージ
+
+生成された `dist.zip` を解凍し、`dist/index.html` をブラウザで直接開いて使用します。
+
+### Edge でのオフライン起動（推奨設定）
+
+`file:///` で IndexedDB や cross-origin 通信が正常に動作するよう、Edge に以下のフラグを追加してください。
+
+**設定方法：**
+1. Edge のショートカットを**右クリック ＞ プロパティ**を開く
+2. 「リンク先」の末尾に以下を追記：
+
+```
+--allow-file-access-from-files --user-data-dir="C:\temp\edge_dev"
+```
+
+> [!NOTE]
+> `--user-data-dir` には任意のパスを指定できます。このフラグにより、`file:///` 同士の通信制限や IndexedDB の制限が解除され、通常のサーバー環境に近い挙動になります。専用のプロファイルが作成されるため、通常の Edge セッションとは独立して動作します。
+
+> [!WARNING]
+> このフラグ付き Edge ウィンドウでは通常のウェブブラウジングを行わないでください。セキュリティポリシーが緩和されているためです。
+
+---
+
 ## Deployment & Release
 
 ### GitHub Pages (Automatic)

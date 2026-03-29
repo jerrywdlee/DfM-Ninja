@@ -36,9 +36,9 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
-      - name: Zip dist for release
+      - name: Build Local Offline ZIP for release
         if: startsWith(github.ref, 'refs/tags/')
-        run: zip -r dist.zip dist
+        run: npm run build:local
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2

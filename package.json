@@ -1,7 +1,7 @@
 {
   "name": "dfm-ninja",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "license": "MIT",
   "type": "module",
   "homepage": "https://github.com/jerrywdlee/DfM-Ninja",
@@ -15,6 +15,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:local": "node scripts/build-local.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "node scripts/release.js",
