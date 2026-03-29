@@ -509,7 +509,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                             style={{ background: 'linear-gradient(135deg, #92400e 0%, #b45309 40%, #d97706 100%)' }}
                             title="ブックマークバーへドラッグしてインストール"
                         >
-                            🥷 DfM-Ninja
+                            {import.meta.env.VITE_LOCAL_BUILD === '1' ? '🥷 DfM-Ninja Off-Line' : '🥷 DfM-Ninja'}
                         </a>
 
                         <img
