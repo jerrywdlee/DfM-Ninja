@@ -8,8 +8,8 @@
                 class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
             <button title="レンダリング"
                 class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
-            <button title="メール作成"
-                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">✉️</button>
+            <button title="メール送信"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">📨</button>
         </div>
 
         <!-- Main Grid -->
@@ -253,7 +253,7 @@
                     $scope.find('input[name="emailCc"]').val(emailCcText);
                 });
 
-                $scope.find('button[title="メール作成"]').off('click').on('click', async function () {
+                $scope.find('button[title="メール送信"]').off('click').on('click', async function () {
                     const emailHead = $scope.find('textarea[name="emailHead"]').val();
                     const emailBody = $scope.find('textarea[name="emailBody"]').val();
                     const emailTo = $scope.find('input[name="emailTo"]').val();
