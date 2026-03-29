@@ -4,6 +4,7 @@ import JSZip from 'jszip'
 import LZString from 'lz-string'
 import { getCaseDb, saveCaseDb, deleteCaseDb } from '../utils/db'
 import { bookmarkletCode } from '../utils/bookmarkletCode'
+import { bookmarkletLocalCode } from '../utils/bookmarkletLocalCode'
 import { parseHolidayDate } from '../utils/dateUtils'
 import installBookmarkletImg from '/install-bookmarklet.png'
 
@@ -85,7 +86,13 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         const origin = window.location.origin;
         const pathname = window.location.pathname.replace(/\/$/, '');
         const ninja_path = `${origin}${pathname}`;
-        const href = `javascript:${bookmarkletCode}`.replace(/\$\{DFM_NINJA_PATH\}/g, ninja_path);
+        
+        let href = '';
+        if (import.meta.env.VITE_LOCAL_BUILD === '1') {
+            href = `javascript:${bookmarkletLocalCode}`;
+        } else {
+            href = `javascript:${bookmarkletCode}`.replace(/\$\{DFM_NINJA_PATH\}/g, ninja_path);
+        }
         bookmarkletAnchorRef.current.setAttribute('href', href);
     }, [isOpen]);
 

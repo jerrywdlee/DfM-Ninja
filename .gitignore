@@ -28,3 +28,4 @@ tmp/*
 .env
 *.zip
 src/utils/bookmarkletCode.js
+src/utils/bookmarkletLocalCode.js
