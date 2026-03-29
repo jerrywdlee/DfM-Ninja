@@ -6,6 +6,7 @@ import TemplateModal from './components/TemplateModal'
 import NewCaseModal from './components/NewCaseModal'
 import ToastContainer from './components/ToastContainer'
 import VariablesModal from './components/VariablesModal'
+import SearchModal from './components/SearchModal'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
 import * as dfmScripts from './utils/dfmScripts'
@@ -113,6 +114,7 @@ const App = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false)
   const [isVariablesModalOpen, setIsVariablesModalOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isLogoHovered, setIsLogoHovered] = useState(false)
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_settings')
@@ -165,10 +167,14 @@ const App = () => {
     window.dfmScripts = dfmScripts;
     window.showToast = showToast;
 
-    // Global shortcut prevention (Ctrl+S / Cmd+S)
+    // Global shortcut prevention (Ctrl+S / Cmd+S) + Search (Ctrl+P / Cmd+P)
     const preventSave = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        setIsSearchOpen(true);
       }
     };
     window.addEventListener('keydown', preventSave);
@@ -571,6 +577,11 @@ const App = () => {
         templates={templates}
         setTemplates={setTemplates}
         showToast={showToast}
+      />
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        cases={cases}
       />
       
       {/* GitHub Corner (Top-Left) */}
