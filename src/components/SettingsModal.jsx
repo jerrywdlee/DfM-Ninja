@@ -6,7 +6,7 @@ import { getCaseDb, saveCaseDb, deleteCaseDb } from '../utils/db'
 import { bookmarkletCode } from '../utils/bookmarkletCode'
 import { bookmarkletLocalCode } from '../utils/bookmarkletLocalCode'
 import { parseHolidayDate } from '../utils/dateUtils'
-import installBookmarkletImg from '/install-bookmarklet.png'
+import installBookmarkletImg from '/install-bookmarklet.jpg'
 
 const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast }) => {
     const [code, setCode] = useState(rawYaml || '')
