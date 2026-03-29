@@ -8,6 +8,31 @@ The application is built with **React** and **Vite**, using **Tailwind CSS** for
 
 It uses a Bookmarklet script (found in `tmp/bookmarklet.js`) injected into the DfM (Dynamics 365) page to extract case metadata and communicate with the DfM-Ninja SPA via `postMessage`.
 
+## Key Features
+
+### 🔍 Full-Text Search (`cmd+p` / `ctrl+p`)
+Press **`Cmd+P`** (Mac) or **`Ctrl+P`** (Windows/Linux) to open the global full-text search modal. It searches across **all cases** stored in IndexedDB using **regular expressions**. Results are displayed in an accordion view grouped by case, showing the matching stage and a ±5-character snippet around each hit (matched text is highlighted). Clicking a result navigates directly to that case and stage via URL hash routing (`#caseId=...&stageId=...`).
+
+### 📋 Sidebar Case List
+The sidebar search query is **persisted to `localStorage`** across page reloads. When a query is present, the search icon changes to a ❌ clear button that wipes the query with one click. The input expands to fill the available width when active.
+
+### 🥷 Bookmarklet Integration
+The Bookmarklet injects a **🥷 button** into the Dynamics 365 case page. Clicking it extracts the case metadata and **automatically focuses an existing DfM-Ninja window** (or opens a new one if none is found), eliminating the need to switch tabs manually.
+
+### 🔰 Variables List Modal
+The Variables List modal (opened via the 🔰 button on a stage header) provides:
+
+| Section | Description |
+|---|---|
+| **Editable Var.** | User-defined variables backed by the current case's top-level data; pre-populated from System Template `variables` definitions. |
+| **Dynamic Var.** | Visual builder for date/NC variables (`nextNC_XL`, `Lic_S`, `stageLog_Dot`, etc.) with live preview. |
+| **Stage Var.** | Variables extracted from `name="..."` attributes in the active stage's HTML. Empty variables are hidden by default; a 🔽 toggle reveals them (minimum 2 rows shown if all are empty). |
+| **Sys Temp.** | Lists all registered System Templates with their ID and title, copyable as `{{templateId}}`. |
+
+Each row has two copy buttons:
+- **🧲** — Copies the variable name wrapped in `{{...}}` syntax.
+- **📋** — Copies the current resolved value directly.
+
 ## Documentation & Templating
  
 DfM-Ninja features a robust templating engine that automatically resolves variables like `{{caseNum}}`, `{{nextNC_XL}}`, `{{stageLog}}`, and dynamic email configurations from `settings.yml`. 
@@ -16,9 +41,7 @@ In addition to standard variable replacement, it supports **EJS (Embedded JavaSc
  
 Users can construct custom "Stages" by uploading `.zip` templates containing custom HTML and YAML configuration, mapping natively to the tabbed interface. HTML contents are automatically compressed via `lz-string` to save storage space.
  
-A built-in **Variables List Modal** allows users to easily reference, construct, and copy dynamic variables or stage-specific inputs directly from the UI.
-
-In addition, templates have access to a rich EJS context including `settings` (the full YAML config), `isNearHoliday` (a flag indicating whether the current stage's send date falls within 10 days before a major holiday cluster as configured in `settings.Holidays`), and other date helpers.
+Templates have access to a rich EJS context including `settings` (the full YAML config), `isNearHoliday` (a flag indicating whether the current stage's send date falls within 10 days before a major holiday cluster as configured in `settings.Holidays`), and other date helpers.
  
 For a full list of rendering variables and how they resolve, please see **[Variables Reference](docs/Variables.md)**.
 
@@ -74,7 +97,7 @@ To create a formal release with a downloadable `dist.zip` on GitHub:
    ```bash
    npm run release
    ```
-This script automatically tags the current commit with the version number (e.g., `v0.1.5`) and pushes it to GitHub, triggering the release workflow.
+This script automatically tags the current commit with the version number (e.g., `v0.5.0`) and pushes it to GitHub, triggering the release workflow.
 
 ## Built With
 - React 19
