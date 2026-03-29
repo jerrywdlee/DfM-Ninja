@@ -577,7 +577,7 @@ const App = () => {
         href={pkg.homepage}
         target="_blank"
         rel="noopener noreferrer"
-        className={`github-corner transition-opacity duration-300 hover:opacity-[0.4] ${isLogoHovered ? 'opacity-[0.85]' : 'opacity-5'}`}
+        className={`github-corner transition-opacity duration-300 hover:opacity-100 ${isLogoHovered ? 'opacity-75' : 'opacity-0'}`}
         aria-label="View source on GitHub"
         title="View source on GitHub"
         style={{
