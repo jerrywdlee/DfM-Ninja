@@ -16,6 +16,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
 
     // Stage Var State
     const [stageVars, setStageVars] = useState([]);
+    const [showEmptyStageVars, setShowEmptyStageVars] = useState(false);
 
     // Initialize Editable Vars & Stage Vars when modal opens
     useEffect(() => {
@@ -79,6 +80,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
         } else {
             setStageVars([]);
         }
+        setShowEmptyStageVars(false);
     }, [isOpen, sysTemplates, activeCase, activeCase?.activeStageId]); // re-run on case open
 
     if (!isOpen) return null;
@@ -92,7 +94,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
         if (field === 'value' && newVars[index].name) {
             onUpdateCase({
                 ...activeCase,
-                [newVars[index].name]: val || undefined // save even if empty to clear it, actually let's just save val
+                [newVars[index].name]: val || undefined
             });
         }
         if (field === 'name' && val && newVars[index].value) {
@@ -103,10 +105,16 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
         }
     };
 
-    const copyToClipboard = (text) => {
-        const copyText = `{{${text}}}`;
+    const copyVarName = (name) => {
+        const copyText = `{{${name}}}`;
         navigator.clipboard.writeText(copyText).then(() => {
             if (showToast) showToast(`コピーしました: ${copyText}`, 'info');
+        });
+    };
+
+    const copyVarValue = (value) => {
+        navigator.clipboard.writeText(value).then(() => {
+            if (showToast) showToast(`値をコピーしました`, 'info');
         });
     };
 
@@ -131,6 +139,50 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
     };
     const getRow2Key = () => `Lic${dynRow2.format === '(none)' ? '' : dynRow2.format}`;
     const getRow3Key = () => `stageLog${dynRow3.format === '(none)' ? '' : dynRow3.format}`;
+
+
+    // Stage Var filtering logic
+    const nonEmptyStageVars = stageVars.filter(v => {
+        let valPreview = String(v.value || '').replace(/\s+/g, ' ');
+        if (/\{\{.*?\}\}/.test(valPreview)) valPreview = '';
+        return valPreview.trim().length > 0;
+    });
+    const emptyStageVars = stageVars.filter(v => {
+        let valPreview = String(v.value || '').replace(/\s+/g, ' ');
+        if (/\{\{.*?\}\}/.test(valPreview)) valPreview = '';
+        return valPreview.trim().length === 0;
+    });
+    const allEmpty = nonEmptyStageVars.length === 0;
+    // Show: non-empty always. If all empty show first 2. Toggle reveals rest.
+    const visibleStageVars = showEmptyStageVars
+        ? stageVars
+        : allEmpty
+            ? stageVars.slice(0, 2)
+            : nonEmptyStageVars;
+    const hiddenCount = stageVars.length - visibleStageVars.length;
+
+    const renderCopyButtons = (varName, varValue) => (
+        <td className="p-3 w-fit text-center">
+            <div className="flex items-center gap-1 justify-center">
+                <button
+                    onClick={() => copyVarName(varName)}
+                    disabled={!varName}
+                    className="text-red-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-50 p-1.5 rounded transition-colors text-lg filter drop-shadow hover:drop-shadow-md"
+                    title={`変数名をコピー: {{${varName}}}`}
+                >
+                    🧲
+                </button>
+                <button
+                    onClick={() => copyVarValue(varValue)}
+                    disabled={!varValue}
+                    className="text-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 p-1.5 rounded transition-colors text-lg filter drop-shadow hover:drop-shadow-md"
+                    title="値をコピー"
+                >
+                    📋
+                </button>
+            </div>
+        </td>
+    );
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 sm:p-6" onClick={onClose}>
@@ -186,16 +238,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                                                     onChange={(e) => handleUpdateEditableVar(i, 'value', e.target.value)}
                                                 />
                                             </td>
-                                            <td className="p-3 w-12 text-center">
-                                                <button 
-                                                    onClick={() => copyToClipboard(v.name)}
-                                                    disabled={!v.name}
-                                                    className="text-red-700 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-red-50 p-1.5 rounded transition-colors text-lg filter drop-shadow hover:drop-shadow-md"
-                                                    title="Copy Variable"
-                                                >
-                                                    🧲
-                                                </button>
-                                            </td>
+                                            {renderCopyButtons(v.name, v.value)}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -236,14 +279,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                                         <td className="p-2 text-[#4f6f60] max-w-[150px] truncate">
                                             {getPreview(`{{${getRow1Key()}}}`)}
                                         </td>
-                                        <td className="p-2 w-12 text-center">
-                                            <button 
-                                                onClick={() => copyToClipboard(getRow1Key())}
-                                                className="text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors filter drop-shadow hover:drop-shadow-md"
-                                            >
-                                                🧲
-                                            </button>
-                                        </td>
+                                        {renderCopyButtons(getRow1Key(), previewEngine.render(`{{${getRow1Key()}}}`) || '')}
                                     </tr>
 
                                     <tr className="border-b border-[#a1dfc3]/30">
@@ -261,14 +297,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                                         <td className="p-2 text-[#4f6f60] max-w-[150px] truncate">
                                             {getPreview(`{{${getRow2Key()}}}`)}
                                         </td>
-                                        <td className="p-2 w-12 text-center">
-                                            <button 
-                                                onClick={() => copyToClipboard(getRow2Key())}
-                                                className="text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors filter drop-shadow hover:drop-shadow-md"
-                                            >
-                                                🧲
-                                            </button>
-                                        </td>
+                                        {renderCopyButtons(getRow2Key(), previewEngine.render(`{{${getRow2Key()}}}`) || '')}
                                     </tr>
 
                                     <tr className="border-b border-[#a1dfc3]/30">
@@ -285,14 +314,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                                         <td className="p-2 text-[#4f6f60] max-w-[150px] truncate">
                                             {getPreview(`{{${getRow3Key()}}}`)}
                                         </td>
-                                        <td className="p-2 w-12 text-center">
-                                            <button 
-                                                onClick={() => copyToClipboard(getRow3Key())}
-                                                className="text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors filter drop-shadow hover:drop-shadow-md"
-                                            >
-                                                🧲
-                                            </button>
-                                        </td>
+                                        {renderCopyButtons(getRow3Key(), previewEngine.render(`{{${getRow3Key()}}}`) || '')}
                                     </tr>
                                 </tbody>
                             </table>
@@ -307,7 +329,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                         <div className="bg-white rounded-lg border border-[#a1dfc3] overflow-hidden shadow-sm">
                             <table className="w-full text-sm">
                                 <tbody>
-                                    {stageVars.map((v, i) => {
+                                    {visibleStageVars.map((v, i) => {
                                         let valPreview = String(v.value || '').replace(/\s+/g, ' ');
                                         if (/\{\{.*?\}\}/.test(valPreview)) valPreview = '';
                                         if (valPreview.length > 20) valPreview = valPreview.substring(0, 20) + '...';
@@ -319,16 +341,9 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                                                 <td className="p-3 text-[#4f6f60] truncate max-w-[150px]">
                                                     {valPreview}
                                                 </td>
-                                                <td className="p-3 w-12 text-center">
-                                                    <button 
-                                                        onClick={() => copyToClipboard(v.name)}
-                                                        className="text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors text-lg filter drop-shadow hover:drop-shadow-md"
-                                                    >
-                                                        🧲
-                                                    </button>
-                                                </td>
+                                                {renderCopyButtons(v.name, v.value)}
                                             </tr>
-                                        )
+                                        );
                                     })}
                                     {stageVars.length === 0 && (
                                         <tr>
@@ -337,10 +352,60 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                                             </td>
                                         </tr>
                                     )}
+                                    {/* Toggle row */}
+                                    {stageVars.length > 0 && (
+                                        <tr>
+                                            <td colSpan="3" className="px-3 py-1.5 border-t border-[#a1dfc3]/30">
+                                                <button
+                                                    onClick={() => setShowEmptyStageVars(v => !v)}
+                                                    className="w-full flex items-center justify-center gap-1.5 text-[11px] text-[#4f6f60] hover:text-[#0f5132] transition-colors py-0.5 rounded hover:bg-[#eafaf1]"
+                                                >
+                                                    {showEmptyStageVars
+                                                        ? <><span>🔼</span> 空の変数を隠す</>
+                                                        : hiddenCount > 0
+                                                            ? <><span>🔽</span> 空の変数をすべて表示 ({hiddenCount} 件)</>
+                                                            : null
+                                                    }
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </section>
+
+                    {/* Sys Temp. (Template IDs themselves) */}
+                    {Array.isArray(sysTemplates) && sysTemplates.length > 0 && (
+                        <section>
+                            <h3 className="text-lg font-bold text-[#146c43] mb-3 flex items-center gap-2 border-b-2 border-[#146c43]/20 pb-1">
+                                 Sys Temp.
+                            </h3>
+                            <div className="bg-white rounded-lg border border-[#a1dfc3] overflow-hidden shadow-sm">
+                                <table className="w-full text-sm">
+                                    <tbody>
+                                        {sysTemplates.map((t, i) => {
+                                            const rendered = previewEngine.render(`{{${t.id}}}`) || '';
+                                            let valPreview = rendered.replace(/\s+/g, ' ');
+                                            if (valPreview.length > 20) valPreview = valPreview.substring(0, 20) + '...';
+                                            return (
+                                                <tr key={i} className="border-b border-[#a1dfc3]/30 last:border-none">
+                                                    <td className="p-3 w-[40%]">
+                                                        <div className="font-bold text-[#0f5132]">{t.title || t.id}</div>
+                                                        <div className="text-[10px] text-[#6aaa85] font-mono mt-0.5">{t.id}</div>
+                                                    </td>
+                                                    <td className="p-3 text-[#4f6f60] truncate max-w-[120px] text-xs">
+                                                        {valPreview || <span className="italic text-[#a1dfc3] text-[10px]">no preview</span>}
+                                                    </td>
+                                                    {renderCopyButtons(t.id, rendered)}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    )}
                 </div>
             </div>
         </div>
@@ -348,3 +413,4 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
 };
 
 export default VariablesModal;
+
