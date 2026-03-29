@@ -4,15 +4,19 @@
     const windowName = "DfM-Ninja";
 
     // 1. Try to open or focus the Ninja window
-    let ninjaWindow = window.open("", windowName);
+    const openNinjaWindow = () => {
+        let ninjaWindow = window.open("", windowName);
 
-    if (!ninjaWindow || ninjaWindow.location.href === "about:blank") {
-        // Not open yet or connection lost, open fresh
-        ninjaWindow = window.open(spaUrl, windowName);
-    } else {
-        // Already open, just focus
-        ninjaWindow.focus();
-    }
+        if (!ninjaWindow || ninjaWindow.location.href === "about:blank") {
+            // Not open yet or connection lost, open fresh
+            ninjaWindow = window.open(spaUrl, windowName);
+        } else {
+            // Already open, just focus
+            ninjaWindow.focus();
+        }
+    };
+
+    openNinjaWindow();
 
     // 3. Extraction is now handled dynamically via RPC from the Ninja SPA
 
@@ -61,7 +65,8 @@
 
     const style = 'background: none; border: none; right: 4px; top: 60px; font-size: 18px; position: absolute; z-index: 10000;';
     if (!document.getElementById('DfM-Ninja')) {
-        const $btn = $(`<button style="${style}" id="DfM-Ninja" >🥷</button>`);
+        const $btn = $(`<button style="${style}" id="DfM-Ninja" title="Open DfM-Ninja">🥷</button>`);
+        $btn.on('click', openNinjaWindow);
         $('body').append($btn);
     }
     console.log("DfM-Ninja Bookmarklet Initialized.");

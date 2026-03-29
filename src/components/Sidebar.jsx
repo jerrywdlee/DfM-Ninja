@@ -2,8 +2,12 @@ import { useState, useEffect } from 'react'
 import pkg from '../../package.json'
 
 const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, onToggleResolveCase, connectionStatus, onReconnect, onExtractCase, onOpenSettings, onLogoHover }) => {
-    const [search, setSearch] = useState('')
+    const [search, setSearch] = useState(() => localStorage.getItem('dfm_search_query') || '');
     const [showResolved, setShowResolved] = useState(false)
+
+    useEffect(() => {
+        localStorage.setItem('dfm_search_query', search);
+    }, [search]);
 
     const filteredCases = cases.filter(c => {
         const keywords = search.split(',').map(k => k.trim()).filter(k => k !== '');
@@ -54,16 +58,27 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
 
             <div className="p-3 bg-slate-900/50 border-b border-slate-800/30">
                 <div className="flex gap-2 items-center">
-                    <div className="relative flex-1 group">
+                    <div className="relative flex-1 group flex items-center">
                         <input
                             type="text"
                             placeholder="Search (`,` for OR)..."
                             title="Multiple keywords separated by commas (OR search)"
-                            className="w-full pl-8 pr-2 py-1.5 bg-slate-950 rounded border border-slate-800 text-[11px] focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/10 transition-all text-slate-200 placeholder-slate-600"
+                            className={`w-full py-1.5 bg-slate-950 rounded border border-slate-800 text-[11px] focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/10 transition-all text-slate-200 placeholder-slate-600 ${search ? 'pl-2 pr-8' : 'pl-8 pr-2'}`}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-orange-500/50 transition-colors">🔍</span>
+                        {!search && (
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-orange-500/50 transition-colors pointer-events-none">🔍</span>
+                        )}
+                        {search && (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-400 transition-colors flex items-center justify-center p-0.5 rounded cursor-pointer"
+                                title="Clear search"
+                            >
+                                ❌
+                            </button>
+                        )}
                     </div>
                     <button
                         onClick={() => setShowResolved(!showResolved)}
