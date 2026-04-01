@@ -100,6 +100,35 @@ export function formatDateIsoLocal(date) {
 }
 
 /**
+ * Formats an ISO date string to "YYYY-MM-DD" in the browser's LOCAL timezone.
+ * Use this anywhere you currently do `isoStr.split('T')[0]` to avoid UTC offset issues.
+ * @param {string|null} iso - ISO 8601 date string (e.g. "2026-04-01T15:30:00.000Z")
+ * @returns {string} e.g. "2026-04-02" (adjusted for local timezone)
+ */
+export function isoToLocalDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/**
+ * Formats an ISO date string to compact "YY/MM/DD" in the browser's LOCAL timezone.
+ * @param {string|null} iso - ISO 8601 date string
+ * @returns {string} e.g. "26/04/02"
+ */
+export function isoToCompactDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const yy = String(d.getFullYear()).slice(-2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yy}/${mm}/${dd}`;
+}
+
+/**
  * Checks if two dates (Date object or string) fall on the same calendar day.
  */
 export function isSameDate(d1, d2) {

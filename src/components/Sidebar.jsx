@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import pkg from '../../package.json'
+import CaseDateBadge from './CaseDateBadge'
 
 const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, onToggleResolveCase, connectionStatus, onReconnect, onExtractCase, onOpenSettings, onLogoHover }) => {
     const [search, setSearch] = useState(() => localStorage.getItem('dfm_search_query') || '');
@@ -112,7 +113,15 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                                     )}
                                     <span className="truncate text-[16px] tracking-tight">{c.id}</span>
                                 </div>
-                                <div className="truncate text-[10px] text-slate-500 group-hover:text-slate-400 mt-0.5 transition-colors leading-tight">{c.title}</div>
+                                <div className="flex items-center justify-between mt-0.5">
+                                    <div className="truncate text-[10px] text-slate-500 group-hover:text-slate-400 transition-colors leading-tight flex-1">{c.title}</div>
+                                    <CaseDateBadge
+                                        createdAt={c.createdAt}
+                                        updatedAt={c.updatedAt}
+                                        resolvedAt={c.resolvedAt}
+                                        format="short"
+                                    />
+                                </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                                 <button

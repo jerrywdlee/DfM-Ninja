@@ -232,12 +232,13 @@ const App = () => {
     // Update Index
     setCases(prev => {
         const idx = prev.findIndex(c => c.id === id);
+        const entry = { id, title, createdAt: mergedData.createdAt, updatedAt: mergedData.updatedAt };
         if (idx >= 0) {
             const newIndex = [...prev];
-            newIndex[idx] = { id, title };
+            newIndex[idx] = entry;
             return newIndex;
         } else {
-            return [...prev, { id, title }];
+            return [...prev, entry];
         }
     });
 
@@ -281,9 +282,9 @@ const App = () => {
         setActiveCaseData(caseInstance);
 
         // Update index if title or resolvedAt changed
-        setCases(prev => prev.map(c => 
-            c.id === rawData.id 
-                ? { id: c.id, title: rawData.title, resolvedAt: rawData.resolvedAt } 
+        setCases(prev => prev.map(c =>
+            c.id === rawData.id
+                ? { ...c, title: rawData.title, resolvedAt: rawData.resolvedAt, updatedAt: rawData.updatedAt }
                 : c
         ));
 
@@ -312,50 +313,46 @@ const App = () => {
                 return;
             }
 
-            let needsUpdate = false;
-            
-            if (stageId) {
-                const stageIndex = caseData.stages.findIndex(s => String(s.id) === String(stageId));
-                if (stageIndex === -1) {
-                    showToast(`Error: Stage "${stageId}" not found in Case "${caseId}".`, 'error');
-                    caseData.activeStageId = null;
-                    caseData.activeStepId = null;
-                    needsUpdate = true;
-                } else {
-                    const actualStage = caseData.stages[stageIndex];
-                    caseData.activeStageId = actualStage.id;
+            if (!stageId) {
+                // No stageId in hash: open with whatever is saved in DB (no override)
+                setActiveCaseId(caseId);
+                setActiveCaseData(new DfmCase(caseData, settings));
+                return;
+            }
 
-                    if (stepId) {
-                        let actualStepIndex = -1;
-                        if (actualStage.steps && actualStage.steps.length > 0) {
-                            if (stepId.startsWith('step-')) {
-                                const idx = parseInt(stepId.replace('step-', ''), 10);
-                                if (!isNaN(idx) && idx >= 0 && idx < actualStage.steps.length) {
-                                    actualStepIndex = idx;
-                                }
-                            } else {
-                                actualStepIndex = actualStage.steps.findIndex(s => String(s.id) === String(stepId));
-                            }
-                        }
+            // stageId is present: resolve it, but do NOT persist to DB.
+            // It is a transient navigation request only.
+            const stageIndex = caseData.stages.findIndex(s => String(s.id) === String(stageId));
+            if (stageIndex === -1) {
+                showToast(`Error: Stage "${stageId}" not found in Case "${caseId}".`, 'error');
+                setActiveCaseId(caseId);
+                setActiveCaseData(new DfmCase(caseData, settings));
+                return;
+            }
 
-                        if (actualStepIndex === -1 && stepId !== 'llm' && actualStage.steps && actualStage.steps.length > 0) {
-                            showToast(`Error: Step "${stepId}" not found in Stage "${stageId}".`, 'error');
-                            caseData.activeStepId = 'step-0';
-                            needsUpdate = true;
-                        } else if (actualStepIndex !== -1 || stepId === 'llm') {
-                            caseData.activeStepId = stepId;
-                        }
+            const actualStage = caseData.stages[stageIndex];
+            // Build a shallow copy with the overridden stage/step ids (in-memory only)
+            const overrideData = { ...caseData, activeStageId: actualStage.id };
+
+            if (stepId) {
+                let resolvedStepId = stepId;
+                if (stepId.startsWith('step-')) {
+                    const idx = parseInt(stepId.replace('step-', ''), 10);
+                    if (!isNaN(idx) && actualStage.steps && idx >= 0 && idx < actualStage.steps.length) {
+                        resolvedStepId = stepId; // valid
+                    } else if (stepId !== 'llm') {
+                        resolvedStepId = 'step-0'; // fallback
                     }
+                } else if (stepId !== 'llm' && actualStage.steps) {
+                    const found = actualStage.steps.findIndex(s => String(s.id) === String(stepId));
+                    resolvedStepId = found !== -1 ? stepId : 'step-0';
                 }
-            }
-            
-            if (needsUpdate) {
-                await saveCaseDb(caseId, caseData);
+                overrideData.activeStepId = resolvedStepId;
             }
 
-            // Always update state to trigger re-render
+            // Apply the transient override without touching DB
             setActiveCaseId(caseId);
-            setActiveCaseData(new DfmCase(caseData, settings));
+            setActiveCaseData(new DfmCase(overrideData, settings));
         };
 
         // Run once on mount to handle initial deep link
@@ -496,7 +493,7 @@ const App = () => {
                     };
                     const updatedCase = new DfmCase(mergedData, settings);
                     await saveCaseDb(id, updatedCase.toJSON());
-                    setCases(prev => prev.map(c => c.id === id ? { ...c, title } : c));
+                    setCases(prev => prev.map(c => c.id === id ? { ...c, title, updatedAt: now } : c));
                     setActiveCaseId(id);
                     showToast(`Case "${id}" を更新しました。`, 'success');
                 } else {
@@ -516,7 +513,7 @@ const App = () => {
                 await saveCaseDb(id, newCase.toJSON());
                 setCases(prev => {
                     const exists = prev.some(c => c.id === id);
-                    return exists ? prev.map(c => c.id === id ? { ...c, title } : c) : [...prev, { id, title }];
+                    return exists ? prev.map(c => c.id === id ? { ...c, title, createdAt: now, updatedAt: now } : c) : [...prev, { id, title, createdAt: now, updatedAt: now }];
                 });
                 setActiveCaseId(id);
                 showToast(`Case "${id}" を作成しました。`, 'success');

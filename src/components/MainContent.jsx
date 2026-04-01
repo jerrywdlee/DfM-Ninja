@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import TemplateModal from './TemplateModal'
 import DfmCase from '../models/DfmCase'
-import { calculateNcDate, formatDateIsoLocal } from '../utils/dateUtils'
+import { calculateNcDate, formatDateIsoLocal, isoToLocalDate } from '../utils/dateUtils'
 import LZString from 'lz-string'
 
 const Stage = ({ stage, isActive, onToggle, onUpdate, onDelete, onMoveUp, onMoveDown, activeStepId, onStepToggle, onOpenVariables, settings }) => {
@@ -590,13 +590,13 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                     
                     <div className="flex justify-end gap-6 mt-2 text-[10px] font-bold text-slate-400/80 italic tracking-wider">
                         {activeCase.createdAt && (
-                            <span>Created At: {activeCase.createdAt.split('T')[0]}</span>
+                            <span>Created At: {isoToLocalDate(activeCase.createdAt)}</span>
                         )}
                         {activeCase.updatedAt && (
-                            <span>Updated At: {activeCase.updatedAt.split('T')[0]}</span>
+                            <span>Updated At: {isoToLocalDate(activeCase.updatedAt)}</span>
                         )}
                         {activeCase.resolvedAt && (
-                            <span>Resolved At: {activeCase.resolvedAt.split('T')[0]}</span>
+                            <span>Resolved At: {isoToLocalDate(activeCase.resolvedAt)}</span>
                         )}
                     </div>
                 </div>

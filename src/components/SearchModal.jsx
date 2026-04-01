@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getCaseDb } from '../utils/db'
+import { isoToLocalDate } from '../utils/dateUtils'
+import CaseDateBadge from './CaseDateBadge'
 
 // Extract all searchable text from a step (excluding html field)
 const flattenStepText = (step) => {
@@ -34,6 +36,7 @@ const extractSnippets = (text, regex) => {
     }
     return snippets;
 };
+
 
 const SearchModal = ({ isOpen, onClose, cases }) => {
     const [query, setQuery] = useState('');
@@ -132,6 +135,9 @@ const SearchModal = ({ isOpen, onClose, cases }) => {
                     found.push({
                         caseId: caseData.id,
                         title: caseData.title || caseData.id,
+                        resolvedAt: caseData.resolvedAt || null,
+                        createdAt: caseData.createdAt || null,
+                        updatedAt: caseData.updatedAt || null,
                         stages: stageHits,
                     });
                 }
@@ -240,51 +246,79 @@ const SearchModal = ({ isOpen, onClose, cases }) => {
                         </div>
                     )}
 
-                    {results.map((result) => (
-                        <div key={result.caseId} className="border-b border-slate-800/60 last:border-b-0">
-                            {/* Case Row */}
-                            <button
-                                onClick={() => toggleCase(result.caseId)}
-                                className="w-full flex items-center gap-3 px-5 py-3 hover:bg-slate-800/40 transition-colors text-left group"
-                            >
-                                <span className={`text-slate-500 text-[10px] transition-transform duration-150 ${openCaseIds.has(result.caseId) ? 'rotate-90' : ''}`}>▶</span>
-                                <div className="flex-1 min-w-0">
-                                    <span className="font-mono text-[13px] font-bold text-orange-400 mr-2">{result.caseId}</span>
-                                    <span className="text-slate-400 text-xs truncate">{result.title}</span>
-                                </div>
-                                <span className="text-slate-600 text-[10px] shrink-0 bg-slate-800 px-1.5 py-0.5 rounded-full">
-                                    {result.stages.length} stage{result.stages.length !== 1 ? 's' : ''}
-                                </span>
-                            </button>
+                    {results.map((result) => {
+                        const isClosed = !!result.resolvedAt;
+                        const isExpanded = openCaseIds.has(result.caseId);
+                        return (
+                            <div key={result.caseId} className={`border-b last:border-b-0 ${isClosed ? 'border-slate-800/30' : 'border-slate-800/60'}`}>
+                                {/* Case Row */}
+                                <button
+                                    onClick={() => toggleCase(result.caseId)}
+                                    className={`w-full flex items-center gap-3 px-5 py-2.5 transition-colors text-left group ${
+                                        isClosed
+                                            ? 'hover:bg-slate-800/20 opacity-60 hover:opacity-90'
+                                            : 'hover:bg-slate-800/40'
+                                    }`}
+                                >
+                                    {/* Chevron */}
+                                    <span className={`text-[10px] transition-transform duration-150 shrink-0 ${isExpanded ? 'rotate-90' : ''} ${isClosed ? 'text-slate-600' : 'text-slate-500'}`}>▶</span>
 
-                            {/* Stage Rows (accordion) */}
-                            {openCaseIds.has(result.caseId) && (
-                                <div className="bg-slate-950/30">
-                                    {result.stages.map((stage) => (
-                                        <button
-                                            key={stage.stageId}
-                                            onClick={() => handleNavigate(result.caseId, stage.stageId)}
-                                            className="w-full flex flex-col gap-1 px-8 py-2.5 hover:bg-orange-500/5 transition-colors text-left border-t border-slate-800/30 first:border-t-0 group"
+                                    {/* ID + Title */}
+                                    <div className="flex-1 min-w-0 flex items-baseline gap-2 overflow-hidden">
+                                        <span className={`font-mono text-[12px] font-bold shrink-0 ${isClosed ? 'text-slate-500' : 'text-orange-400'}`}>
+                                            {result.caseId}
+                                        </span>
+                                        <span
+                                            className={`text-xs truncate min-w-0 ${isClosed ? 'text-slate-600 line-through decoration-slate-700/60' : 'text-slate-400'}`}
+                                            title={result.title}
                                         >
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-slate-500 text-[10px]">↳</span>
-                                                <span className="text-slate-200 text-xs font-semibold group-hover:text-orange-300 transition-colors">
-                                                    {stage.stageName}
-                                                </span>
-                                            </div>
-                                            {stage.snippets.map((snip, i) => (
-                                                <p key={i} className="text-slate-500 text-[10px] font-mono pl-4 truncate group-hover:text-slate-400 transition-colors">
-                                                    <span>{snip.prefix}{snip.before}</span>
-                                                    <span className="bg-orange-400/25 text-orange-300 rounded px-0.5 font-semibold">{snip.match}</span>
-                                                    <span>{snip.after}{snip.suffix}</span>
-                                                </p>
-                                            ))}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                                            {result.title}
+                                        </span>
+                                    </div>
+
+                                    {/* Right-side meta */}
+                                    <div className="shrink-0 flex flex-col items-end gap-0.5 ml-2">
+                                        <span className="text-[10px] bg-slate-800 text-slate-600 px-1.5 py-0.5 rounded-full">
+                                            {result.stages.length} stage{result.stages.length !== 1 ? 's' : ''}
+                                        </span>
+                                        <CaseDateBadge
+                                            createdAt={result.createdAt}
+                                            updatedAt={result.updatedAt}
+                                            resolvedAt={result.resolvedAt}
+                                            format="compact"
+                                        />
+                                    </div>
+                                </button>
+
+                                {/* Stage Rows (accordion) */}
+                                {isExpanded && (
+                                    <div className="bg-slate-950/30">
+                                        {result.stages.map((stage) => (
+                                            <button
+                                                key={stage.stageId}
+                                                onClick={() => handleNavigate(result.caseId, stage.stageId)}
+                                                className="w-full flex flex-col gap-1 px-8 py-2.5 hover:bg-orange-500/5 transition-colors text-left border-t border-slate-800/30 first:border-t-0 group"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-slate-500 text-[10px]">↳</span>
+                                                    <span className="text-slate-200 text-xs font-semibold group-hover:text-orange-300 transition-colors truncate">
+                                                        {stage.stageName}
+                                                    </span>
+                                                </div>
+                                                {stage.snippets.map((snip, i) => (
+                                                    <p key={i} className="text-slate-500 text-[10px] font-mono pl-4 truncate group-hover:text-slate-400 transition-colors">
+                                                        <span>{snip.prefix}{snip.before}</span>
+                                                        <span className="bg-orange-400/25 text-orange-300 rounded px-0.5 font-semibold">{snip.match}</span>
+                                                        <span>{snip.after}{snip.suffix}</span>
+                                                    </p>
+                                                ))}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Footer */}
