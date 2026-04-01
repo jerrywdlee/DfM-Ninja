@@ -224,7 +224,13 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                 }
             }
 
-            const content = await zip.generateAsync({ type: 'blob' });
+            const content = await zip.generateAsync({
+                type: 'blob',
+                compression: 'DEFLATE',
+                compressionOptions: {
+                    level: 6
+                }
+            });
             
             // Generate filename with YYYYMMDD
             const now = new Date();

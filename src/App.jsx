@@ -40,7 +40,13 @@ const App = () => {
           zip.file(`MetaData_${id}.json`, data);
         });
 
-        const content = await zip.generateAsync({ type: 'blob' });
+        const content = await zip.generateAsync({
+            type: 'blob',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 6
+            }
+        });
         
         const now = new Date();
         const yyyy = now.getFullYear();
