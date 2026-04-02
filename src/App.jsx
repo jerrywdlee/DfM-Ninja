@@ -187,19 +187,36 @@ const App = () => {
     return () => window.removeEventListener('keydown', preventSave);
   }, [execDfM]);
 
+  const settingsRef = useRef(settings);
+  useEffect(() => { settingsRef.current = settings; }, [settings]);
+
+  const activeCaseDataIdRef = useRef(null);
+  useEffect(() => {
+    activeCaseDataIdRef.current = activeCaseData?.id;
+  }, [activeCaseData]);
+
+  // Load from DB when activeCaseId changes, but skip if already loaded (e.g., via hash)
   useEffect(() => {
     let mounted = true;
     if (activeCaseId) {
+      if (activeCaseDataIdRef.current === activeCaseId) {
+        return; // Already loaded, preserves transient overrides
+      }
       getCaseDb(activeCaseId).then(saved => {
         if (mounted && saved) {
-          setActiveCaseData(new DfmCase(saved, settings))
+          setActiveCaseData(new DfmCase(saved, settingsRef.current));
         }
       }).catch(console.error);
     } else {
-      setActiveCaseData(null)
+      setActiveCaseData(null);
     }
     return () => { mounted = false; };
-  }, [activeCaseId, settings])
+  }, [activeCaseId]);
+
+  // Re-apply settings seamlessly without DB fetch if settings change
+  useEffect(() => {
+    setActiveCaseData(prev => prev ? new DfmCase(prev.toJSON(), settings) : null);
+  }, [settings]);
 
   useEffect(() => {
     localStorage.setItem('dfm_ninja_settings', JSON.stringify(settings))
@@ -352,7 +369,7 @@ const App = () => {
 
             // Apply the transient override without touching DB
             setActiveCaseId(caseId);
-            setActiveCaseData(new DfmCase(overrideData, settings));
+            setActiveCaseData(new DfmCase(overrideData, settingsRef.current));
         };
 
         // Run once on mount to handle initial deep link
