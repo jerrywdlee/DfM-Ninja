@@ -107,6 +107,14 @@
 
             [追加質問]
             {{askContent}}
+
+            {%_ if (!!locals.askResult?.trim() ) { -%}
+            [お客様が困った点]
+            {{custTrouble}}
+
+            [回答方針]
+            {{answerPolicy}}
+            {%_ } -%}
         </noscript>
 
         <noscript data-name="emailBody">

@@ -7,6 +7,7 @@ import NewCaseModal from './components/NewCaseModal'
 import ToastContainer from './components/ToastContainer'
 import VariablesModal from './components/VariablesModal'
 import SearchModal from './components/SearchModal'
+import UpdateModal, { checkForUpdate } from './components/UpdateModal'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
 import * as dfmScripts from './utils/dfmScripts'
@@ -122,6 +123,10 @@ const App = () => {
   const [isVariablesModalOpen, setIsVariablesModalOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isLogoHovered, setIsLogoHovered] = useState(false)
+  const [updateInfo, setUpdateInfo] = useState(() => {
+    const prev = checkForUpdate();
+    return prev ? { previousVersion: prev } : null;
+  })
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('dfm_ninja_settings')
     return saved ? JSON.parse(saved) : { prompt_template: 'Default prompt...' }
@@ -604,7 +609,11 @@ const App = () => {
         onClose={() => setIsSearchOpen(false)}
         cases={cases}
       />
-      
+      <UpdateModal
+        isOpen={!!updateInfo}
+        previousVersion={updateInfo?.previousVersion}
+        onClose={() => setUpdateInfo(null)}
+      />
       {/* GitHub Corner (Top-Left) */}
       <a
         href={pkg.homepage}

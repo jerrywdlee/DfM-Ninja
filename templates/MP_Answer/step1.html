@@ -1,47 +1,93 @@
 <% const uid=new Date().getTime(); %>
-    <div id="MP_Answer_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
-        <div class="grid grid-cols-2 gap-6">
-            <div class="flex flex-col">
-                <div class="flex items-center justify-between mb-3 px-1">
-                    <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">Prompt</h4>
-                    <div class="flex gap-1.5 focus-within:ring-0">
-                        <button title="リセット"
-                            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
-                        <button title="レンダリング"
-                            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
-                    </div>
+    <div id="MP_Answer_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
+        
+        <!-- Action Buttons -->
+        <div class="absolute top-4 right-6 flex gap-1.5 focus-within:ring-0">
+            <button title="リセット"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
+            <button title="レンダリング"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-8 mt-6">
+            <!-- Left Column: Prompt -->
+            <div class="flex flex-col h-full">
+                <div class="flex items-center mb-3 px-1">
+                    <h4 class="text-[13px] font-black text-emerald-900 tracking-wider">Prompt</h4>
                 </div>
                 <textarea name="prompt" data-doubleclick="copy"
-                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                    class="w-full flex-1 min-h-[500px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
                     placeholder="Prompt goes here..."></textarea>
             </div>
-            <div class="flex flex-col">
-                <div class="flex items-center justify-between mt-3 mb-3 px-1">
-                    <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">回答文面</h4>
+
+            <!-- Right Column: Fields and Buttons -->
+            <div class="flex flex-col gap-5">
+
+                <!-- Field 1: お客様が困った点 -->
+                <div class="flex flex-col">
+                    <h4 class="text-[13px] font-bold text-emerald-900 mb-2 px-1">お客様が困った点</h4>
+                    <textarea name="custTrouble"
+                        class="w-full h-[120px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="お客様が何に困っているか..."></textarea>
                 </div>
-                <div name="answerText" data-doubleclick="copy" contenteditable="true"
-                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
-                    placeholder=" ... "></div>
+
+                <!-- Field 2: 回答方針 -->
+                <div class="flex flex-col">
+                    <h4 class="text-[13px] font-bold text-emerald-900 mb-2 px-1">回答方針</h4>
+                    <textarea name="answerPolicy"
+                        class="w-full h-[120px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="どのように回答するかの方針..."></textarea>
+                </div>
+
+                <!-- Field 3: 回答文面 -->
+                <div class="flex flex-col">
+                    <h4 class="text-[13px] font-bold text-emerald-900 mb-2 px-1">回答文面</h4>
+                    <div name="answerText" data-doubleclick="copy" contenteditable="true"
+                        class="w-full h-[180px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
+                        placeholder="実際の回答文面..."></div>
+                </div>
             </div>
         </div>
+
         <noscript data-name="prompt">
-            現在のお問い合わせ内容は以下です。
+            # 指示
+            現在のお問い合わせ内容と、担当者が作成した修正前の回答本文を分析し、以下のフォーマットに従って「お客様が困った点」「回答方針」「修正後の回答本文」を作成してください。
+
+            # 重要
+            - 各項目ごとに、**それぞれ独立した単一のコードブロック（```text 〜 ```）で囲んだプレーンテキスト**として出力してください。
+            - 「お客様が困った点」と「回答方針」はチーム内のレビュー用ですので、**挨拶や丁寧な言い回しを省略し、なるべく簡潔に**記載してください。
+            - 「修正後の回答本文」は以下のルールに従って修正・推敲してください：
+              - 半角英数字の前後に半角スペースを入れる
+              - お客様名が統一されていること
+              - 挨拶は不要（後で定型文を追加するため）
+              - 感情表現は不要、ただしお客様を追及するようなニュアンスは避けること
+              - ケースと関連しない個人情報等は含まれないこと
+              - お客様の文脈を常に考慮すること
+
+            # 出力フォーマット
+            お客様が困った点：
+            ```text
+            (お問い合わせ内容から、お客様が何に困っているかを簡潔に要約)
             ```
+
+            回答方針：
+            ```text
+            (修正前の回答本文をもとに、どのような方針で回答・解決しようとしているかを簡潔に要約)
+            ```
+
+            修正後の回答本文：
+            ```text
+            (上記のルールに従って修正・推敲した回答本文)
+            ```
+
+            # 入力データ
+            【現在のお問い合わせ内容】
+            ```text
             {{custStatement}}
             ```
 
-            上記質問の回答として、下記の回答文の表現が不適切な箇所を修正し、読みやすいように修正してください。
-            また、文面をPlain Textにし、Code Blockの中に出力してください。
-
-            - 半角英数字の前後に半角スペースはある
-            - お客様名が統一している
-            - 挨拶は不要（定型文あり）
-            - 感情表現は不要、ただしお客様を追及しようとする感覚はしないこと
-            - ケースと関連しない個人情報等は含まれていない
-            - お客様の文脈を考慮して回答する
-
-            回答本文：
-            ```
+            【修正前の回答本文】(修正前回答本文をここに貼り付けてください)
+            ```text
 
 
 
@@ -50,54 +96,62 @@
         <script>
             (function () {
                 const divId = '#MP_Answer_step1-<%=uid%>';
-                const $scope = $(divId); // このステップの範囲内だけで探す
+                const $scope = $(divId);
                 const $prompt = $scope.find('textarea[name="prompt"]');
+                const $custTrouble = $scope.find('textarea[name="custTrouble"]');
+                const $answerPolicy = $scope.find('textarea[name="answerPolicy"]');
                 const $answerText = $scope.find('[name="answerText"]');
-                const promptText = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
+                const promptTextRaw = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
 
+                // Load initial data
                 {
-                    const caseDataInitial = window.currentCase;
-                    const activeStepInitial = caseDataInitial?.activeStep;
+                    const caseData = window.currentCase;
+                    const activeStep = caseData?.activeStep;
 
-                    if (activeStepInitial && activeStepInitial.prompt) {
-                        $prompt.val(activeStepInitial.prompt);
-                    } else if (caseDataInitial) {
-                        const renderedPrompt = caseDataInitial.render(promptText);
-                        $prompt.val(renderedPrompt);
-                    }
-                    if (activeStepInitial && activeStepInitial.answerText) {
-                        if ($answerText.is('textarea, input')) {
-                            $answerText.val(activeStepInitial.answerText);
-                        } else {
-                            $answerText.html(activeStepInitial.answerText);
+                    if (activeStep) {
+                        if (activeStep.prompt) $prompt.val(activeStep.prompt);
+                        else if (caseData) $prompt.val(caseData.render(promptTextRaw));
+
+                        if (activeStep.custTrouble) $custTrouble.val(activeStep.custTrouble);
+                        if (activeStep.answerPolicy) $answerPolicy.val(activeStep.answerPolicy);
+                        
+                        if (activeStep.answerText) {
+                            if ($answerText.is('textarea, input')) $answerText.val(activeStep.answerText);
+                            else $answerText.html(activeStep.answerText);
                         }
+                    } else if (caseData) {
+                        $prompt.val(caseData.render(promptTextRaw));
                     }
                 }
 
-                // .on ではなく、直接要素に .click 等でバインドする
-                $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
+                // Action buttons
+                $scope.find('button[title="レンダリング"]').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
                     
-                    const promptTextVal = $scope.find('textarea[name="prompt"]').val();
-                    const answerTextText = $answerText.is('textarea, input') ? $answerText.val() : $answerText.html();
-
-                    const renderedPrompt = caseData.render(promptTextVal);
-                    $prompt.val(renderedPrompt);
-
-                    console.log('prompt', renderedPrompt, 'answerText', answerTextText);
+                    const pValue = $prompt.val();
+                    $prompt.val(caseData.render(pValue));
                 });
 
-                $scope.find('button[title="リセット"]').off('click').on('click', function () {
-                    if (!confirm('リセットしますか？')) {
-                        return;
-                    }
+                $scope.find('button[title="リセット"]').on('click', function () {
+                    if (!confirm('リセットしますか？')) return;
+                    const pRaw = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
+                    $prompt.val(window.currentCase ? window.currentCase.render(pRaw) : pRaw);
+                    $custTrouble.val('');
+                    $answerPolicy.val('');
+                    $answerText.is('textarea, input') ? $answerText.val('') : $answerText.html('');
+                });
 
-                    // リセットしたら、手動でレンダリング
-                    $scope.find('textarea[name="prompt"]').val(promptText);
-                    // $answerText.val(''); or .html('');
+                // Auto-save sync (This assumes the parent app listens for input or we manually update activeStep)
+                $scope.find('textarea, [contenteditable]').on('input blur', function() {
+                    const caseData = window.currentCase;
+                    if (!caseData || !caseData.activeStep) return;
+
+                    caseData.activeStep.prompt = $prompt.val();
+                    caseData.activeStep.custTrouble = $custTrouble.val();
+                    caseData.activeStep.answerPolicy = $answerPolicy.val();
+                    caseData.activeStep.answerText = $answerText.is('textarea, input') ? $answerText.val() : $answerText.html();
                 });
             })();
         </script>
-
     </div>
