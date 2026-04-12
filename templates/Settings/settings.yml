@@ -1,5 +1,6 @@
 TeamName: SCIM Messaging Protection
 CompanyName: 日本FooBar株式会社
+CompanyName_S: FooBar
 SectionName: Security ＆ Compliance サポート
 MailList:
   to: # 確認メールの宛名はこの順(自分を除外)

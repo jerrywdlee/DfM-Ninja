@@ -11,9 +11,10 @@
 **フロントエンドのみの SPA**（Single Page Application）です。
 
 - ケース管理・メールテンプレート生成・LLMプロンプト補助などを担う
-- データはすべて **IndexedDB**（`idb-keyval`）に永続化（ localStorage はインデックスと設定のみ）
-- サーバーは不要。GitHub Pages 上で稼働、またはオフライン（`file:///`）でも動作する（ただし、オフライン時は一部機能が制限される）
+- データはすべて **IndexedDB**（`idb-keyval`）に永続化
+- サーバーは不要。GitHub Pages 上で稼働、またはオフライン（`file:///`）でも動作する
 - Bookmarklet 経由で Dynamics 365 ページからケースデータを抽出し、`postMessage` RPC で連携する
+- **v0.6.3+**: バージョン更新通知（UpdateModal）を搭載。既存ユーザーへの案内や新規ウェルカム、マイナーアップデート通知を自動制御する
 
 ---
 
@@ -107,9 +108,9 @@ npm run dev -- --port <PORT>     # カスタムポートで起動
 | `dfm_ninja_settings` | 設定オブジェクト（YAML を JSON パースした結果） |
 | `dfm_ninja_raw_yaml` | 生の YAML 設定文字列 |
 | `dfm_ninja_templates` | アップロード済みテンプレートの配列（HTML は lz-string 圧縮済み） |
-| `dfm_ninja_sys_templates` | システムテンプレートの配列 |
+| `dfm_ninja_sys_templates` | システムテンプレートの配列（`teamsDisclaimer` 等を含む） |
 | `dfm_ninja_parent_domain` | Bookmarklet から受け取った親ウィンドウのドメイン |
-| `dfm_ninja_app_version` | 最後に確認したアプリバージョン（UpdateModal で使用） |
+| `dfm_ninja_app_version` | 最後に確認したアプリバージョン（UpdateModal で使用。現在は `0.6.3`） |
 
 ### IndexedDB（ケースデータ本体）
 
@@ -165,7 +166,7 @@ MP_Answer/
 ```yaml
 id: MP_Answer
 name: Answer
-version: 0.0.29
+version: 0.0.30
 description: ""
 steps:
     - name: LLM連携
@@ -220,10 +221,11 @@ steps:
 1. **`uid`** を使って div の ID を一意にすること（複数ステージが同時にマウントされるため）
 2. **`const $scope = $(divId)`** でスコープを限定し、他のステージのDOM に干渉しないこと
 3. state 読み込みは `window.currentCase?.activeStep` から行う
-4. **auto-save** は `$scope.find('textarea, [contenteditable]').on('input blur', ...)` で `caseData.activeStep.<field>` に書き込む
-5. `div[contenteditable="true"]` の値読み書きには `.html()` を使う（`.val()` は textarea 用）
-6. `.off('click').on('click', ...)` または `.on('click', ...)` でイベントの重複登録を防ぐ
-7. `noscript[data-name="prompt"]` の text は `text().trim().replace(/\n +/g, '\n')` でインデント除去する
+4. **auto-save**: `$scope.find('textarea, input, select, [contenteditable]').on('input change blur', ...)` で `caseData.activeStep.<field>` に書き込む
+5. **初期化順序**: `internalTitle` が `{{currentAction}}` を含む場合、必ず先に `currentAction` をモデルにセットしてからレンダリングすること
+6. `div[contenteditable="true"]` の値読み書きには `.html()` を使う（`.val()` は textarea 用）
+7. `.off('click').on('click', ...)` または `.on('click', ...)` でイベントの重複登録を防ぐ
+8. **2カラムレイアウト**: v0.6 以降の標準。左にプロンプト、右に入力フィールドを配置する
 
 ### LLM プロンプト設計方針（MP_Answer・MP_AddAsk・MP_QuickAck 共通）
 
