@@ -109,6 +109,14 @@
                 const internalTitleText = $scope.find('noscript[data-name="internalTitleText"]').text().trim() || '';
 
                 if (activeStepInitial) {
+                    if (activeStepInitial.currentAction) {
+                        $currentAction.val(activeStepInitial.currentAction);
+                    } else {
+                        const defaultAction = 'Troubleshooting';
+                        $currentAction.val(defaultAction);
+                        activeStepInitial.currentAction = defaultAction;
+                    }
+
                     if (activeStepInitial.emailBodyFinal) {
                         if ($emailBody.is('textarea, input')) $emailBody.val(activeStepInitial.emailBodyFinal);
                         else $emailBody.html(autoLink(activeStepInitial.emailBodyFinal));
@@ -123,9 +131,6 @@
 
                     if (activeStepInitial.internalTitle) $internalTitle.val(activeStepInitial.internalTitle);
                     else if (caseDataInitial) $internalTitle.val(caseDataInitial.render(internalTitleText).trim());
-
-                    if (activeStepInitial.currentAction) $currentAction.val(activeStepInitial.currentAction);
-                    else $currentAction.val('Troubleshooting');
                 }
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
@@ -233,6 +238,15 @@
                             .then(() => window.showToast('Auto Checkbox clicked', 'info'))
                             .catch(e => window.showToast('Auto Checkbox failed', 'error'));
                     }
+                });
+
+                // Auto-save sync
+                $scope.find('textarea, input, select, [contenteditable]').on('input change blur', function () {
+                    if (!caseDataInitial?.activeStep) return;
+                    caseDataInitial.activeStep.emailBodyFinal = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
+                    caseDataInitial.activeStep.dfmCc = $dfmCc.val();
+                    caseDataInitial.activeStep.internalTitle = $internalTitle.val();
+                    caseDataInitial.activeStep.currentAction = $currentAction.val();
                 });
 
             })();

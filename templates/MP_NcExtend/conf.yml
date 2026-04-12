@@ -1,6 +1,6 @@
-id: MP_Strike2
-name: Strike2
-version: 0.0.16
+id: MP_NcExtend
+name: NC延長
+version: 0.0.3
 description: ""
 steps:
     - name: 確認メール

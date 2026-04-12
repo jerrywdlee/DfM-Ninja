@@ -1,5 +1,5 @@
 <% const uid=new Date().getTime(); %>
-    <div id="MP_Strike3_step3-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
+    <div id="MP_NcExtend_step2-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
 
         <!-- Action Buttons -->
         <div class="absolute top-4 right-6 flex gap-1.5 focus-within:ring-0">
@@ -48,10 +48,10 @@
                     <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80 mb-2">Current Action:</h4>
                     <select name="currentAction"
                         class="w-full p-2.5 text-xs font-mono border border-emerald-200 rounded-lg bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all cursor-pointer">
-                        <option value="Troubleshooting">Troubleshooting</option>
+                        <option value="Troubleshooting" selected>Troubleshooting</option>
                         <option value="Pending customer information">Pending customer information</option>
                         <option value="Waiting TL">Waiting TL</option>
-                        <option value="Ready to close" selected>Ready to close</option>
+                        <option value="Ready to close">Ready to close</option>
                     </select>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                 placeholder="FoooBarFoooBarFoooBar" />
         </div>
 
-        <dialog id="MP_Strike3_step3-<%=uid%>-dialog" class="m-auto p-0 rounded-2xl shadow-xl border border-emerald-200 backdrop:bg-slate-800/40 w-[420px] max-w-full focus:outline-none overflow-hidden text-slate-700">
+        <dialog id="MP_Strke1_step2-<%=uid%>-dialog" class="m-auto p-0 rounded-2xl shadow-xl border border-emerald-200 backdrop:bg-slate-800/40 w-[420px] max-w-full focus:outline-none overflow-hidden text-slate-700">
             <!-- Header -->
             <div class="dialog-header flex justify-between items-center px-5 py-3 bg-emerald-100/80 border-b border-emerald-200">
                 <span class="title font-bold text-sm text-emerald-900 tracking-wider"></span>
@@ -76,7 +76,7 @@
                 </form>
             </div>
             <!-- Content -->
-            <div class="dialog-content flex flex-col gap-4 p-5 bg-emerald-50/30" id="MP_Strike3_step3-<%=uid%>-dialog-content">
+            <div class="dialog-content flex flex-col gap-4 p-5 bg-emerald-50/30" id="MP_Strke1_step2-<%=uid%>-dialog-content">
                 <!-- injected via JS -->
             </div>
         </dialog>
@@ -88,12 +88,13 @@
             {{dfmCc}}
         </noscript>
         <noscript data-name="internalTitleText">
-            {{Status}}{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | {{Actor}} | Green | PI: N/A | SE: {{currentNC_L}} | {{currentAction}} | <Ready to Close>
+            {{Status}}{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | {{Actor}} | Green | PI: N/A | SE: {{sendAt_L}} | {{currentAction}} | <NC延長>
         </noscript>
 
         <script>
             (function () {
-                const divId = '#MP_Strike3_step3-<%=uid%>';
+                const divId = '#MP_NcExtend_step2-<%=uid%>';
+                const dialogId = '#MP_NcExtend_step2-<%=uid%>-dialog';
                 const $scope = $(divId);
                 const $emailBody = $scope.find('[name="emailBodyFinal"]');
                 const $dfmCc = $scope.find('input[name="dfmCc"]');
@@ -112,7 +113,7 @@
                     if (activeStepInitial.currentAction) {
                         $currentAction.val(activeStepInitial.currentAction);
                     } else {
-                        const defaultAction = 'Ready to close';
+                        const defaultAction = 'Troubleshooting';
                         $currentAction.val(defaultAction);
                         activeStepInitial.currentAction = defaultAction;
                     }
@@ -139,7 +140,7 @@
                     else $emailBody.html(autoLink(emailBodyText));
                     $dfmCc.val(dfmCcText);
                     $internalTitle.val(internalTitleText);
-                    $currentAction.val('Ready to close');
+                    $currentAction.val('Troubleshooting');
                 });
 
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
@@ -170,7 +171,6 @@
 
                 $scope.find('button[title="Highlight To CC List"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
-                    const dialogId = '#MP_Strike3_step3-<%=uid%>-dialog';
                     const dialog = $(dialogId)[0];
                     const $dialogContent = $scope.find('.dialog-content');
                     const btnTitle = $(this).attr('title') || 'Mailing List';
