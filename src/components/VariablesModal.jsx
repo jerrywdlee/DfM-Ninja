@@ -18,6 +18,9 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
     const [stageVars, setStageVars] = useState([]);
     const [showEmptyStageVars, setShowEmptyStageVars] = useState(false);
 
+    // Case Var State
+    const [showEmptyCaseVars, setShowEmptyCaseVars] = useState(false);
+
     // Initialize Editable Vars & Stage Vars when modal opens
     useEffect(() => {
         if (!isOpen || !activeCase) return;
@@ -81,6 +84,7 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
             setStageVars([]);
         }
         setShowEmptyStageVars(false);
+        setShowEmptyCaseVars(false);
     }, [isOpen, sysTemplates, activeCase, activeCase?.activeStageId]); // re-run on case open
 
     if (!isOpen) return null;
@@ -160,6 +164,39 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
             ? stageVars.slice(0, 2)
             : nonEmptyStageVars;
     const hiddenCount = stageVars.length - visibleStageVars.length;
+
+    // Case Var definitions & filtering logic
+    const caseVarKeys = [
+        { key: 'caseTitle', label: 'ケースのタイトル' },
+        { key: 'caseNum', label: '16桁のケース番号' },
+        { key: 'assignedTo', label: '担当者名' },
+        { key: 'internalTitle', label: '内部用タイトル' },
+        { key: 'custStatement', label: '顧客の申告内容' },
+        { key: 'phoneNum', label: '電話番号' },
+        { key: 'email', label: '顧客のメールアドレス' },
+        { key: 'contactMethod', label: '連絡方法' },
+        { key: 'lastUpdatedAt', label: '最終更新日時' },
+        { key: 'SLA', label: 'SLAステータス' },
+        { key: 'servName', label: 'サービス名' },
+        { key: 'severity', label: '深刻度' },
+        { key: 'statusReason', label: 'ステータス理由' },
+        { key: 'createdAt', label: 'ケース作成日時(ISO)' },
+        { key: 'updatedAt', label: '最終更新日時(ISO)' },
+        { key: 'resolvedAt', label: '解決日時' },
+    ];
+    const caseVars = caseVarKeys.map(({ key, label }) => ({
+        name: key,
+        label,
+        value: activeCase?.[key] != null ? String(activeCase[key]) : '',
+    }));
+    const nonEmptyCaseVars = caseVars.filter(v => v.value.trim().length > 0);
+    const allCaseEmpty = nonEmptyCaseVars.length === 0;
+    const visibleCaseVars = showEmptyCaseVars
+        ? caseVars
+        : allCaseEmpty
+            ? caseVars.slice(0, 2)
+            : nonEmptyCaseVars;
+    const hiddenCaseCount = caseVars.length - visibleCaseVars.length;
 
     const renderCopyButtons = (varName, varValue) => (
         <td className="p-3 w-fit text-center">
@@ -364,6 +401,53 @@ const VariablesModal = ({ isOpen, onClose, activeCase, onUpdateCase, sysTemplate
                                                         ? <><span>🔼</span> 空の変数を隠す</>
                                                         : hiddenCount > 0
                                                             ? <><span>🔽</span> 空の変数をすべて表示 ({hiddenCount} 件)</>
+                                                            : null
+                                                    }
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    {/* Case Var. */}
+                    <section>
+                        <h3 className="text-lg font-bold text-[#146c43] mb-3 flex items-center gap-2 border-b-2 border-[#146c43]/20 pb-1">
+                             Case Var.
+                        </h3>
+                        <div className="bg-white rounded-lg border border-[#a1dfc3] overflow-hidden shadow-sm">
+                            <table className="w-full text-sm">
+                                <tbody>
+                                    {visibleCaseVars.map((v, i) => {
+                                        let valPreview = String(v.value || '').replace(/\s+/g, ' ');
+                                        if (valPreview.length > 20) valPreview = valPreview.substring(0, 20) + '...';
+                                        return (
+                                            <tr key={i} className="border-b border-[#a1dfc3]/30 last:border-none">
+                                                <td className="p-3 w-[45%] truncate">
+                                                    <div className="font-bold text-[#0f5132]">{v.name}</div>
+                                                    <div className="text-[10px] text-[#6aaa85] mt-0.5">{v.label}</div>
+                                                </td>
+                                                <td className="p-3 text-[#4f6f60] truncate max-w-[150px]">
+                                                    {valPreview}
+                                                </td>
+                                                {renderCopyButtons(v.name, v.value)}
+                                            </tr>
+                                        );
+                                    })}
+                                    {/* Toggle row */}
+                                    {caseVars.length > 0 && (
+                                        <tr>
+                                            <td colSpan="3" className="px-3 py-1.5 border-t border-[#a1dfc3]/30">
+                                                <button
+                                                    onClick={() => setShowEmptyCaseVars(v => !v)}
+                                                    className="w-full flex items-center justify-center gap-1.5 text-[11px] text-[#4f6f60] hover:text-[#0f5132] transition-colors py-0.5 rounded hover:bg-[#eafaf1]"
+                                                >
+                                                    {showEmptyCaseVars
+                                                        ? <><span>🔼</span> 空の変数を隠す</>
+                                                        : hiddenCaseCount > 0
+                                                            ? <><span>🔽</span> 空の変数をすべて表示 ({hiddenCaseCount} 件)</>
                                                             : null
                                                     }
                                                 </button>
