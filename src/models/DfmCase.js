@@ -81,6 +81,7 @@ class DfmCase {
     getFormattedSLA() {
         if (!this.SLA || !this.sampledAt) return 'Met';
         const slaStrClean = String(this.SLA).trim();
+        if (slaStrClean === 'Expired') return 'Expired';
         const isValidFormat = /^(\d+\s*[dhms]\s*)+$/i.test(slaStrClean);
         if (!isValidFormat) return 'Met';
 
