@@ -135,11 +135,18 @@
 
                 $scope.find('button[title="リセット"]').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
-                    const pRaw = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
-                    $prompt.val(window.currentCase ? window.currentCase.render(pRaw) : pRaw);
+                    const caseData = window.currentCase;
+                    $prompt.val(promptTextRaw);
                     $custTrouble.val('');
                     $answerPolicy.val('');
                     $answerText.is('textarea, input') ? $answerText.val('') : $answerText.html('');
+
+                    if (caseData && caseData.activeStep) {
+                        caseData.activeStep.prompt = promptTextRaw;
+                        caseData.activeStep.custTrouble = '';
+                        caseData.activeStep.answerPolicy = '';
+                        caseData.activeStep.answerText = '';
+                    }
                 });
 
                 // Auto-save sync (This assumes the parent app listens for input or we manually update activeStep)

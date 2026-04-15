@@ -182,11 +182,20 @@
 
             $scope.find('button[title="リセット"]').off('click').on('click', function () {
                 if (!confirm('リセットしますか？')) return;
+                const caseData = window.currentCase;
                 $askContent.val(askContentText);
-                $askPrompt.val(window.currentCase ? window.currentCase.render(askPromptText) : askPromptText);
+                $askPrompt.val(askPromptText);
                 $custTrouble.val('');
                 $answerPolicy.val('');
                 $askResult.is('textarea, input') ? $askResult.val(askResultText) : $askResult.html(askResultText);
+
+                if (caseData && caseData.activeStep) {
+                    caseData.activeStep.askContent = askContentText;
+                    caseData.activeStep.askPrompt = askPromptText;
+                    caseData.activeStep.custTrouble = '';
+                    caseData.activeStep.answerPolicy = '';
+                    caseData.activeStep.askResult = $askResult.is('textarea, input') ? $askResult.val() : $askResult.html();
+                }
             });
 
             // Auto-save sync
