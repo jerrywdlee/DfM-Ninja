@@ -8,8 +8,10 @@
                 class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
             <button title="レンダリング"
                 class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
+            <button title="メール文面コピー"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">✉️</button>
             <button title="メール送信"
-                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">📨</button>
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">📬</button>
         </div>
 
         <!-- Main Grid -->
@@ -266,41 +268,57 @@
                     $scope.find('input[name="emailCc"]').val(currentEmailCcText);
                 });
 
-                $scope.find('button[title="メール送信"]').off('click').on('click', async function () {
-                    const emailHead = $scope.find('textarea[name="emailHead"]').val();
-                    const emailBody = $scope.find('textarea[name="emailBody"]').val();
-                    const emailTo = $scope.find('input[name="emailTo"]').val();
-                    const emailCc = $scope.find('input[name="emailCc"]').val();
-                    const emailSubject = $scope.find('input[name="emailSubject"]').val();
+                $scope.find('button[title="メール文面コピー"]').off('click').on('click', async function () {
+                    const cleanHtml = (html) => {
+                        return html.replace(/<br\s*\/?>/gi, '\n')
+                                   .replace(/<div[^>]*>/gi, '\n')
+                                   .replace(/<\/div>/gi, '')
+                                   .replace(/<p[^>]*>/gi, '\n')
+                                   .replace(/<\/p>/gi, '')
+                                   .replace(/&nbsp;/gi, ' ')
+                                   .trim();
+                    };
+
+                    const emailHeadContent = $emailHead.is('textarea, input') ? $emailHead.val() : cleanHtml($emailHead.html());
+                    const emailBodyContent = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
+
+                    const separator = '\n\n========================================\n\n';
+                    let emailContentHTML = emailHeadContent + separator + emailBodyContent;
+                    emailContentHTML = emailContentHTML.replace(/\r?\n|\r/g, '<br>');
+                    
+                    try {
+                        const blobHTML = new Blob([emailContentHTML], { type: 'text/html' });
+                        
+                        const tmpDiv = document.createElement('div');
+                        tmpDiv.innerHTML = emailHeadContent + separator + emailBodyContent;
+                        let blockText = tmpDiv.innerText;
+                        blockText = blockText.replace(/^$/gm, ' ');
+                        
+                        const blobText = new Blob([blockText], { type: 'text/plain' });
+                        const data = [new ClipboardItem({
+                            'text/html': blobHTML,
+                            'text/plain': blobText
+                        })];
+
+                        await navigator.clipboard.write(data);
+                        window.showToast('メール文面をコピーしました！', 'success');
+                    } catch (err) {
+                        console.error('Failed to copy: ', err);
+                        window.showToast('コピーに失敗しました。', 'error');
+                    }
+                });
+
+                $scope.find('button[title="メール送信"]').off('click').on('click', function () {
+                    const emailHead = $emailHead.val();
+                    const emailBody = $emailBody.val();
+                    const emailTo = $emailTo.val();
+                    const emailCc = $emailCc.val();
+                    const emailSubject = $emailSubject.val();
 
                     const separator = '\n\n========================================\n\n';
                     const emailContent = `${emailHead}${separator}${emailBody}`;
                     const emailUrl = `mailto:${emailTo}?cc=${emailCc}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailContent)}`;
-                    
-                    // mailtoの文字数制限(1MB)対策
-                    if (emailUrl.length > 1000000) {
-                        let emailContentHTML = emailContent.replace(/\r?\n|\r/g, '<br>');
-                        try {
-                            const blobHTML = new Blob([emailContentHTML], { type: 'text/html' });
-                            const blobText = new Blob([emailContent], { type: 'text/plain' });
-                            const data = [new ClipboardItem({
-                                'text/html': blobHTML,
-                                'text/plain': blobText
-                            })];
-                            await navigator.clipboard.write(data);
-                            window.showToast('メールURLが長すぎるため、文面をリッチテキストとして直接コピーしました', 'success');
-                        } catch (err) {
-                            try {
-                                await navigator.clipboard.writeText(emailContent);
-                                window.showToast('メールURLが長すぎるため、文面をプレーンテキストとして直接コピーしました', 'success');
-                            } catch (err2) {
-                                console.error('Failed to copy: ', err2);
-                                window.showToast('メールURLが長すぎ、さらにコピーにも失敗しました', 'error');
-                            }
-                        }
-                    } else {
-                        window.open(emailUrl, '_blank');
-                    }
+                    window.open(emailUrl, '_blank');
                 });
             })();
         </script>
