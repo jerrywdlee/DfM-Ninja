@@ -79,7 +79,8 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                 doc.querySelectorAll('noscript[data-name]').forEach(ns => {
                     const name = ns.getAttribute('data-name');
                     if (!savedPhrases[name]) {
-                        savedPhrases[name] = ns.textContent.trim().replace(/\\n +/g, '\\n');
+                        savedPhrases[name] = ns.textContent.trim().replace(/\n[ |\t]+/g, '\n');
+                        console.log(name, savedPhrases[name]);
                         anyNew = true;
                     }
                 });

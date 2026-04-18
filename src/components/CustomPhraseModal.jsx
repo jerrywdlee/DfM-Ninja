@@ -41,7 +41,7 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
             const doc = parser.parseFromString(html, 'text/html');
             const noscript = doc.querySelector(`noscript[data-name="${selectedPhrase.id}"]`);
             if (noscript) {
-                originalText = noscript.textContent.trim().replace(/\\n +/g, '\\n');
+                originalText = noscript.textContent.trim().replace(/\n[ |\t]+/g, '\n');
             }
         });
 
@@ -68,7 +68,7 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
             if (!availablePhrases.find(p => p.id === id)) {
                 availablePhrases.push({
                     id,
-                    defaultText: ns.textContent.trim().replace(/\\n +/g, '\\n')
+                    defaultText: ns.textContent.trim().replace(/\n[ |\t]+/g, '\n')
                 });
             }
         });

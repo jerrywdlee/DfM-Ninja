@@ -55,7 +55,7 @@
                 const $detailConfirm = $scope.find('textarea[name="detailConfirm"]');
                 const templateId = 'MP_QuickAck';
                 const getRawText = (name) => {
-                    const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\\n +/g, '\\n') || '';
+                    const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\n[ |\t]+/g, '\n') || '';
                     return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
                 };
 
