@@ -19,6 +19,21 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
         }
     }, [isOpen, template])
 
+    // Shortcut for Save (Ctrl+S / Cmd+S)
+    useEffect(() => {
+        if (!isOpen || view !== 'edit') return;
+
+        const handleGlobalKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }, [isOpen, view, editValue, phrases, selectedPhrase]);
+
     if (!isOpen || !template) return null
 
     const handleSave = () => {
@@ -55,6 +70,14 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
         }
     }
 
+    const handleResetAll = () => {
+        if (!confirm('このテンプレートのすべてのカスタム定型文をリセットして初期状態に戻しますか？')) return;
+        localStorage.removeItem(`dfm_ninja_custom_phrase_${template.id}`);
+        setPhrases({});
+        showToast('All custom phrases reset to default', 'info');
+        if (view === 'edit') setView('list');
+    }
+
     // Extract all available phrases from all steps for the list view
     const availablePhrases = [];
     template.steps.forEach(step => {
@@ -87,7 +110,23 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
                             <>[ <span className="text-orange-500">{selectedPhrase.id}</span> ] - {template.id}</>
                         )}
                     </h3>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">✕</button>
+                    <div className="flex items-center gap-3">
+                        {view === 'list' && (
+                            <button 
+                                onClick={handleResetAll} 
+                                className="text-slate-400 hover:text-orange-400 transition-colors p-1 rounded-lg hover:bg-slate-800"
+                                title="Reset All Phrases"
+                            >
+                                <span className="text-xl">🔁</span>
+                            </button>
+                        )}
+                        <button 
+                            onClick={view === 'edit' ? () => setView('list') : onClose} 
+                            className="text-slate-400 hover:text-white transition-colors p-1"
+                        >
+                            ✕
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-900 custom-scrollbar flex flex-col">
@@ -153,8 +192,9 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
                                     <button
                                         onClick={handleSave}
                                         className="px-8 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-bold text-sm transition-all active:scale-95 shadow-lg shadow-orange-900/20"
+                                        title="Save Changes (Ctrl+S / Cmd+S)"
                                     >
-                                        Save
+                                        Save <span className="text-[10px] opacity-70 font-normal ml-1">(Ctrl+S)</span>
                                     </button>
                                 </div>
                             </div>
