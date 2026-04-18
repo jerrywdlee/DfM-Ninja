@@ -7,11 +7,24 @@
     const openNinjaWindow = () => {
         let ninjaWindow = window.open("", windowName);
 
-        if (!ninjaWindow || ninjaWindow.location.href === "about:blank") {
-            // Not open yet or connection lost, open fresh
+        if (!ninjaWindow) {
+            // Popup blocked or failed, open fresh
             ninjaWindow = window.open(spaUrl, windowName);
-        } else {
-            // Already open, just focus
+            return;
+        }
+
+        try {
+            // If we can read location.href, we're same-origin or about:blank
+            if (ninjaWindow.location.href === "about:blank") {
+                // Not open yet, open fresh
+                ninjaWindow = window.open(spaUrl, windowName);
+            } else {
+                // Same-origin and already loaded, just focus
+                ninjaWindow.focus();
+            }
+        } catch (e) {
+            // SecurityError: cross-origin window already exists with the Ninja SPA
+            // This means the child window is alive and loaded — just focus it
             ninjaWindow.focus();
         }
     };
