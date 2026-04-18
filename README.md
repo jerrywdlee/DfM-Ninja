@@ -22,6 +22,8 @@ The Bookmarklet injects a Ninja button into Dynamics 365, which extracts case me
 - **2-Column Layout**: Standardized workflow with Prompts/Guidelines on the left and Input fields on the right.
 - **Auto-Save**: All progress is automatically persisted to IndexedDB as you type, preventing data loss during navigation.
 - **Dynamic Content**: Rich template engine supporting EJS logic for complex conditional formatting.
+- **Custom Template Phrases**: Edit and persist template text (like LLM prompts or email bodies) specifically for each template set. These edits are saved to `localStorage` and persist across template updates.
+- **Dynamic Reset**: The "Reset" button in templates now fetches the latest custom phrases from storage, ensuring consistency between user edits and template behavior.
 
 ### 🚀 Update & Version Control
 Integrated notification system that intelligently handles:

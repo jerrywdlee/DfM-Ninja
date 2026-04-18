@@ -78,9 +78,15 @@
             const $custInfoPrompt = $scope.find('textarea[name="custInfoPrompt"]');
             const $replyContent = $scope.find('textarea[name="replyContent"]');
 
-            const custInfoText = $scope.find('noscript[data-name="custInfo"]').text().trim().replace(/\n +/g, '\n');
-            const custInfoPromptText = $scope.find('noscript[data-name="custInfoPrompt"]').text().trim().replace(/\n +/g, '\n');
-            const replyContentText = $scope.find('noscript[data-name="replyContent"]').text().trim().replace(/\n +/g, '\n');
+            const templateId = 'MP_Confirm';
+            const getRawText = (name) => {
+                const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\\n +/g, '\\n') || '';
+                return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
+            };
+
+            const custInfoText = getRawText('custInfo');
+            const custInfoPromptText = getRawText('custInfoPrompt');
+            const replyContentText = getRawText('replyContent');
 
             const caseDataInitial = window.currentCase;
             const activeStepInitial = caseDataInitial?.activeStep;
@@ -123,12 +129,14 @@
             });
 
             $scope.find('button[title="リセット"]').off('click').on('click', function () {
-                if (!confirm('リセットしますか？')) {
-                    return;
-                }
-                $custInfo.val(custInfoText);
-                $custInfoPrompt.val(custInfoPromptText);
-                $replyContent.val(replyContentText);
+                if (!confirm('リセットしますか？')) return;
+                const currentCustInfoText = getRawText('custInfo');
+                const currentCustInfoPromptText = getRawText('custInfoPrompt');
+                const currentReplyContentText = getRawText('replyContent');
+                
+                $custInfo.val(currentCustInfoText);
+                $custInfoPrompt.val(currentCustInfoPromptText);
+                $replyContent.val(currentReplyContentText);
             });
         })();
     </script>

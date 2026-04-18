@@ -101,7 +101,13 @@
                 const $custTrouble = $scope.find('textarea[name="custTrouble"]');
                 const $answerPolicy = $scope.find('textarea[name="answerPolicy"]');
                 const $answerText = $scope.find('[name="answerText"]');
-                const promptTextRaw = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
+                const templateId = 'MP_Answer';
+                const getRawText = (name) => {
+                    const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\\n +/g, '\\n') || '';
+                    return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
+                };
+
+                const promptTextRaw = getRawText('prompt');
 
                 // Load initial data
                 {
@@ -135,14 +141,15 @@
 
                 $scope.find('button[title="リセット"]').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
+                    const promptTextCurrent = getRawText('prompt');
                     const caseData = window.currentCase;
-                    $prompt.val(promptTextRaw);
+                    $prompt.val(promptTextCurrent);
                     $custTrouble.val('');
                     $answerPolicy.val('');
                     $answerText.is('textarea, input') ? $answerText.val('') : $answerText.html('');
 
                     if (caseData && caseData.activeStep) {
-                        caseData.activeStep.prompt = promptTextRaw;
+                        caseData.activeStep.prompt = promptTextCurrent;
                         caseData.activeStep.custTrouble = '';
                         caseData.activeStep.answerPolicy = '';
                         caseData.activeStep.answerText = '';

@@ -53,7 +53,13 @@
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $prompt = $scope.find('textarea[name="prompt"]');
                 const $detailConfirm = $scope.find('textarea[name="detailConfirm"]');
-                const promptText = $scope.find('noscript[data-name="prompt"]').text().trim().replace(/\n +/g, '\n');
+                const templateId = 'MP_QuickAck';
+                const getRawText = (name) => {
+                    const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\\n +/g, '\\n') || '';
+                    return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
+                };
+
+                const promptText = getRawText('prompt');
 
                 {
                     const caseDataInitial = window.currentCase;
@@ -84,13 +90,9 @@
                 });
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
-                    if (!confirm('リセットしますか？')) {
-                        return;
-                    }
-
-                    // リセットしたら、手動でレンダリング
-                    $scope.find('textarea[name="prompt"]').val(promptText);
-                    // $scope.find('textarea[name="detailConfirm"]').val('');
+                    if (!confirm('リセットしますか？')) return;
+                    const currentPromptText = getRawText('prompt');
+                    $scope.find('textarea[name="prompt"]').val(currentPromptText);
                 });
             })();
         </script>

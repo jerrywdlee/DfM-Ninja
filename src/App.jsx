@@ -7,6 +7,7 @@ import NewCaseModal from './components/NewCaseModal'
 import ToastContainer from './components/ToastContainer'
 import VariablesModal from './components/VariablesModal'
 import SearchModal from './components/SearchModal'
+import CustomPhraseModal from './components/CustomPhraseModal'
 import UpdateModal, { checkForUpdate } from './components/UpdateModal'
 import DfmCase from './models/DfmCase'
 import { useDfmBridge } from './hooks/useDfmBridge'
@@ -122,6 +123,8 @@ const App = () => {
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false)
   const [isVariablesModalOpen, setIsVariablesModalOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isCustomPhraseOpen, setIsCustomPhraseOpen] = useState(false)
+  const [phraseTemplate, setPhraseTemplate] = useState(null)
   const [isLogoHovered, setIsLogoHovered] = useState(false)
   const [updateInfo, setUpdateInfo] = useState(() => checkForUpdate())
   const [settings, setSettings] = useState(() => {
@@ -174,6 +177,23 @@ const App = () => {
     window.execDfM = execDfM;
     window.dfmScripts = dfmScripts;
     window.showToast = showToast;
+
+    // Helper to get customized template text
+    window.getTemplateText = (templateId, dataName, defaultText) => {
+        const saved = localStorage.getItem(`dfm_ninja_custom_phrase_${templateId}`);
+        if (saved) {
+            try {
+                const phrases = JSON.parse(saved);
+                if (phrases[dataName]) return phrases[dataName];
+            } catch (e) { console.error('Failed to parse custom phrases', e); }
+        }
+        return defaultText;
+    };
+
+    window.openCustomPhraseModal = (template) => {
+        setPhraseTemplate(template);
+        setIsCustomPhraseOpen(true);
+    };
 
     // Global shortcut prevention (Ctrl+S / Cmd+S) + Search (Ctrl+P / Cmd+P)
     const preventSave = (e) => {
@@ -605,6 +625,13 @@ const App = () => {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         cases={cases}
+      />
+      <CustomPhraseModal
+        isOpen={isCustomPhraseOpen}
+        onClose={() => setIsCustomPhraseOpen(false)}
+        template={phraseTemplate}
+        showToast={showToast}
+        onOpenVariables={() => setIsVariablesModalOpen(true)}
       />
       <UpdateModal
         isOpen={!!updateInfo}

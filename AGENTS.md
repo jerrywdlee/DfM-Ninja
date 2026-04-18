@@ -111,6 +111,7 @@ npm run dev -- --port <PORT>     # カスタムポートで起動
 | `dfm_ninja_sys_templates` | システムテンプレートの配列（`teamsDisclaimer` 等を含む） |
 | `dfm_ninja_parent_domain` | Bookmarklet から受け取った親ウィンドウのドメイン |
 | `dfm_ninja_app_version` | 最後に確認したアプリバージョン（UpdateModal で使用。現在は `0.6.3`） |
+| `dfm_ninja_custom_phrase_<id>` | テンプレート別のカスタム定型文（noscript の内容を上書き保存） |
 
 ### IndexedDB（ケースデータ本体）
 

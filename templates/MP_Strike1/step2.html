@@ -105,9 +105,15 @@
                 const autoLink = window.autoLinkUrls || ((text) => text);
                 const activeStepInitial = caseDataInitial?.activeStep;
 
-                const emailBodyText = $scope.find('noscript[data-name="emailBodyText"]').text().trim().replace(/\\n +/g, '\\n') || '';
-                const dfmCcText = $scope.find('noscript[data-name="dfmCcText"]').text().trim() || '';
-                const internalTitleText = $scope.find('noscript[data-name="internalTitleText"]').text().trim() || '';
+                const templateId = 'MP_Strike1';
+                const getRawText = (name) => {
+                    const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\\n +/g, '\\n') || '';
+                    return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
+                };
+
+                const emailBodyText = getRawText('emailBodyText');
+                const dfmCcText = getRawText('dfmCcText');
+                const internalTitleText = getRawText('internalTitleText');
 
                 if (activeStepInitial) {
                     if (activeStepInitial.currentAction) {
@@ -136,10 +142,14 @@
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
-                    if ($emailBody.is('textarea, input')) $emailBody.val(emailBodyText);
-                    else $emailBody.html(autoLink(emailBodyText));
-                    $dfmCc.val(dfmCcText);
-                    $internalTitle.val(internalTitleText);
+                    const currentEmailBodyText = getRawText('emailBodyText');
+                    const currentInternalTitleText = getRawText('internalTitleText');
+                    const currentDfmCcText = getRawText('dfmCcText');
+
+                    if ($emailBody.is('textarea, input')) $emailBody.val(currentEmailBodyText);
+                    else $emailBody.html(autoLink(currentEmailBodyText));
+                    $dfmCc.val(currentDfmCcText);
+                    $internalTitle.val(currentInternalTitleText);
                     $currentAction.val('Waiting TL');
                 });
 

@@ -150,9 +150,15 @@
                 const $closeRequest = $scope.find('textarea[name="closeRequest"]');
                 const $closeTypeRadios = $scope.find('input[name="closeType"]');
 
-                const caseSummaryPromptText = $scope.find('noscript[data-name="caseSummaryPrompt"]').text().trim().replace(/\n +/g, '\n');
-                const scrPromptText = $scope.find('noscript[data-name="scrPrompt"]').text().trim().replace(/\n +/g, '\n');
-                const closeRequestText = $scope.find('noscript[data-name="closeRequest"]').text().trim().replace(/\n +/g, '\n');
+                const templateId = 'MP_Strike3';
+                const getRawText = (name) => {
+                    const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\\n +/g, '\\n') || '';
+                    return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
+                };
+
+                const caseSummaryPromptText = getRawText('caseSummaryPrompt');
+                const scrPromptText = getRawText('scrPrompt');
+                const closeRequestText = getRawText('closeRequest');
 
                 const caseDataInitial = window.currentCase;
                 const activeStepInitial = caseDataInitial?.activeStep;
@@ -200,13 +206,14 @@
                 });
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
-                    if (!confirm('リセットしますか？')) {
-                        return;
-                    }
+                    if (!confirm('リセットしますか？')) return;
+                    const currentCaseSummaryPromptText = getRawText('caseSummaryPrompt');
+                    const currentScrPromptText = getRawText('scrPrompt');
+                    const currentCloseRequestText = getRawText('closeRequest');
 
-                    $caseSummaryPrompt.val(caseSummaryPromptText);
-                    $scrPrompt.val(scrPromptText);
-                    $closeRequest.val(closeRequestText);
+                    $caseSummaryPrompt.val(currentCaseSummaryPromptText);
+                    $scrPrompt.val(currentScrPromptText);
+                    $closeRequest.val(currentCloseRequestText);
 
                     $scope.find('input[name="closeType"][value="strike3"]').prop('checked', true);
                 });

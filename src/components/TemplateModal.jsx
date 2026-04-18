@@ -62,6 +62,32 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                 steps: richSteps
             }
 
+            // 3. Merge Custom Phrases
+            const customPhraseKey = `dfm_ninja_custom_phrase_${templateData.id}`;
+            let savedPhrases = {};
+            const savedJson = localStorage.getItem(customPhraseKey);
+            if (savedJson) {
+                try { savedPhrases = JSON.parse(savedJson); } catch (e) {}
+            }
+
+            const parser = new DOMParser();
+            let anyNew = false;
+            for (const step of richSteps) {
+                if (!step.html) continue;
+                const html = LZString.decompressFromUTF16(step.html);
+                const doc = parser.parseFromString(html, 'text/html');
+                doc.querySelectorAll('noscript[data-name]').forEach(ns => {
+                    const name = ns.getAttribute('data-name');
+                    if (!savedPhrases[name]) {
+                        savedPhrases[name] = ns.textContent.trim().replace(/\\n +/g, '\\n');
+                        anyNew = true;
+                    }
+                });
+            }
+            if (anyNew) {
+                localStorage.setItem(customPhraseKey, JSON.stringify(savedPhrases));
+            }
+
             const existingIndex = templates.findIndex(t => t.id === templateData.id)
             if (existingIndex !== -1) {
                 const existingTemp = templates[existingIndex]
@@ -131,6 +157,19 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                                         </div>
                                         <div className="text-xs text-slate-500 mt-1">
                                             {template.steps?.length || 0} steps included
+                                        </div>
+                                        <div className="mt-2 group-hover:translate-x-1 transition-transform">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (window.openCustomPhraseModal) {
+                                                        window.openCustomPhraseModal(template);
+                                                    }
+                                                }}
+                                                className="text-xs text-orange-400/80 hover:text-orange-400 underline decoration-orange-400/30 underline-offset-4 flex items-center gap-1.5 font-medium"
+                                            >
+                                                Edit Custom Phrases 🔗
+                                            </button>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-center gap-1 border-l border-slate-700 pl-3 ml-2">

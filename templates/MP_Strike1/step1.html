@@ -169,12 +169,18 @@
                 const $emailSubject = $scope.find('input[name="emailSubject"]');
                 const $reviewRequest = $scope.find('textarea[name="reviewRequest"]');
 
-                const emailHeadText = $scope.find('noscript[data-name="emailHead"]').text().trim().replace(/\n +/g, '\n');
-                const emailBodyText = $scope.find('noscript[data-name="emailBody"]').text().trim().replace(/\n +/g, '\n');
-                const emailSubjectText = $scope.find('noscript[data-name="emailSubject"]').text().trim().replace(/\n +/g, '\n');
-                const emailToText = $scope.find('noscript[data-name="emailTo"]').text().trim().replace(/\n +/g, '\n');
-                const emailCcText = $scope.find('noscript[data-name="emailCc"]').text().trim().replace(/\n +/g, '\n');
-                const reviewRequestText = $scope.find('noscript[data-name="reviewRequest"]').text().trim().replace(/\n +/g, '\n');
+                const templateId = 'MP_Strike1';
+                const getRawText = (name) => {
+                    const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\\n +/g, '\\n') || '';
+                    return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
+                };
+
+                const emailHeadText = getRawText('emailHead');
+                const emailBodyText = getRawText('emailBody');
+                const emailSubjectText = getRawText('emailSubject');
+                const emailToText = getRawText('emailTo');
+                const emailCcText = getRawText('emailCc');
+                const reviewRequestText = getRawText('reviewRequest');
 
                 const caseDataInitial = window.currentCase;
                 const autoLink = window.autoLinkUrls || ((text) => text);
@@ -244,16 +250,20 @@
                 });
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
-                    if (!confirm('リセットしますか？')) {
-                        return;
-                    }
+                    if (!confirm('リセットしますか？')) return;
+                    const currentEmailHeadText = getRawText('emailHead');
+                    const currentEmailBodyText = getRawText('emailBody');
+                    const currentEmailSubjectText = getRawText('emailSubject');
+                    const currentReviewRequestText = getRawText('reviewRequest');
+                    const currentEmailToText = getRawText('emailTo');
+                    const currentEmailCcText = getRawText('emailCc');
 
-                    if ($emailHead.is('textarea, input')) $emailHead.val(emailHeadText); else $emailHead.html(autoLink(emailHeadText));
-                    if ($emailBody.is('textarea, input')) $emailBody.val(emailBodyText); else $emailBody.html(autoLink(emailBodyText));
-                    $scope.find('input[name="emailSubject"]').val(emailSubjectText);
-                    $scope.find('textarea[name="reviewRequest"]').val(reviewRequestText);
-                    $scope.find('input[name="emailTo"]').val(emailToText);
-                    $scope.find('input[name="emailCc"]').val(emailCcText);
+                    if ($emailHead.is('textarea, input')) $emailHead.val(currentEmailHeadText); else $emailHead.html(autoLink(currentEmailHeadText));
+                    if ($emailBody.is('textarea, input')) $emailBody.val(currentEmailBodyText); else $emailBody.html(autoLink(currentEmailBodyText));
+                    $scope.find('input[name="emailSubject"]').val(currentEmailSubjectText);
+                    $scope.find('textarea[name="reviewRequest"]').val(currentReviewRequestText);
+                    $scope.find('input[name="emailTo"]').val(currentEmailToText);
+                    $scope.find('input[name="emailCc"]').val(currentEmailCcText);
                 });
 
                 $scope.find('button[title="メール文面コピー"]').off('click').on('click', async function () {
