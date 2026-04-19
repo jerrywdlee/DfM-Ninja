@@ -15,6 +15,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
     const fileInputRef = useRef(null)
     const importInputRef = useRef(null)
     const importTemplatesRef = useRef(null)
+    const importSettingsRef = useRef(null)
     const bookmarkletAnchorRef = useRef(null)
     const [storageUsage, setStorageUsage] = useState({ local: 0, idb: 0, quota: 0 })
 
@@ -455,6 +456,100 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         }
     };;
 
+    const handleExportSettings = async () => {
+        try {
+            const zip = new JSZip();
+
+            // 1. Export Settings YAML from localStorage
+            const settingsYaml = localStorage.getItem('dfm_ninja_raw_yaml');
+            if (settingsYaml) {
+                zip.file('settings.yml', settingsYaml);
+            }
+
+            // 2. Export all custom phrase entries
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('dfm_ninja_custom_phrase_')) {
+                    const templateId = key.replace('dfm_ninja_custom_phrase_', '');
+                    const value = localStorage.getItem(key);
+                    zip.file(`CustomPhrases_${templateId}.json`, value);
+                }
+            }
+
+            if (Object.keys(zip.files).length === 0) {
+                showToast('エクスポートするデータがありません。', 'error');
+                return;
+            }
+
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const filename = `DfM-Ninja_Settings_${yyyy}${mm}${dd}.zip`;
+
+            const content = await zip.generateAsync({
+                type: 'blob',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 6 }
+            });
+
+            const url = URL.createObjectURL(content);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`設定をエクスポートしました: ${filename}`, 'success');
+        } catch (e) {
+            console.error(e);
+            showToast('設定のエクスポートに失敗しました: ' + e.message, 'error');
+        }
+    };
+
+    const handleImportSettings = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!confirm('設定ファイルを取り込みますか？\n（Settings.yml および カスタム定型文が上書きされます）')) {
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            const zip = await JSZip.loadAsync(file);
+            let importedCount = 0;
+
+            // 1. Import settings.yml
+            const settingsFile = zip.file('settings.yml');
+            if (settingsFile) {
+                const yamlText = (await settingsFile.async('string')).trim();
+                localStorage.setItem('dfm_ninja_raw_yaml', yamlText);
+                setCode(yamlText);
+                importedCount++;
+            }
+
+            // 2. Import custom phrase files
+            const phraseFiles = Object.keys(zip.files).filter(name => name.startsWith('CustomPhrases_') && name.endsWith('.json'));
+            for (const filename of phraseFiles) {
+                const content = await zip.files[filename].async('string');
+                const templateId = filename.replace('CustomPhrases_', '').replace('.json', '');
+                localStorage.setItem(`dfm_ninja_custom_phrase_${templateId}`, content);
+                importedCount++;
+            }
+
+            if (importedCount === 0) {
+                showToast('有効な設定ファイルが見つかりませんでした。', 'error');
+            } else {
+                showToast(`${importedCount} 件の設定を取り込みました。ページをリロードして反映してください。`, 'success');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('設定の取り込みに失敗しました: ' + err.message, 'error');
+        } finally {
+            e.target.value = '';
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-xl shadow-2xl flex flex-col max-h-[90vh] relative">
@@ -642,6 +737,19 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                         </div>
 
                         <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
+                            <h4 className="text-lg font-bold text-slate-200 mb-2">Export Settings</h4>
+                            <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
+                                Settings.yml およびすべてのカスタム定型文を zip 形式でダウンロードします。
+                            </p>
+                            <button
+                                onClick={handleExportSettings}
+                                className="px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-violet-900/20 transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                📦 Export Settings
+                            </button>
+                        </div>
+
+                        <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
                             <h4 className="text-lg font-bold text-slate-200 mb-2">Import Data</h4>
                             <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
                                 バックアップとしてエクスポートされたZIPファイルを取り込みます。
@@ -679,6 +787,26 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                                 className="px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-teal-900/20 transition-all active:scale-95 flex items-center gap-2"
                             >
                                 📥 Import Templates
+                            </button>
+                        </div>
+
+                        <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
+                            <h4 className="text-lg font-bold text-slate-200 mb-2">Import Settings</h4>
+                            <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
+                                エクスポートした Settings.yml およびカスタム定型文の zip を取り込みます。既存のデータは<strong>上書き</strong>されます。
+                            </p>
+                            <input 
+                                type="file" 
+                                accept=".zip"
+                                ref={importSettingsRef}
+                                onChange={handleImportSettings}
+                                className="hidden"
+                            />
+                            <button
+                                onClick={() => importSettingsRef.current?.click()}
+                                className="px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-violet-900/20 transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                📥 Import Settings
                             </button>
                         </div>
 
