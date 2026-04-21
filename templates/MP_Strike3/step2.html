@@ -87,9 +87,6 @@
             [TL review][MP][{{Lic_L}}] {{caseNum}} {{caseTitle}}
         </noscript>
 
-        <noscript data-name="internalTitleText">
-            S{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | CX | Green | PI: N/A | SE: {{sendAt_L}} | Waiting TL | <Strike3>
-        </noscript>
         <noscript data-name="emailHead">
             {{mailToNames}}
 
@@ -218,7 +215,6 @@
                 const emailToText = getRawText('emailTo');
                 const emailCcText = getRawText('emailCc');
                 const reviewRequestText = getRawText('reviewRequest');
-                const internalTitleText = getRawText('internalTitleText');
 
                 const caseDataInitial = window.currentCase;
                 const activeStepInitial = caseDataInitial?.activeStep;

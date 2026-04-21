@@ -1,7 +1,7 @@
 ---
 id: fileUpload
-title: ファイル添付用
-version: 1.0.1
+title: DTM Upload サイトのご案内
+version: 1.0.2
 variables:
   - fileUploadUrl
 ---

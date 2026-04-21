@@ -49,9 +49,10 @@
                     <select name="currentAction"
                         class="w-full p-2.5 text-xs font-mono border border-emerald-200 rounded-lg bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all cursor-pointer">
                         <option value="Troubleshooting">Troubleshooting</option>
-                        <option value="Pending customer information">Pending customer information</option>
-                        <option value="Waiting TL">Waiting TL</option>
-                        <option value="Ready to close">Ready to close</option>
+                        <option value="Pending cust info (Wait Data)">Pending cust info (Wait Data)</option>
+                        <option value="Pending Cust. Response">Pending Cust. Response</option>
+                        <option value="Wait For Cust. Confirm">Wait For Cust. Confirm</option>
+                        <option value="Mitigated (Close)">Mitigated (Close)</option>
                     </select>
                 </div>
             </div>
@@ -122,10 +123,10 @@
                     if (activeStepInitial.currentAction) {
                         $currentAction.val(activeStepInitial.currentAction);
                     } else {
-                        // Conditional default: askResult (from step1) exists => Waiting TL, else => Troubleshooting
+                        // Conditional default: askResult (from step1) exists => Pending Cust. Response, else => Troubleshooting
                         const stageCtx = caseDataInitial?.activeStageContext;
                         const hasAskResult = !!stageCtx?.askResult?.trim();
-                        const defaultAction = hasAskResult ? 'Waiting TL' : 'Troubleshooting';
+                        const defaultAction = hasAskResult ? 'Pending Cust. Response' : 'Troubleshooting';
                         $currentAction.val(defaultAction);
                         activeStepInitial.currentAction = defaultAction;
                     }

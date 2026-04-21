@@ -49,9 +49,10 @@
                     <select name="currentAction"
                         class="w-full p-2.5 text-xs font-mono border border-emerald-200 rounded-lg bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all cursor-pointer">
                         <option value="Troubleshooting">Troubleshooting</option>
-                        <option value="Pending customer information">Pending customer information</option>
-                        <option value="Waiting TL">Waiting TL</option>
-                        <option value="Ready to close" selected>Ready to close</option>
+                        <option value="Pending cust info (Wait Data)">Pending cust info (Wait Data)</option>
+                        <option value="Pending Cust. Response">Pending Cust. Response</option>
+                        <option value="Wait For Cust. Confirm">Wait For Cust. Confirm</option>
+                        <option value="Mitigated (Close)" selected>Mitigated (Close)</option>
                     </select>
                 </div>
             </div>
@@ -88,7 +89,7 @@
             {{dfmCc}}
         </noscript>
         <noscript data-name="internalTitleText">
-            {{Status}}{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | {{Actor}} | Green | PI: N/A | SE: {{currentNC_L}} | {{currentAction}} | <Ready to Close>
+            {{Status}}{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | {{Actor}} | Green | PI: N/A | SE: {{currentNC_L}} | {{currentAction}} | <Mitigated (Close)>
         </noscript>
 
         <script>
@@ -118,7 +119,7 @@
                     if (activeStepInitial.currentAction) {
                         $currentAction.val(activeStepInitial.currentAction);
                     } else {
-                        const defaultAction = 'Ready to close';
+                        const defaultAction = 'Mitigated (Close)';
                         $currentAction.val(defaultAction);
                         activeStepInitial.currentAction = defaultAction;
                     }
@@ -149,7 +150,7 @@
                     else $emailBody.html(autoLink(currentEmailBodyText));
                     $dfmCc.val(currentDfmCcText);
                     $internalTitle.val(currentInternalTitleText);
-                    $currentAction.val('Ready to close');
+                    $currentAction.val('Mitigated (Close)');
                 });
 
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {

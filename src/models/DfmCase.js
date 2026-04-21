@@ -177,9 +177,10 @@ class DfmCase {
                 if (currentActionVal) {
                     const actionMappings = {
                         'Troubleshooting': { Status: 'P', Actor: 'SE' },
-                        'Pending customer information': { Status: 'W', Actor: 'CX' },
-                        'Waiting TL': { Status: 'S', Actor: 'CX' },
-                        'Ready to close': { Status: 'C', Actor: 'SE' }
+                        'Pending cust info (Wait Data)': { Status: 'W', Actor: 'CX' },
+                        'Pending Cust. Response': { Status: 'S', Actor: 'CX' },
+                        'Wait For Cust. Confirm': { Status: 'S', Actor: 'CX' },
+                        'Mitigated (Close)': { Status: 'C', Actor: 'SE' }
                     };
                     if (actionMappings[currentActionVal]) {
                         context.Status = actionMappings[currentActionVal].Status;
@@ -368,9 +369,10 @@ class DfmCase {
                 if (currentAction) {
                     const mappings = {
                         'Troubleshooting': { Status: 'P', Actor: 'SE' },
-                        'Pending customer information': { Status: 'W', Actor: 'CX' },
-                        'Waiting TL': { Status: 'S', Actor: 'CX' },
-                        'Ready to close': { Status: 'C', Actor: 'SE' }
+                        'Pending cust info (Wait Data)': { Status: 'W', Actor: 'CX' },
+                        'Pending Cust. Response': { Status: 'S', Actor: 'CX' },
+                        'Wait For Cust. Confirm': { Status: 'S', Actor: 'CX' },
+                        'Mitigated (Close)': { Status: 'C', Actor: 'SE' }
                     };
                     if (mappings[currentAction] && mappings[currentAction][k]) {
                         return mappings[currentAction][k];

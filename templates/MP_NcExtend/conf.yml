@@ -1,6 +1,6 @@
 id: MP_NcExtend
 name: NC延長
-version: 0.1.2
+version: 0.1.3
 description: ""
 steps:
     - name: 確認メール
