@@ -1,6 +1,6 @@
 id: MP_NcExtend
 name: NC延長
-version: 0.1.4
+version: 0.1.5
 # adjDays: 3
 # nc: ''
 sendAt: today
