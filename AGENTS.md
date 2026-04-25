@@ -14,7 +14,7 @@
 - データはすべて **IndexedDB**（`idb-keyval`）に永続化
 - サーバーは不要。GitHub Pages 上で稼働、またはオフライン（`file:///`）でも動作する
 - Bookmarklet 経由で Dynamics 365 ページからケースデータを抽出し、`postMessage` RPC で連携する
-- **v0.6.3+**: バージョン更新通知（UpdateModal）を搭載。既存ユーザーへの案内や新規ウェルカム、マイナーアップデート通知を自動制御する
+- **UpdateModal 搭載**: 既存ユーザーへの案内・新規ウェルカム・更新通知を自動制御する
 
 ---
 
@@ -29,7 +29,7 @@
 | ZIP 処理 | `jszip` |
 | YAML パース | `js-yaml` |
 | IndexedDB ラッパー | `idb-keyval` |
-| テンプレートエンジン | **EJS**（CDN 経由、ブラウザ実行）。デリミタは `{% %}` / `{%= %}` / `{%_ %}` |
+| テンプレートエンジン | **EJS**（CDN 経由、ブラウザ実行）。ステップHTML初期展開は `<% %>` 系、`DfmCase.render()` 内の評価は `{% %}` 系 |
 
 ---
 
@@ -45,6 +45,7 @@ DfM-Ninja/
 │   │   ├── SettingsModal.jsx     # 設定モーダル（YAML設定・テンプレート管理・バックアップ）
 │   │   ├── SearchModal.jsx       # 全文検索モーダル（正規表現対応・Cmd+P）
 │   │   ├── VariablesModal.jsx    # 変数一覧モーダル（🔰ボタン）
+│   │   ├── CustomPhraseModal.jsx # テンプレート文面（noscript）の編集モーダル
 │   │   ├── UpdateModal.jsx       # バージョンアップ通知モーダル
 │   │   ├── CaseDateBadge.jsx     # 日付バッジ（ツールチップ付き）
 │   │   ├── ToastContainer.jsx    # Toast 通知
@@ -59,12 +60,17 @@ DfM-Ninja/
 │       ├── dateUtils.js          # 日付計算・NC日計算・祝日判定
 │       ├── dfmScripts.js         # DfM ページで実行するスクリプト群（extractCaseData 等）
 │       ├── dfmBookmarklet.js     # Bookmarklet ソース（Git 管理対象）
-│       └── bookmarkletCode.js    # ⚠️ 自動生成。Git 管理外（.gitignore 済み）
+│       ├── dfmBookmarkletLocal.js # ローカル（file:///）向け Bookmarklet ソース
+│       ├── bookmarkletCode.js    # ⚠️ 自動生成。Git 管理外（.gitignore 済み）
+│       ├── bookmarkletLocalCode.js # ⚠️ 自動生成。Git 管理外（.gitignore 済み）
+│       └── textUtils.js          # URL自動リンク化（window.autoLinkUrls）
+├── template_zips/                # テンプレート個別zipの出力先（build:templates）
 ├── templates/                    # バンドル対象テンプレート群
 │   ├── MP_Answer/
 │   ├── MP_AddAsk/
 │   ├── MP_QuickAck/
 │   ├── MP_Confirm/
+│   ├── MP_NcExtend/
 │   ├── MP_Strike1/
 │   ├── MP_Strike2/
 │   ├── MP_Strike3/
@@ -75,7 +81,8 @@ DfM-Ninja/
 │   ├── build-bookmarklet.js      # Bookmarklet を手動コンパイル
 │   └── release.js                # git tag & push でリリース
 ├── docs/
-│   └── Variables.md              # テンプレート変数のリファレンス
+│   ├── Variables.md              # テンプレート変数のリファレンス
+│   └── README_ja.md              # 日本語版README
 └── tmp/
     └── TODOs.md                  # 開発ロードマップ・完了タスク記録（GitHub管理外）
 ```
@@ -88,7 +95,11 @@ DfM-Ninja/
 npm run dev                      # 開発サーバー起動（デフォルト port: 5178）
 npm run build                    # GitHub Pages 向けビルド（/DfM-Ninja/ base）
 npm run build:local              # オフライン版 dist.zip 生成
+npm run build:templates           # templates/ を個別zip化（template_zips/）
 npm run build:templates:bundle   # templates/ を zip 化 → templates.zip（--master フラグ付き）
+npm run build:bookmarklet         # Bookmarklet ソースを手動コンパイル
+npm run lint                      # ESLint 実行
+npm run preview                   # build 結果のローカル確認
 npm run release                  # git tag を打ち、GitHub にプッシュしてリリース
 npm run dev -- --port <PORT>     # カスタムポートで起動
 ```
@@ -110,7 +121,7 @@ npm run dev -- --port <PORT>     # カスタムポートで起動
 | `dfm_ninja_templates` | アップロード済みテンプレートの配列（HTML は lz-string 圧縮済み） |
 | `dfm_ninja_sys_templates` | システムテンプレートの配列（`teamsDisclaimer` 等を含む） |
 | `dfm_ninja_parent_domain` | Bookmarklet から受け取った親ウィンドウのドメイン |
-| `dfm_ninja_app_version` | 最後に確認したアプリバージョン（UpdateModal で使用。現在は `0.6.3`） |
+| `dfm_ninja_app_version` | 最後に確認したアプリバージョン（UpdateModal で使用。`package.json` の `version` と比較） |
 | `dfm_ninja_custom_phrase_<id>` | テンプレート別のカスタム定型文（noscript の内容を上書き保存） |
 
 ### IndexedDB（ケースデータ本体）
@@ -125,8 +136,9 @@ npm run dev -- --port <PORT>     # カスタムポートで起動
 
 ### DfmCase モデル（`src/models/DfmCase.js`）
 
-- **`render(templateStr)`**: テンプレート文字列内の `{{変数名}}` と EJS 構文を解決して返す
+- **`render(templateStr)`**: テンプレート文字列内の `{{変数名}}` と EJS 構文（`{% %}`）を解決して返す
 - **`activeStage`** / **`activeStep`**: 現在アクティブなステージ・ステップへのショートカット
+- **`activeStageContext`**: アクティブステージ + その全ステップ変数をマージした参照用コンテキスト
 - **`activeStageId`** / **`activeStepId`**: URL ハッシュとステート同期される UI 状態
 - ケースデータの保存は非同期で行い、UI ブロッキングを避ける
 
@@ -289,7 +301,7 @@ showToast('メッセージ', 'success');  // App.jsx 内部から
 
 ## UpdateModal（バージョンアップ通知）
 
-`src/components/UpdateModal.jsx` にて `localStorage['dfm_ninja_app_version']` を管理。
+`src/components/UpdateModal.jsx` にて `localStorage['dfm_ninja_app_version']` を管理し、`package.json` の `version` と比較して表示判定する。
 
 | モード | 条件 | 表示内容 |
 |---|---|---|
@@ -309,7 +321,7 @@ showToast('メッセージ', 'success');  // App.jsx 内部から
 | テンプレート修正後にバンドルしない | 必ず `npm run build:templates:bundle` を実行 |
 | `conf.yml` のバージョンを更新しない | テンプレート編集時は必ずバージョンインクリメント |
 | `$('#global-selector')` でDOMを検索する | `$scope.find(...)` でステージスコープ内に限定する |
-| `bookmarkletCode.js` を直接編集する | `dfmBookmarklet.js` を編集し、ビルドで自動生成させる |
+| `bookmarkletCode.js` / `bookmarkletLocalCode.js` を直接編集する | `dfmBookmarklet.js` / `dfmBookmarkletLocal.js` を編集し、ビルドで自動生成させる |
 | ISO日時をそのまま表示する | `new Date(isoStr).toLocaleString()` 等でローカル変換して表示 |
 | `checkForUpdate()` の戻り値を再ラップする | 戻り値は `{previousVersion, mode}` または `null` そのままを state に渡す |
 
