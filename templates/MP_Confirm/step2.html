@@ -275,6 +275,7 @@
                                    .replace(/<p[^>]*>/gi, '\n')
                                    .replace(/<\/p>/gi, '')
                                    .replace(/&nbsp;/gi, ' ')
+                                   .replace(/<[^>]+>/g, '')
                                    .trim();
                     };
 
@@ -305,6 +306,19 @@
                         console.error('Failed to copy: ', err);
                         window.showToast('コピーに失敗しました。', 'error');
                     }
+                });
+
+                // Auto-save sync
+                $scope.find('textarea, [contenteditable], input').on('input blur', function() {
+                    const caseData = window.currentCase;
+                    if (!caseData || !caseData.activeStep) return;
+
+                    caseData.activeStep.emailHead = $emailHead.is('textarea, input') ? $emailHead.val() : $emailHead.html();
+                    caseData.activeStep.emailBody = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
+                    caseData.activeStep.emailTo = $emailTo.val();
+                    caseData.activeStep.emailCc = $emailCc.val();
+                    caseData.activeStep.emailSubject = $emailSubject.val();
+                    caseData.activeStep.reviewRequest = $reviewRequest.val();
                 });
             })();
         </script>

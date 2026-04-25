@@ -1,6 +1,6 @@
 id: MP_Confirm
 name: Confirm
-version: 0.1.3
+version: 0.1.4
 description: ""
 steps:
     - name: LLM連携

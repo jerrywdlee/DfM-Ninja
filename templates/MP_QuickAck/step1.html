@@ -19,9 +19,9 @@
                 <div class="flex items-center justify-between mt-3 mb-3 px-1">
                     <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">認識合わせ文</h4>
                 </div>
-                <textarea name="detailConfirm" data-doubleclick="copy"
-                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                    placeholder=" ... "></textarea>
+                <div name="detailConfirm" data-doubleclick="copy" contenteditable="true"
+                    class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
+                    placeholder=" ... "></div>
             </div>
         </div>
         <noscript data-name="prompt">
@@ -52,7 +52,7 @@
                 const divId = '#MP_QuickAck_step1-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $prompt = $scope.find('textarea[name="prompt"]');
-                const $detailConfirm = $scope.find('textarea[name="detailConfirm"]');
+                const $detailConfirm = $scope.find('[name="detailConfirm"]');
                 const templateId = 'MP_QuickAck';
                 const getRawText = (name) => {
                     const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\n[ |\t]+/g, '\n') || '';
@@ -72,7 +72,8 @@
                         $prompt.val(renderedPrompt);
                     }
                     if (activeStepInitial && activeStepInitial.detailConfirm) {
-                        $detailConfirm.val(activeStepInitial.detailConfirm);
+                        if ($detailConfirm.is('textarea, input')) $detailConfirm.val(activeStepInitial.detailConfirm);
+                        else $detailConfirm.html(activeStepInitial.detailConfirm);
                     }
                 }
 
@@ -80,8 +81,8 @@
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
-                    const promptVal = $scope.find('textarea[name="prompt"]').val();
-                    const detailConfirmText = $scope.find('textarea[name="detailConfirm"]').val();
+                    const promptVal = $prompt.val();
+                    const detailConfirmText = $detailConfirm.is('textarea, input') ? $detailConfirm.val() : $detailConfirm.html();
 
                     const renderedPrompt = caseData.render(promptVal);
                     $prompt.val(renderedPrompt);
@@ -92,7 +93,16 @@
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
                     const currentPromptText = getRawText('prompt');
-                    $scope.find('textarea[name="prompt"]').val(currentPromptText);
+                    $prompt.val(currentPromptText);
+                });
+
+                // Auto-save sync
+                $scope.find('textarea, [contenteditable]').on('input blur', function() {
+                    const caseData = window.currentCase;
+                    if (!caseData || !caseData.activeStep) return;
+
+                    caseData.activeStep.prompt = $prompt.val();
+                    caseData.activeStep.detailConfirm = $detailConfirm.is('textarea, input') ? $detailConfirm.val() : $detailConfirm.html();
                 });
             })();
         </script>

@@ -169,7 +169,7 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                                                 }}
                                                 className="text-xs text-orange-400/80 hover:text-orange-400 underline decoration-orange-400/30 underline-offset-4 flex items-center gap-1.5 font-medium"
                                             >
-                                                Edit Custom Phrases 🔗
+                                                Edit Custom Phrases 🖊️
                                             </button>
                                         </div>
                                     </div>

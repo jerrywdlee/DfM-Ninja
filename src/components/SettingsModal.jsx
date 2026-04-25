@@ -345,7 +345,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
             return;
         }
 
-        if (!confirm('テンプレートを一括インポート（上書き）します。よろしいですか？\n※ Settings.yml は上書きされません')) {
+        if (!confirm('テンプレートを一括インポート（上書き）します。よろしいですか？\n※ Settings.yml および カスタム定型文は上書きされません')) {
             e.target.value = '';
             return;
         }
@@ -773,7 +773,7 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                         <div className="bg-slate-950 border border-slate-700/50 p-6 rounded-xl shadow-inner">
                             <h4 className="text-lg font-bold text-slate-200 mb-2">Import Templates</h4>
                             <p className="text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
-                                `templates.zip` を取り込み、Sys Temp. および Stage Templates を一括で上書き更新します（Settings.ymlは上書きされません）。
+                                `templates.zip` を取り込み、Sys Temp. および Stage Templates を一括で上書き更新します（Settings.yml および カスタム定型文は上書きされません）。
                             </p>
                             <input 
                                 type="file" 

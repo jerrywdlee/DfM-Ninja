@@ -33,9 +33,9 @@
                     <div class="flex items-center justify-between mb-2 px-1">
                         <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">Email 本文</h4>
                     </div>
-                    <textarea name="emailBody" data-doubleclick="copy"
-                        class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                        placeholder="メール本文..."></textarea>
+                    <div name="emailBody" data-doubleclick="copy" contenteditable="true"
+                        class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all overflow-y-auto whitespace-pre-wrap outline-none"
+                        placeholder="メール本文..."></div>
                 </div>
             </div>
 
@@ -166,7 +166,7 @@
                 const divId = '#MP_QuickAck_step2-<%=uid%>';
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $emailHead = $scope.find('textarea[name="emailHead"]');
-                const $emailBody = $scope.find('textarea[name="emailBody"]');
+                const $emailBody = $scope.find('[name="emailBody"]');
                 const $emailTo = $scope.find('input[name="emailTo"]');
                 const $emailCc = $scope.find('input[name="emailCc"]');
                 const $emailSubject = $scope.find('input[name="emailSubject"]');
@@ -195,10 +195,12 @@
                     $emailHead.val(renderedEmailHead);
                 }
                 if (activeStepInitial && activeStepInitial.emailBody) {
-                    $emailBody.val(activeStepInitial.emailBody);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(activeStepInitial.emailBody);
+                    else $emailBody.html(activeStepInitial.emailBody);
                 } else if (caseDataInitial) {
                     const renderedEmailBody = caseDataInitial.render(emailBodyText);
-                    $emailBody.val(renderedEmailBody);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody);
+                    else $emailBody.html(renderedEmailBody);
                 }
                 if (activeStepInitial && activeStepInitial.emailTo) {
                     $emailTo.val(activeStepInitial.emailTo);
@@ -230,7 +232,7 @@
                     const caseData = window.currentCase;
                     if (!caseData) return;
                     const headVal = $scope.find('textarea[name="emailHead"]').val();
-                    const bodyVal = $scope.find('textarea[name="emailBody"]').val();
+                    const bodyVal = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
                     const subjectVal = $scope.find('input[name="emailSubject"]').val();
                     const reviewVal = $scope.find('textarea[name="reviewRequest"]').val();
 
@@ -242,7 +244,8 @@
                     const renderedEmailCc = caseData.render(emailCcText);
 
                     $emailHead.val(renderedEmailHead);
-                    $emailBody.val(renderedEmailBody);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(renderedEmailBody);
+                    else $emailBody.html(renderedEmailBody);
                     $emailSubject.val(renderedEmailSubject);
                     $reviewRequest.val(renderedReviewRequest);
                     $emailTo.val(renderedEmailTo);
@@ -261,24 +264,26 @@
                     const currentEmailCcText = getRawText('emailCc');
 
                     $emailHead.val(currentEmailHeadText);
-                    $emailBody.val(currentEmailBodyText);
+                    if ($emailBody.is('textarea, input')) $emailBody.val(currentEmailBodyText);
+                    else $emailBody.html(currentEmailBodyText);
                     $scope.find('input[name="emailSubject"]').val(currentEmailSubjectText);
                     $scope.find('textarea[name="reviewRequest"]').val(currentReviewRequestText);
                     $scope.find('input[name="emailTo"]').val(currentEmailToText);
                     $scope.find('input[name="emailCc"]').val(currentEmailCcText);
                 });
 
-                $scope.find('button[title="メール文面コピー"]').off('click').on('click', async function () {
-                    const cleanHtml = (html) => {
-                        return html.replace(/<br\s*\/?>/gi, '\n')
-                                   .replace(/<div[^>]*>/gi, '\n')
-                                   .replace(/<\/div>/gi, '')
-                                   .replace(/<p[^>]*>/gi, '\n')
-                                   .replace(/<\/p>/gi, '')
-                                   .replace(/&nbsp;/gi, ' ')
-                                   .trim();
-                    };
+                const cleanHtml = (html) => {
+                    return html.replace(/<br\s*\/?>/gi, '\n')
+                                .replace(/<div[^>]*>/gi, '\n')
+                                .replace(/<\/div>/gi, '')
+                                .replace(/<p[^>]*>/gi, '\n')
+                                .replace(/<\/p>/gi, '')
+                                .replace(/&nbsp;/gi, ' ')
+                                .replace(/<[^>]+>/g, '') // strip any remaining tags like <img>
+                                .trim();
+                };
 
+                $scope.find('button[title="メール文面コピー"]').off('click').on('click', async function () {
                     const emailHeadContent = $emailHead.is('textarea, input') ? $emailHead.val() : cleanHtml($emailHead.html());
                     const emailBodyContent = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
 
@@ -310,15 +315,28 @@
 
                 $scope.find('button[title="メール送信"]').off('click').on('click', function () {
                     const emailHead = $emailHead.val();
-                    const emailBody = $emailBody.val();
+                    const emailBodyContent = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
                     const emailTo = $emailTo.val();
                     const emailCc = $emailCc.val();
                     const emailSubject = $emailSubject.val();
 
                     const separator = '\n\n========================================\n\n';
-                    const emailContent = `${emailHead}${separator}${emailBody}`;
+                    const emailContent = `${emailHead}${separator}${emailBodyContent}`;
                     const emailUrl = `mailto:${emailTo}?cc=${emailCc}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailContent)}`;
                     window.open(emailUrl, '_blank');
+                });
+
+                // Auto-save sync
+                $scope.find('textarea, [contenteditable]').on('input blur', function() {
+                    const caseData = window.currentCase;
+                    if (!caseData || !caseData.activeStep) return;
+
+                    caseData.activeStep.emailHead = $emailHead.val();
+                    caseData.activeStep.emailBody = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.html();
+                    caseData.activeStep.emailTo = $emailTo.val();
+                    caseData.activeStep.emailCc = $emailCc.val();
+                    caseData.activeStep.emailSubject = $emailSubject.val();
+                    caseData.activeStep.reviewRequest = $reviewRequest.val();
                 });
             })();
         </script>
