@@ -1,6 +1,7 @@
 id: MP_AddAsk
 name: 追加質問 QuickAck / 回答
-version: 0.1.6
+version: 0.1.7
+# adjDays: 3
 # nc: ''
 sendAt: today
 description: ""

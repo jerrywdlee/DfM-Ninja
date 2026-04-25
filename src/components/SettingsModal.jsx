@@ -8,7 +8,7 @@ import { bookmarkletLocalCode } from '../utils/bookmarkletLocalCode'
 import { parseHolidayDate } from '../utils/dateUtils'
 import installBookmarkletImg from '/install-bookmarklet.jpg'
 
-const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast }) => {
+const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast, onImportTemplates }) => {
     const [code, setCode] = useState(rawYaml || '')
     const [error, setError] = useState(null)
     const [activeTab, setActiveTab] = useState('usage') // 'usage', 'yaml', 'sysTemp', or 'data'
@@ -351,113 +351,13 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
         }
 
         try {
-            const masterZip = await JSZip.loadAsync(file);
-            let importedSysCount = 0;
-            let importedStageCount = 0;
-
-            const newSysTemplates = [...sysTemplates];
-            const newStageTemplates = [...templates];
-
-            for (const [filename, fileData] of Object.entries(masterZip.files)) {
-                if (!fileData.dir && filename.endsWith('.zip')) {
-                    const innerBuffer = await fileData.async('arraybuffer');
-                    const innerZip = await JSZip.loadAsync(innerBuffer);
-
-                    if (filename === 'Settings.zip') {
-                        // Extract Sys Temp from .md files
-                        for (const [innerName, innerData] of Object.entries(innerZip.files)) {
-                            if (!innerData.dir && innerName.endsWith('.md')) {
-                                const text = await innerData.async('string');
-                                const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-                                if (match) {
-                                    try {
-                                        const data = yaml.load(match[1]) || {};
-                                        if (data.id) {
-                                            const newTemp = {
-                                                id: data.id,
-                                                title: data.title || data.id,
-                                                version: data.version || '1.0.0',
-                                                renderIf: data.renderIf,
-                                                variables: data.variables || [],
-                                                content: match[2]
-                                            };
-                                            const existingIndex = newSysTemplates.findIndex(t => t.id === newTemp.id);
-                                            if (existingIndex !== -1) {
-                                                newSysTemplates[existingIndex] = newTemp;
-                                            } else {
-                                                newSysTemplates.push(newTemp);
-                                            }
-                                            importedSysCount++;
-                                        }
-                                    } catch (err) {
-                                        console.error('Failed to parse md frontmatter:', innerName, err);
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        // Stage template
-                        const confFileKeys = Object.keys(innerZip.files).filter(k => /conf\.yml$/i.test(k));
-                        if (confFileKeys.length > 0) {
-                            const confFile = innerZip.files[confFileKeys[0]];
-                            const confText = await confFile.async('string');
-                            const config = yaml.load(confText);
-
-                            const richSteps = [];
-                            if (config.steps) {
-                                for (let i = 0; i < config.steps.length; i++) {
-                                    const stepNum = i + 1;
-                                    const htmlRegex = new RegExp(`step${stepNum}\\.html$`, 'i');
-                                    const htmlFileKeys = Object.keys(innerZip.files).filter(k => htmlRegex.test(k));
-                                    let html = '';
-                                    if (htmlFileKeys.length > 0) {
-                                        html = await innerZip.files[htmlFileKeys[0]].async('string');
-                                        html = LZString.compressToUTF16(html);
-                                    }
-                                    richSteps.push({ ...config.steps[i], html, format: 'lz' });
-                                }
-                            }
-
-                            const templateId = config.id || config.name || filename.replace('.zip', '');
-                            const templateData = {
-                                id: templateId,
-                                name: config.name || templateId,
-                                version: config.version || '1.0.0',
-                                description: config.description || '',
-                                nc: config.nc?.trim() || '',
-                                sendAt: config.sendAt?.trim() || '',
-                                adjDays: parseInt(config.adjDays) || 3,
-                                steps: richSteps
-                            };
-
-                            const existingIndex = newStageTemplates.findIndex(t => t.id === templateData.id);
-                            if (existingIndex !== -1) {
-                                newStageTemplates[existingIndex] = templateData;
-                            } else {
-                                newStageTemplates.push(templateData);
-                            }
-                            importedStageCount++;
-                        }
-                    }
-                }
-            }
-
-            setSysTemplates(newSysTemplates);
-            setTemplates(newStageTemplates);
-
-            if (showToast) {
-                showToast(`Sys Temp: ${importedSysCount}件、Stage Template: ${importedStageCount}件 をインポートしました。`, 'success');
-            } else {
-                alert(`Sys Temp: ${importedSysCount}件、Stage Template: ${importedStageCount}件 をインポートしました。`);
-            }
-
+            await onImportTemplates(file);
         } catch (err) {
             console.error(err);
-            alert('テンプレートの取り込みに失敗しました: ' + err.message);
         } finally {
             e.target.value = '';
         }
-    };;
+    };
 
     const handleExportSettings = async () => {
         try {

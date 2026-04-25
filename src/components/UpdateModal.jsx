@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import pkg from '../../package.json';
 
 const STORAGE_KEY = 'dfm_ninja_app_version';
@@ -73,7 +74,8 @@ const modeConfig = {
     },
 };
 
-const UpdateModal = ({ isOpen, previousVersion, mode = 'update', onClose }) => {
+const UpdateModal = ({ isOpen, previousVersion, mode = 'update', onClose, onImportTemplates }) => {
+    const fileInputRef = useRef(null);
     if (!isOpen) return null;
 
     const releaseUrl = `${pkg.homepage}/releases/tag/v${pkg.version}`;
@@ -82,6 +84,18 @@ const UpdateModal = ({ isOpen, previousVersion, mode = 'update', onClose }) => {
     const handleAcknowledge = () => {
         acknowledgeUpdate();
         onClose();
+    };
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            await onImportTemplates(file);
+        }
+        e.target.value = '';
     };
 
     return (
@@ -122,7 +136,23 @@ const UpdateModal = ({ isOpen, previousVersion, mode = 'update', onClose }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-end gap-3 rounded-b-xl">
+                <div className="p-4 border-t border-slate-800 bg-slate-800/30 flex justify-between items-center rounded-b-xl">
+                    <div className="flex gap-2">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept=".zip"
+                            className="hidden"
+                        />
+                        <button
+                            onClick={handleImportClick}
+                            className="px-4 py-2 rounded-lg text-xs text-slate-400 font-bold hover:bg-slate-800 hover:text-slate-200 transition-all flex items-center gap-1.5 border border-slate-700/50"
+                            title="テンプレート(templates.zip)をインポートします"
+                        >
+                            📥 Import Templates
+                        </button>
+                    </div>
                     <button
                         onClick={handleAcknowledge}
                         className="px-5 py-2 rounded-lg text-sm text-slate-300 font-bold hover:bg-slate-800 transition-colors"

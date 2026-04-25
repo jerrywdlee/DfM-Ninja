@@ -1,6 +1,9 @@
 id: MP_Answer
 name: Answer
-version: 0.1.5
+version: 0.1.6
+# nc: ''
+# adjDays: 3
+# sendAt: today
 description: ""
 steps:
     - name: LLM連携
