@@ -2,11 +2,11 @@
 
 [日本語版はこちら (docs/README_ja.md)](docs/README_ja.md)
 
-DfM-Ninja is a premium, frontend-only SPA (Single Page Application) designed specifically for Dynamics 365 customer support engineers. It provides a clean, fast, and feature-rich interface to manage support cases, format emails, handle metadata, and streamline communication by bridging the gap between Dynamics 365 and LLM-assisted workflows.
+DfM-Ninja is a frontend-only SPA (Single Page Application) designed for Dynamics 365 customer support engineers. It provides a fast interface for managing support cases, formatting emails, handling metadata, and bridging Dynamics 365 with LLM-assisted workflows.
 
 ## Overview
 
-The application is built with **React 19** and **Vite 7**, using **Tailwind CSS 4** for its modern, dark-themed UI. It runs entirely in the browser and persists data using **IndexedDB**, requiring no backend server. Cases can be backed up in bulk or exported individually as JSON via the UI.
+The application is built with **React 19** and **Vite 7**, using **Tailwind CSS 4** for its UI. It runs entirely in the browser and persists case data in **IndexedDB**, with settings, templates, and custom phrases stored in `localStorage`. No backend server is required. Cases can be backed up in bulk or exported individually as JSON via the UI.
 
 It integrates with the DfM (Dynamics 365) page via a specialized Bookmarklet, enabling seamless metadata extraction and real-time communication between the Dynamics environment and Ninja SPA.
 
@@ -18,12 +18,12 @@ Global search functionality that scans all stored cases in IndexedDB using regul
 ### 🥷 Bookmarklet Integration
 The Bookmarklet injects a Ninja button into Dynamics 365, which extracts case metadata and automatically focuses or opens the DfM-Ninja tab, ensuring a smooth context switch.
 
-### 🛠️ Premium Modern UI (v0.6+)
+### 🛠️ Template Workflow UI
 - **2-Column Layout**: Standardized workflow with Prompts/Guidelines on the left and Input fields on the right.
 - **Auto-Save**: All progress is automatically persisted to IndexedDB as you type, preventing data loss during navigation.
 - **Dynamic Content**: Rich template engine supporting EJS logic for complex conditional formatting.
-- **Custom Template Phrases**: Edit and persist template text (like LLM prompts or email bodies) specifically for each template set. These edits are saved to `localStorage` and persist across template updates.
-- **Dynamic Reset**: The "Reset" button in templates now fetches the latest custom phrases from storage, ensuring consistency between user edits and template behavior.
+- **Custom Template Phrases**: Edit and persist template text such as LLM prompts and email bodies per template ID. These edits are saved in `localStorage`, are merged when templates are imported, and can be exported/imported from Settings.
+- **Reset Behavior**: Template reset actions restore the latest phrase source currently loaded for that template field, while step inputs remain synchronized with saved case state.
 
 ### 🚀 Update & Version Control
 Integrated notification system that intelligently handles:
@@ -36,7 +36,14 @@ A comprehensive builder and reference for all available template variables, incl
 - **Editable Var.**: User-defined global variables.
 - **Dynamic Var.**: Date/NC calculators with live previews.
 - **Stage Var.**: Variables extracted directly from the current UI.
+- **Case Var.**: Core case metadata such as `caseNum`, `caseTitle`, `SLA`, `severity`, and timestamps.
 - **Sys Temp.**: Registered system snippets like `attentions` or `teamsDisclaimer`.
+
+### 💾 Import / Export
+- **Cases**: Export all cases to ZIP and re-import them later.
+- **Templates**: Import `templates.zip` to refresh stage templates and system templates in bulk.
+- **Settings**: Export and import YAML settings together with custom phrases.
+- **Legacy Migration**: Older localStorage-based case data is automatically backed up to ZIP and migrated to IndexedDB on startup.
 
 ## Documentation
 
@@ -55,6 +62,14 @@ A comprehensive builder and reference for all available template variables, incl
    npm run dev
    ```
 4. Access the application at `http://localhost:5178`.
+
+Optional commands:
+
+- `npm run build` - Build for GitHub Pages deployment (`/DfM-Ninja/` base path)
+- `npm run build:local` - Build an offline package (`dist.zip`)
+- `npm run build:templates:bundle` - Rebuild `templates.zip` from the `templates/` directory
+- `npm run build:bookmarklet` - Build bookmarklet sources manually
+- `npm run release` - Tag and publish a release
 
 > [!NOTE]
 > `src/utils/bookmarkletCode.js` is an auto-generated file. It is created automatically when running `npm run dev` or `npm run build`.
