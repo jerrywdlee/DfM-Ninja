@@ -424,6 +424,9 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                                 name: config.name || templateId,
                                 version: config.version || '1.0.0',
                                 description: config.description || '',
+                                nc: config.nc?.trim() || '',
+                                sendAt: config.sendAt?.trim() || '',
+                                adjDays: parseInt(config.adjDays) || 3,
                                 steps: richSteps
                             };
 
@@ -525,6 +528,16 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                 const yamlText = (await settingsFile.async('string')).trim();
                 localStorage.setItem('dfm_ninja_raw_yaml', yamlText);
                 setCode(yamlText);
+
+                try {
+                    const parsed = yaml.load(yamlText) || {};
+                    // Update localStorage and app state immediately
+                    localStorage.setItem('dfm_ninja_settings', JSON.stringify(parsed));
+                    onSave(yamlText, parsed);
+                } catch (yamlErr) {
+                    console.error('Failed to parse settings.yml during import:', yamlErr);
+                }
+
                 importedCount++;
             }
 

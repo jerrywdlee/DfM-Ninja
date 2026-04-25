@@ -1,6 +1,8 @@
 id: MP_AddAsk
 name: 追加質問 QuickAck / 回答
-version: 0.1.4
+version: 0.1.5
+# nc: ''
+sendAt: today
 description: ""
 steps:
     - name: LLM連携

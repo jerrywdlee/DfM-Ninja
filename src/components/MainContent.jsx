@@ -390,11 +390,11 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
         // Determine initial NC date: use last stage's Send At if available
         let initialNc = formatDateIsoLocal(new Date());
         let lastSendAt = null;
-        
+
         if (activeCase.stages && activeCase.stages.length > 0) {
             const lastStage = activeCase.stages[activeCase.stages.length - 1];
             lastSendAt = lastStage.sendAt || lastStage.nc;
-            
+
             if (lastSendAt) {
                 const baseDate = new Date(lastSendAt);
                 const adjDays = Number(lastStage.adjDays) || 3;
@@ -421,12 +421,32 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
 
         const newName = hasBaseName ? `${baseName} #${maxCount + 1}` : baseName;
 
+        let nc = initialNc;
+        switch (template.nc?.toLowerCase().trim()) {
+            case 'today':
+                nc = formatDateIsoLocal(new Date());
+                break;
+            default:
+                nc = initialNc;
+                break;
+        }
+
+        let sendAt = nc; // Default same as NC
+        switch (template.sendAt?.toLowerCase().trim()) {
+            case 'today':
+                sendAt = formatDateIsoLocal(new Date());
+                break;
+            default:
+                sendAt = nc; // Default same as NC
+                break;
+        }
+
         const newStage = {
             id: uid,
             name: newName,
-            nc: initialNc,
-            sendAt: initialNc, // Default same as NC
-            adjDays: 3,
+            nc: nc,
+            sendAt: sendAt,
+            adjDays: Number(template.adjDays) || 3,
             steps: (template.steps || []).map(step => {
                 let rawHtml = step.html || '';
                 

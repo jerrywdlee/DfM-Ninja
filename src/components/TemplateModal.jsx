@@ -59,6 +59,9 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                 name: config.name || file.name.replace('.zip', ''),
                 version: config.version || '1.0.0',
                 description: config.description || '',
+                nc: config.nc?.trim() || '',
+                sendAt: config.sendAt?.trim() || '',
+                adjDays: parseInt(config.adjDays) || 3,
                 steps: richSteps
             }
 
