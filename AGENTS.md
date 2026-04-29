@@ -332,3 +332,15 @@ showToast('メッセージ', 'success');  // App.jsx 内部から
 - [docs/Variables.md](docs/Variables.md) — テンプレートで使える変数の完全リファレンス
 - [tmp/TODOs.md](tmp/TODOs.md) — 開発ログ・未完了タスク（GitHub管理外）
 - [README.md](README.md) — ユーザー向けセットアップ・デプロイガイド
+
+<!-- harness-insight: installed -->
+## Harness-Insight SKILL
+- Trigger: `/reflect`
+- Spec: see [.skills/harness-insight/SKILL.md](.skills/harness-insight/SKILL.md)
+<!-- /harness-insight -->
+
+<!-- harness-insight: 2026-04-29 scope=project -->
+## Self-Reflection Rule (auto-generated 2026-04-29)
+- Trigger: 類似した名前の関数（`handleImportSettings`, `handleImportTemplates` 等）が複数存在し、ユーザーからの指示対象が曖昧な場合や、ユーザーが指示を訂正した場合
+- Rule: コードを一括置換する前に、変更対象の関数名とスコープが正確に合致しているかを必ず再確認・自己検証する。
+<!-- /harness-insight -->
