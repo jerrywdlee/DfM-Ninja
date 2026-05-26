@@ -74,9 +74,14 @@ export const extractCaseData = () => {
 
     let emailCcList = $('[aria-label="Email CC list"]').val().trim();
 
-    let $SLA = $('[aria-label*="IR"][aria-label*="SLA"][aria-label*="In Progress"]').next(); // SLA 時間
-    $SLA = !$SLA[0] ? $('[aria-label*="IR"][aria-label*="SLA"][aria-label*="Expired"]').next() : $SLA; // SLA 'Expired'
-    const SLA = $SLA.text() ? $SLA.text() : 'Met';
+    let SLA;
+    if ($('[aria-label*="IR"][aria-label*="SLA"][aria-label*="Expired"]').next().length ||
+        $('[aria-label*="IR"][aria-label*="SLA"][aria-label*="Violated"]').next().length) {
+        SLA = 'Expired';
+    } else {
+        const $SLA = $('[aria-label*="IR"][aria-label*="SLA"][aria-label*="In Progress"]').next(); // SLA 時間
+        SLA = $SLA.text() ? $SLA.text() : 'Met';
+    }
 
     if (emailCcList) {
         emailCcList = emailCcList.split(/;/);
