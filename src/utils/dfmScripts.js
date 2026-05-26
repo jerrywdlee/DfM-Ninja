@@ -114,7 +114,7 @@ export const highlightKeywords = (args) => {
 
     // 2. 正規表現の作成 (g: 全体、i: 大文字小文字不問)
     // 特殊文字をエスケープし、| で結合
-    const pattern = keywords.map(k => k.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')).join('|');
+    const pattern = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
     const regex = new RegExp(pattern, 'gi');
 
     const ranges = [];
