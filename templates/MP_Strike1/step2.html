@@ -116,6 +116,15 @@
                 const dfmCcText = getRawText('dfmCcText');
                 const internalTitleText = getRawText('internalTitleText');
 
+                const updateInternalTitle = () => {
+                    const caseData = window.currentCase;
+                    if (caseData) {
+                        if (caseData.activeStep) caseData.activeStep.currentAction = $currentAction.val();
+                        $internalTitle.val(caseData.render(internalTitleText).trim());
+                        $internalTitle.trigger('change');
+                    }
+                };
+
                 if (activeStepInitial) {
                     if (activeStepInitial.currentAction) {
                         $currentAction.val(activeStepInitial.currentAction);
@@ -144,14 +153,14 @@
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
                     const currentEmailBodyText = getRawText('emailBodyText');
-                    const currentInternalTitleText = getRawText('internalTitleText');
                     const currentDfmCcText = getRawText('dfmCcText');
 
                     if ($emailBody.is('textarea, input')) $emailBody.val(currentEmailBodyText);
                     else $emailBody.html(autoLink(currentEmailBodyText));
                     $dfmCc.val(currentDfmCcText);
-                    $internalTitle.val(currentInternalTitleText);
-                    // $currentAction.val('Pending Cust. Response');
+                    
+                    $currentAction.val('Pending Cust. Response');
+                    $internalTitle.val(internalTitleText.trim());
                 });
 
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
@@ -249,6 +258,10 @@
                             .then(() => window.showToast('Auto Checkbox clicked', 'info'))
                             .catch(e => window.showToast('Auto Checkbox failed', 'error'));
                     }
+                });
+
+                $currentAction.on('change', function () {
+                    updateInternalTitle();
                 });
 
                 // Auto-save sync
