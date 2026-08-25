@@ -62,8 +62,12 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
 
         if (originalText !== undefined) {
              const newPhrases = { ...phrases }
-             newPhrases[selectedPhrase.id] = originalText;
-             localStorage.setItem(`dfm_ninja_custom_phrase_${template.id}`, JSON.stringify(newPhrases))
+             delete newPhrases[selectedPhrase.id];
+             if (Object.keys(newPhrases).length > 0) {
+                 localStorage.setItem(`dfm_ninja_custom_phrase_${template.id}`, JSON.stringify(newPhrases))
+             } else {
+                 localStorage.removeItem(`dfm_ninja_custom_phrase_${template.id}`)
+             }
              setPhrases(newPhrases)
              setEditValue(originalText)
              showToast('Restored to default', 'info')
@@ -134,7 +138,8 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
                         <div className="flex flex-col gap-3">
                             {availablePhrases.length > 0 ? availablePhrases.map(p => {
                                 const customText = phrases[p.id];
-                                const display = customText || p.defaultText;
+                                const isCustomized = customText !== undefined && customText !== p.defaultText;
+                                const display = customText !== undefined ? customText : p.defaultText;
                                 return (
                                     <button
                                         key={p.id}
@@ -143,11 +148,14 @@ const CustomPhraseModal = ({ isOpen, onClose, template, showToast, onOpenVariabl
                                             setEditValue(display);
                                             setView('edit');
                                         }}
-                                        className="text-left bg-slate-950 border border-slate-800 p-4 rounded-xl shadow-sm hover:border-slate-600 transition-all group"
+                                        className={`text-left bg-slate-950 border ${isCustomized ? 'border-orange-500/50 shadow-orange-900/20' : 'border-slate-800'} p-4 rounded-xl shadow-sm hover:border-slate-600 transition-all group relative`}
                                     >
-                                        <div className="font-bold text-sm text-slate-200 mb-1 group-hover:text-orange-400">{p.id}</div>
-                                        <div className="text-xs text-slate-500 truncate font-mono mt-1">
-                                            {display.split('\n')[0]}...
+                                        <div className="flex justify-between items-center mb-1">
+                                            <div className={`font-bold text-sm ${isCustomized ? 'text-orange-400' : 'text-slate-200 group-hover:text-orange-400'} transition-colors`}>{p.id}</div>
+                                            {isCustomized && <span className="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full font-bold">Customized</span>}
+                                        </div>
+                                        <div className={`text-xs ${isCustomized ? 'text-slate-300' : 'text-slate-500'} truncate font-mono mt-1`}>
+                                            {display.split('\n')[0] || '(Empty)'}
                                         </div>
                                     </button>
                                 );

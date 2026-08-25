@@ -163,17 +163,32 @@ const TemplateModal = ({ isOpen, onClose, templates, onSelect, onUpload, onDelet
                                             {template.steps?.length || 0} steps included
                                         </div>
                                         <div className="mt-2 group-hover:translate-x-1 transition-transform">
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (window.openCustomPhraseModal) {
-                                                        window.openCustomPhraseModal(template);
-                                                    }
-                                                }}
-                                                className="text-xs text-orange-400/80 hover:text-orange-400 underline decoration-orange-400/30 underline-offset-4 flex items-center gap-1.5 font-medium"
-                                            >
-                                                Edit Custom Phrases 🖊️
-                                            </button>
+                                            {(() => {
+                                                let count = 0;
+                                                try {
+                                                    const saved = localStorage.getItem(`dfm_ninja_custom_phrase_${template.id}`);
+                                                    if (saved) count = Object.keys(JSON.parse(saved)).length;
+                                                } catch (e) {}
+                                                
+                                                return (
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (window.openCustomPhraseModal) {
+                                                                window.openCustomPhraseModal(template);
+                                                            }
+                                                        }}
+                                                        className="text-xs text-orange-400/80 hover:text-orange-400 underline decoration-orange-400/30 underline-offset-4 flex items-center gap-1.5 font-medium"
+                                                    >
+                                                        Edit Custom Phrases 🖊️
+                                                        {count > 0 && (
+                                                            <span className="no-underline inline-flex items-center justify-center bg-orange-500/20 text-orange-400 px-1.5 py-0.5 min-w-[1.25rem] rounded-full text-[9px] font-bold shadow-sm border border-orange-500/20">
+                                                                {count}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-center gap-1 border-l border-slate-700 pl-3 ml-2">
