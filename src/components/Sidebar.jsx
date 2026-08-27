@@ -112,6 +112,9 @@ const Sidebar = ({ cases, activeCaseId, onSelectCase, onNewCase, onDeleteCase, o
                                         <span className="text-[8px] bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded-sm border border-emerald-500/20 leading-none shrink-0 font-sans">🎯</span>
                                     )}
                                     <span className="truncate text-[16px] tracking-tight">{c.id}</span>
+                                    {c.Lic === 'Pro' && (
+                                        <span className="text-[8px] font-sans font-black text-emerald-400/90 shrink-0">Pro</span>
+                                    )}
                                 </div>
                                 <div className="flex items-center justify-between mt-0.5">
                                     <div className="truncate text-[10px] text-slate-500 group-hover:text-slate-400 transition-colors leading-tight flex-1">{c.title}</div>

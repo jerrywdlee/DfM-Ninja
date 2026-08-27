@@ -273,7 +273,7 @@ const App = () => {
     // Update Index
     setCases(prev => {
         const idx = prev.findIndex(c => c.id === id);
-        const entry = { id, title, createdAt: mergedData.createdAt, updatedAt: mergedData.updatedAt };
+        const entry = { id, title, createdAt: mergedData.createdAt, updatedAt: mergedData.updatedAt, Lic: newCase.Lic };
         if (idx >= 0) {
             const newIndex = [...prev];
             newIndex[idx] = entry;
@@ -428,7 +428,7 @@ const App = () => {
         // Update index if title or resolvedAt changed
         setCases(prev => prev.map(c =>
             c.id === rawData.id
-                ? { ...c, title: rawData.title, resolvedAt: rawData.resolvedAt, updatedAt: rawData.updatedAt }
+                ? { ...c, title: rawData.title, resolvedAt: rawData.resolvedAt, updatedAt: rawData.updatedAt, Lic: caseInstance.Lic }
                 : c
         ));
 
@@ -559,7 +559,7 @@ const App = () => {
         
         // Update index
         setCases(prev => prev.map(c => 
-            c.id === id ? { ...c, resolvedAt: newResolvedAt } : c
+            c.id === id ? { ...c, resolvedAt: newResolvedAt, updatedAt: now, Lic: updatedData.Lic } : c
         ));
         
         // Update active case if it's the one being toggled
@@ -637,7 +637,7 @@ const App = () => {
                     };
                     const updatedCase = new DfmCase(mergedData, settings);
                     await saveCaseDb(id, updatedCase.toJSON());
-                    setCases(prev => prev.map(c => c.id === id ? { ...c, title, updatedAt: now } : c));
+                    setCases(prev => prev.map(c => c.id === id ? { ...c, title, updatedAt: now, Lic: updatedCase.Lic } : c));
                     setActiveCaseId(id);
                     showToast(`Case "${id}" を更新しました。`, 'success');
                 } else {
@@ -657,7 +657,7 @@ const App = () => {
                 await saveCaseDb(id, newCase.toJSON());
                 setCases(prev => {
                     const exists = prev.some(c => c.id === id);
-                    return exists ? prev.map(c => c.id === id ? { ...c, title, createdAt: now, updatedAt: now } : c) : [...prev, { id, title, createdAt: now, updatedAt: now }];
+                    return exists ? prev.map(c => c.id === id ? { ...c, title, createdAt: now, updatedAt: now, Lic: newCase.Lic } : c) : [...prev, { id, title, createdAt: now, updatedAt: now, Lic: newCase.Lic }];
                 });
                 setActiveCaseId(id);
                 showToast(`Case "${id}" を作成しました。`, 'success');

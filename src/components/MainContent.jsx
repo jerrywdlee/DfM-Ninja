@@ -590,9 +590,18 @@ const MainContent = ({ activeCase, onUpdateCase, settings, templates, onUploadTe
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <input type="text" readOnly data-doubleclick="copy"
-                                className="bg-blue-600 text-white font-black px-4 py-2 rounded-lg text-lg shadow-lg shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer w-[240px] text-center shrink-0 border-none tracking-tight"
-                                value={activeCase.id} title="Case Number (Double-click to copy)" />
+                            <div className="relative shrink-0">
+                                <input type="text" readOnly data-doubleclick="copy"
+                                    className="bg-blue-600 text-white font-black px-4 py-2 rounded-lg text-lg shadow-lg shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-400/50 cursor-pointer w-[240px] text-center border-none tracking-tight"
+                                    value={activeCase.id} title="Case Number (Double-click to copy)" />
+                                {activeCase.Lic && (
+                                    <span className={`absolute -top-3 -right-3 px-2 py-0.5 text-[11px] font-bold italic text-white rounded-md shadow-sm z-10 ${
+                                        activeCase.Lic === 'Pro' ? 'bg-[#8abf7c]' : 'bg-[#f7aa56]'
+                                    }`}>
+                                        {activeCase.Lic}
+                                    </span>
+                                )}
+                            </div>
                             <input type="text" readOnly data-doubleclick="copy"
                                 className="bg-transparent text-slate-900 font-extrabold text-2xl focus:outline-none flex-1 truncate cursor-pointer tracking-tight"
                                 value={activeCase.title} title="Case Title (Double-click to copy)" />
