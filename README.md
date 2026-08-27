@@ -69,7 +69,7 @@ Optional commands:
 - `npm run build:local` - Build an offline package (`dist.zip`)
 - `npm run build:templates:bundle` - Rebuild `templates.zip` from the `templates/` directory
 - `npm run build:bookmarklet` - Build bookmarklet sources manually
-- `npm run release` - Tag and publish a release
+- `npm run release` - Tag and publish a release. **Note:** Regular pushes to `main` no longer trigger GitHub Pages deployments. You must run this command to deploy changes to GitHub Pages.
 
 > [!NOTE]
 > `src/utils/bookmarkletCode.js` is an auto-generated file. It is created automatically when running `npm run dev` or `npm run build`.

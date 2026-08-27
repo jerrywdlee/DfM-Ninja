@@ -69,7 +69,7 @@ IndexedDB に保存されたすべてのケースを正規表現で検索でき�
 - `npm run build:local` - オフライン配布用の `dist.zip` を生成
 - `npm run build:templates:bundle` - `templates/` から `templates.zip` を再生成
 - `npm run build:bookmarklet` - Bookmarklet ソースを手動ビルド
-- `npm run release` - リリース作成
+- `npm run release` - リリース作成。**注意:** `main` ブランチへのプッシュやマージだけでは GitHub Pages にはデプロイされなくなりました。公開するには必ずこのコマンドでリリースを作成してください。
 
 > [!NOTE]
 > `src/utils/bookmarkletCode.js` は自動生成ファイルです。`npm run dev` または `npm run build` を実行すると自動的に作成されます。
