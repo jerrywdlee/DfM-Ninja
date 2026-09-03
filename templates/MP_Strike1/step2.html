@@ -36,6 +36,10 @@
                         class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
                         Auto ✅
                     </button>
+                    <button title="Zebra AI"
+                        class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                        🦓 AI
+                    </button>
                 </div>
 
                 <div class="flex flex-col">
@@ -90,6 +94,40 @@
         </noscript>
         <noscript data-name="internalTitleText">
             {{Status}}{{nextNC_XS}}/4/{{Lic_S}}/{{TeamName}} | {{Actor}} | Green | PI: N/A | SE: {{sendAt_L}} | {{currentAction}} | <Strike1>
+        </noscript>
+        <noscript data-name="zebraAiPrompt">
+■役割設定
+あなたは {{CompanyName}} {{SectionName}} のサポートのエンジニアです。
+セキュリティインシデントを防ぐため、メール文面の品質チェックを担当します。
+
+■タスク概要
+提供されるメール文面を分析し、下記のチェックリストに基づいてフィードバックを行ってください。
+
+■チェックリスト
+1. 誤字や脱字の有無
+・誤字ないか
+・脱字がないか
+2. SR の重複
+・お問い合わせ番号、SR を 2 種類以上記載しない
+・2 から始まる 5 桁以上の数字を 2 種類以上記載しない
+3. PII の記載
+・記載可能な PII 以外で個人を特定できる情報 （名前、メール アドレス、電話番号、住所、社会保障番号、SSN、やその他の機密性の高い情報) を記載しない
+
+記載可能な PII は下記のみ:
+{{agentAndLeaders}}
+
+■添削方法
+・文書基準チェックリストの各項目単位で、[添削対象メール] の本文内で準拠できていない箇所を特定する
+・[誤字や脱字の有無] に準拠できていない箇所を特定し、すべての修正箇所の抜粋と修正方法を提示する
+・[SR の重複] に準拠できていない箇所を特定し、すべての修正箇所の抜粋と修正方法を提示する
+・[PII の記載] に準拠できていない箇所がある場合は、修正箇所の行数のみを提示する
+・修正が必要ない場合はその旨を記載する
+
+■添削対象メール
+
+```
+{{emailBody}}
+```
         </noscript>
 
         <script>
@@ -258,6 +296,32 @@
                             .then(() => window.showToast('Auto Checkbox clicked', 'info'))
                             .catch(e => window.showToast('Auto Checkbox failed', 'error'));
                     }
+                });
+
+                $scope.find('button[title="Zebra AI"]').off('click').on('click', function () {
+                    const caseData = window.currentCase;
+                    if (!caseData) {
+                        window.showToast('ケースデータがありません', 'error');
+                        return;
+                    }
+
+                    // Get the current emailBody from the contenteditable
+                    const currentEmailBody = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.text();
+                    // Temporarily set emailBody on activeStep so render() can resolve it
+                    const prevEmailBody = caseData.activeStep?.emailBody;
+                    if (caseData.activeStep) caseData.activeStep.emailBody = currentEmailBody;
+
+                    const zebraPromptTemplate = getRawText('zebraAiPrompt');
+                    const rendered = caseData.render(zebraPromptTemplate);
+
+                    // Restore previous emailBody
+                    if (caseData.activeStep) caseData.activeStep.emailBody = prevEmailBody;
+
+                    navigator.clipboard.writeText(rendered).then(() => {
+                        window.showToast('🦓 Zebra AI Prompt をコピーしました', 'success');
+                    }).catch(() => {
+                        window.showToast('コピーに失敗しました', 'error');
+                    });
                 });
 
                 $currentAction.on('change', function () {
