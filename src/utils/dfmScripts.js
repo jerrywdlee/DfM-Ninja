@@ -17,20 +17,39 @@ export const extractCaseData = () => {
 
         const $columns = $infoArea.find('[data-preview_orientation="column"]');
 
-        let text = $($columns[0]).text();
+        // Fallback: Shadow DOM columns when jQuery selector returns nothing
+        const shadowColumns = [];
+        if ($columns.length === 0) {
+            const hostEl = document.querySelector('#headerBodyContainer uci-header-control-list');
+            if (hostEl && hostEl.shadowRoot) {
+                hostEl.shadowRoot.querySelectorAll('[data-preview_orientation="column"]').forEach(el => shadowColumns.push(el));
+            }
+        }
+
+        const getColumnText = (index) => {
+            if ($columns.length > index) {
+                return $($columns[index]).text().replace(/\n/g, ' ');
+            }
+            if (shadowColumns.length > index) {
+                return (shadowColumns[index].innerText || '').replace(/\n/g, ' ');
+            }
+            return '';
+        };
+
+        let text = getColumnText(0);
         let match = text.match(/^(\d+)\ \|(.*?)Case/);
         if (match && match[1] && match[2]) {
             res.caseNum = match[1].trim();
             res.servName = match[2].trim();
         }
 
-        text = $($columns[1]).text();
+        text = getColumnText(1);
         match = text.match(/^(.+?)Severity/);
         if (match && match[1]) {
             res.severity = match[1].trim();
         }
 
-        text = $($columns[2]).text();
+        text = getColumnText(2);
         match = text.match(/^(.+?)Status/);
         if (match && match[1]) {
             res.statusReason = match[1].trim();
