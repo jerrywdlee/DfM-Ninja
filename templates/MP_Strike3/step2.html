@@ -351,24 +351,11 @@
                 });
 
                 $scope.find('button[title="メール送信"]').off('click').on('click', function () {
-                    const cleanHtml = (html) => {
-                        return html.replace(/<br\s*\/?>/gi, '\n')
-                                   .replace(/<div[^>]*>/gi, '\n')
-                                   .replace(/<\/div>/gi, '')
-                                   .replace(/<p[^>]*>/gi, '\n')
-                                   .replace(/<\/p>/gi, '')
-                                   .replace(/&nbsp;/gi, ' ')
-                                   .trim();
-                    };
-                    const emailHeadContent = $emailHead.is('textarea, input') ? $emailHead.val() : cleanHtml($emailHead.html());
-                    const emailBodyContent = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
                     const emailTo = $emailTo.val();
                     const emailCc = $emailCc.val();
                     const emailSubject = $emailSubject.val();
 
-                    const separator = '\n\n========================================\n\n';
-                    const emailContent = `${emailHeadContent}${separator}${emailBodyContent}`;
-                    const emailUrl = `mailto:${emailTo}?cc=${emailCc}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailContent)}`;
+                    const emailUrl = `mailto:${emailTo}?cc=${emailCc}&subject=${encodeURIComponent(emailSubject)}`;
                     window.open(emailUrl, '_blank');
                 });
 
