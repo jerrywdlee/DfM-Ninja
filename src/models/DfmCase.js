@@ -70,7 +70,11 @@ class DfmCase {
         if (!stage) return null;
         const merged = { ...stage };
         if (Array.isArray(stage.steps)) {
-            stage.steps.forEach(s => Object.assign(merged, s));
+            stage.steps.forEach(s => {
+                Object.keys(s).forEach(k => {
+                    if (s[k] !== undefined) merged[k] = s[k];
+                });
+            });
         }
         return merged;
     }
@@ -139,7 +143,9 @@ class DfmCase {
                     // Merge all steps properties
                     if (Array.isArray(stage.steps)) {
                         stage.steps.forEach(s => {
-                            Object.assign(context, s);
+                            Object.keys(s).forEach(k => {
+                                if (s[k] !== undefined) context[k] = s[k];
+                            });
                         });
                     }
                 }
@@ -486,7 +492,9 @@ class DfmCase {
                 if (Array.isArray(stage.steps)) {
                     let combinedSteps = {};
                     stage.steps.forEach(s => {
-                        Object.assign(combinedSteps, s);
+                        Object.keys(s).forEach(k => {
+                            if (s[k] !== undefined) combinedSteps[k] = s[k];
+                        });
                     });
                     if (combinedSteps[k] !== undefined) return combinedSteps[k];
                 }

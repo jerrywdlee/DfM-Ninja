@@ -317,15 +317,11 @@
 
                     // Get the current emailBody from the contenteditable
                     const currentEmailBody = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.text();
-                    // Temporarily set emailBody on activeStep so render() can resolve it
-                    const prevEmailBody = caseData.activeStep?.emailBody;
-                    if (caseData.activeStep) caseData.activeStep.emailBody = currentEmailBody;
 
+                    // Replace {{emailBody}} in the template directly to avoid mutating activeStep
                     const zebraPromptTemplate = getRawText('zebraAiPrompt');
-                    const rendered = caseData.render(zebraPromptTemplate);
-
-                    // Restore previous emailBody
-                    if (caseData.activeStep) caseData.activeStep.emailBody = prevEmailBody;
+                    const promptWithBody = zebraPromptTemplate.replace(/\{\{emailBody\}\}/g, currentEmailBody);
+                    const rendered = caseData.render(promptWithBody);
 
                     navigator.clipboard.writeText(rendered).then(() => {
                         window.showToast('🦓 Zebra AI Prompt をコピーしました', 'success');
