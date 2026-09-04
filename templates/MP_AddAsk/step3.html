@@ -308,26 +308,53 @@
                     }
                 });
 
-                $scope.find('button[title="Zebra AI"]').off('click').on('click', function () {
+                $scope.find('button[title="Zebra AI"]').off('click').on('click', async function () {
                     const caseData = window.currentCase;
                     if (!caseData) {
                         window.showToast('ケースデータがありません', 'error');
                         return;
                     }
 
+                    const cleanHtml = (html) => {
+                        return html.replace(/<br\s*\/?>/gi, '\n')
+                                   .replace(/<div[^>]*>/gi, '\n')
+                                   .replace(/<\/div>/gi, '')
+                                   .replace(/<p[^>]*>/gi, '\n')
+                                   .replace(/<\/p>/gi, '')
+                                   .replace(/&nbsp;/gi, ' ')
+                                   .trim();
+                    };
+
                     // Get the current emailBody from the contenteditable
-                    const currentEmailBody = $emailBody.is('textarea, input') ? $emailBody.val() : $emailBody.text();
+                    const currentEmailBody = $emailBody.is('textarea, input') ? $emailBody.val() : cleanHtml($emailBody.html());
 
                     // Replace {{emailBody}} in the template directly to avoid mutating activeStep
                     const zebraPromptTemplate = getRawText('zebraAiPrompt');
                     const promptWithBody = zebraPromptTemplate.replace(/\{\{emailBody\}\}/g, currentEmailBody);
                     const rendered = caseData.render(promptWithBody);
 
-                    navigator.clipboard.writeText(rendered).then(() => {
+                    let promptContentHTML = rendered.replace(/\r?\n|\r/g, '<br>');
+
+                    try {
+                        const blobHTML = new Blob([promptContentHTML], { type: 'text/html' });
+
+                        const tmpDiv = document.createElement('div');
+                        tmpDiv.innerHTML = rendered;
+                        let blockText = tmpDiv.innerText;
+                        blockText = blockText.replace(/^$/gm, ' ');
+
+                        const blobText = new Blob([blockText || rendered], { type: 'text/plain' });
+                        const data = [new ClipboardItem({
+                            'text/html': blobHTML,
+                            'text/plain': blobText
+                        })];
+
+                        await navigator.clipboard.write(data);
                         window.showToast('🦓 Zebra AI Prompt をコピーしました', 'success');
-                    }).catch(() => {
-                        window.showToast('コピーに失敗しました', 'error');
-                    });
+                    } catch (err) {
+                        console.error('Failed to copy: ', err);
+                        window.showToast('コピーに失敗しました。', 'error');
+                    }
                 });
 
                 $currentAction.on('change', function () {
