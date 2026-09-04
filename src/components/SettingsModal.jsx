@@ -7,6 +7,7 @@ import { bookmarkletCode } from '../utils/bookmarkletCode'
 import { bookmarkletLocalCode } from '../utils/bookmarkletLocalCode'
 import { parseHolidayDate } from '../utils/dateUtils'
 import installBookmarkletImg from '/install-bookmarklet.jpg'
+import DfmCase from '../models/DfmCase'
 
 const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], setSysTemplates, templates = [], setTemplates, showToast, onImportTemplates }) => {
     const [code, setCode] = useState(rawYaml || '')
@@ -308,14 +309,24 @@ const SettingsModal = ({ isOpen, onClose, rawYaml, onSave, sysTemplates = [], se
                     const title = caseData.title || caseData.caseTitle || 'Imported Case';
                     
                     if (id) {
-                        await saveCaseDb(id, caseData);
+                        const newCase = new DfmCase(caseData);
+                        await saveCaseDb(id, newCase.toJSON());
                         
                         // Update index
                         const existingIdx = index.findIndex(item => item.id === id);
+                        const entry = {
+                            id,
+                            title,
+                            createdAt: newCase.createdAt,
+                            updatedAt: newCase.updatedAt,
+                            resolvedAt: newCase.resolvedAt,
+                            Lic: newCase.Lic
+                        };
+                        
                         if (existingIdx >= 0) {
-                            index[existingIdx] = { id, title, resolvedAt: caseData.resolvedAt };
+                            index[existingIdx] = entry;
                         } else {
-                            index.push({ id, title, resolvedAt: caseData.resolvedAt });
+                            index.push(entry);
                         }
                         importedCount++;
                     }

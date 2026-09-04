@@ -273,7 +273,7 @@ const App = () => {
     // Update Index
     setCases(prev => {
         const idx = prev.findIndex(c => c.id === id);
-        const entry = { id, title, createdAt: mergedData.createdAt, updatedAt: mergedData.updatedAt, Lic: newCase.Lic };
+        const entry = { id, title, createdAt: mergedData.createdAt, updatedAt: mergedData.updatedAt, resolvedAt: newCase.resolvedAt, Lic: newCase.Lic };
         if (idx >= 0) {
             const newIndex = [...prev];
             newIndex[idx] = entry;
