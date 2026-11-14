@@ -1,22 +1,33 @@
 <% const uid=new Date().getTime(); %>
-    <div id="MP_QuickAck_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner">
-        <div class="grid grid-cols-2 gap-6">
+    <div id="MP_QuickAck_step1-<%=uid%>" class="bg-emerald-50 p-6 rounded-xl border border-emerald-100 shadow-inner relative">
+
+        <!-- Action Buttons -->
+        <div class="absolute top-4 right-6 flex gap-1.5 focus-within:ring-0">
+            <button title="リセット"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
+            <button title="レンダリング"
+                class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 mt-6">
             <div class="flex flex-col">
-                <div class="flex items-center justify-between mb-3 px-1">
+                <div class="flex items-center justify-between h-6 mb-3 px-1">
                     <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">Prompt</h4>
-                    <div class="flex gap-1.5 focus-within:ring-0">
-                        <button title="リセット"
-                            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">🔄</button>
-                        <button title="レンダリング"
-                            class="text-xs hover:bg-emerald-200/50 p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center bg-white/50 border border-emerald-200/50 shadow-sm">⚡️</button>
-                    </div>
+                    <!-- 特急スイッチ（name を付けない: handleSaveStep が未チェックの checkbox を無視し OFF が保存されないため） -->
+                    <label class="flex items-center gap-2 cursor-pointer select-none" title="特急 ON で確認メールの[調査方針]文面を切り替えます">
+                        <span class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">特急</span>
+                        <input type="checkbox" data-field="isExpress" class="sr-only peer">
+                        <div
+                            class="relative w-9 h-5 rounded-full bg-slate-300 shadow-inner transition-colors peer-checked:bg-orange-500 peer-focus-visible:ring-2 peer-focus-visible:ring-orange-400/40 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-4">
+                        </div>
+                    </label>
                 </div>
                 <textarea name="prompt" data-doubleclick="copy"
                     class="w-full h-[320px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
                     placeholder="Prompt goes here..."></textarea>
             </div>
             <div class="flex flex-col">
-                <div class="flex items-center justify-between mt-3 mb-3 px-1">
+                <div class="flex items-center justify-between h-6 mb-3 px-1">
                     <h4 class="text-[12px] font-black text-emerald-800 tracking-widest opacity-80">認識合わせ文</h4>
                 </div>
                 <div name="detailConfirm" data-doubleclick="copy" contenteditable="true"
@@ -53,6 +64,7 @@
                 const $scope = $(divId); // このステップの範囲内だけで探す
                 const $prompt = $scope.find('textarea[name="prompt"]');
                 const $detailConfirm = $scope.find('[name="detailConfirm"]');
+                const $isExpress = $scope.find('input[data-field="isExpress"]');
                 const templateId = 'MP_QuickAck';
                 const getRawText = (name) => {
                     const defaultText = $scope.find(`noscript[data-name="${name}"]`).text().trim().replace(/\n[ |\t]+/g, '\n') || '';
@@ -75,6 +87,7 @@
                         if ($detailConfirm.is('textarea, input')) $detailConfirm.val(activeStepInitial.detailConfirm);
                         else $detailConfirm.html(activeStepInitial.detailConfirm);
                     }
+                    $isExpress.prop('checked', activeStepInitial?.isExpress === true);
                 }
 
                 // .on ではなく、直接要素に .click 等でバインドする
@@ -94,6 +107,22 @@
                     if (!confirm('リセットしますか？')) return;
                     const currentPromptText = getRawText('prompt');
                     $prompt.val(currentPromptText);
+                });
+
+                // 特急スイッチ: Step2 の[調査方針]文面を切り替える
+                $isExpress.off('change').on('change', function () {
+                    const caseData = window.currentCase;
+                    if (!caseData || !caseData.activeStep) return;
+                    const isExpress = $(this).prop('checked');
+                    caseData.activeStep.isExpress = isExpress;
+                    if (!window.showToast) return;
+                    const label = isExpress ? '特急 ON' : '特急 OFF';
+                    const step2 = caseData.activeStage?.steps?.[1];
+                    if (step2 && step2.emailBody) {
+                        window.showToast(`${label}: 確認メールは保存済みのため、確認メールの 🔄 → ⚡️ で反映してください`, 'warning');
+                    } else {
+                        window.showToast(`${label}: 確認メールの[調査方針]に反映されます`, 'info');
+                    }
                 });
 
                 // Auto-save sync

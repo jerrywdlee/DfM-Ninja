@@ -15,8 +15,16 @@
         <div class="flex flex-col gap-4">
             <!-- 追加質問内容 -->
             <div class="flex flex-col">
-                <div class="flex items-center justify-between mb-2 px-1">
+                <div class="flex items-center justify-between h-5 mb-2 px-1">
                     <h4 class="text-[13px] font-bold text-emerald-900 tracking-wider">追加質問内容</h4>
+                    <!-- 特急スイッチ（name を付けない: handleSaveStep が未チェックの checkbox を無視し OFF が保存されないため） -->
+                    <label class="flex items-center gap-2 cursor-pointer select-none" title="特急 ON で確認メール（QuickAck時）の[追加のご連絡]文面を切り替えます">
+                        <span class="text-[13px] font-bold text-emerald-900 tracking-wider">特急</span>
+                        <input type="checkbox" data-field="isExpress" class="sr-only peer">
+                        <div
+                            class="relative w-9 h-5 rounded-full bg-slate-300 shadow-inner transition-colors peer-checked:bg-orange-500 peer-focus-visible:ring-2 peer-focus-visible:ring-orange-400/40 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-4">
+                        </div>
+                    </label>
                 </div>
                 <textarea name="askContent" data-doubleclick="copy"
                     class="w-full h-[120px] p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
@@ -119,6 +127,7 @@
             const $custTrouble = $scope.find('textarea[name="custTrouble"]');
             const $answerPolicy = $scope.find('textarea[name="answerPolicy"]');
             const $askResult = $scope.find('[name="askResult"]');
+            const $isExpress = $scope.find('input[data-field="isExpress"]');
 
             const templateId = 'MP_AddAsk';
             const getRawText = (name) => {
@@ -160,6 +169,7 @@
                 if ($askResult.is('textarea, input')) $askResult.val(askResultText);
                 else $askResult.html(askResultText);
             }
+            $isExpress.prop('checked', activeStepInitial?.isExpress === true);
 
             // Rendering Logic
             $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
@@ -201,6 +211,22 @@
                     caseData.activeStep.custTrouble = '';
                     caseData.activeStep.answerPolicy = '';
                     caseData.activeStep.askResult = $askResult.is('textarea, input') ? $askResult.val() : $askResult.html();
+                }
+            });
+
+            // 特急スイッチ: Step2 の[追加のご連絡]文面（QuickAck時）を切り替える
+            $isExpress.off('change').on('change', function () {
+                const caseData = window.currentCase;
+                if (!caseData || !caseData.activeStep) return;
+                const isExpress = $(this).prop('checked');
+                caseData.activeStep.isExpress = isExpress;
+                if (!window.showToast) return;
+                const label = isExpress ? '特急 ON' : '特急 OFF';
+                const step2 = caseData.activeStage?.steps?.[1];
+                if (step2 && step2.emailBody) {
+                    window.showToast(`${label}: 確認メールは保存済みのため、確認メールの 🔄 → ⚡️ で反映してください`, 'warning');
+                } else {
+                    window.showToast(`${label}: 確認メール（QuickAck時）の[追加のご連絡]に反映されます`, 'info');
                 }
             });
 
