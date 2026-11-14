@@ -40,6 +40,10 @@
                         class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
                         🦓 AI
                     </button>
+                    <button title="S.C.R. Prompt"
+                        class="whitespace-nowrap py-2 px-3 bg-pink-100/50 hover:bg-pink-200/50 text-slate-800 font-bold text-sm border border-pink-200 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1">
+                        📝 S.C.R.
+                    </button>
                 </div>
 
                 <div class="flex flex-col">
@@ -128,6 +132,30 @@
 ```
 {{emailBody}}
 ```
+        </noscript>
+        <noscript data-name="scrPrompt">
+            # 指示
+            提供されたメール文面を分析し、以下のフォーマットに従って「Symptom、Cause、Resolution」を作成してください。
+
+            # 重要
+            - 各項目（Symptom、Cause、Resolution）ごとに、**それぞれ独立した単一のコードブロック（```text 〜 ```）で囲んだプレーンテキスト**として出力してください。
+            - 各項目の内容は、それぞれ **150〜200文字程度** に要約して記載してください。
+
+            # フォーマット
+            Symptom（事象）：
+            ```text
+            (お客様からの申告をもとに、150〜200文字程度で簡潔に要約して記載)
+            ```
+
+            Cause（原因）：
+            ```text
+            (調査内容から判明した根本原因を、150〜200文字程度で簡潔に要約して記載)
+            ```
+
+            Resolution（解決策）：
+            ```text
+            (提供した解決策や回避策を、150〜200文字程度で簡潔に要約して記載)
+            ```
         </noscript>
 
         <script>
@@ -341,6 +369,22 @@
 
                         await navigator.clipboard.write(data);
                         window.showToast('🦓 Zebra AI Prompt をコピーしました', 'success');
+                    } catch (err) {
+                        console.error('Failed to copy: ', err);
+                        window.showToast('コピーに失敗しました。', 'error');
+                    }
+                });
+
+                $scope.find('button[title="S.C.R. Prompt"]').off('click').on('click', async function () {
+                    const caseData = window.currentCase;
+                    if (!caseData) {
+                        window.showToast('ケースデータがありません', 'error');
+                        return;
+                    }
+                    const rendered = caseData.render(getRawText('scrPrompt'));
+                    try {
+                        await navigator.clipboard.writeText(rendered);
+                        window.showToast('📝 S.C.R. Prompt をコピーしました', 'success');
                     } catch (err) {
                         console.error('Failed to copy: ', err);
                         window.showToast('コピーに失敗しました。', 'error');

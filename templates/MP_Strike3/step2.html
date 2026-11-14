@@ -108,7 +108,7 @@
             {{custStatement}}
         </noscript>
 
-        <noscript data-name="emailBody">
+        <noscript data-name="closeEmailBody">
             ご担当者 様
             
             いつも大変お世話になっております。
@@ -123,6 +123,9 @@
             {{caseTitle}}
 
             [ご連絡]
+            {%_ if (String(locals.closeGuide || '').trim()) { -%}
+            {{closeGuide}}
+            {%_ } else { -%}
             {%_ switch (closeType) {
               case 'customerApprove': -%}
             ご連絡いただきありがとうございます。
@@ -166,6 +169,7 @@
 
             今後とも貴社のお役に立てるよう全力を尽くしてまいりますので、何卒よろしくお願い申し上げます。
             この度は弊社サポートをご利用いただき誠にありがとうございました。
+            {%_ } -%}
             {%_ } -%}
 
             {%_ if (closeType === 'customerApprove') { -%}
@@ -220,7 +224,7 @@
                 };
 
                 const emailHeadText = getRawText('emailHead');
-                const emailBodyText = getRawText('emailBody');
+                const emailBodyText = getRawText('closeEmailBody');
                 const emailSubjectText = getRawText('emailSubject');
                 const emailToText = getRawText('emailTo');
                 const emailCcText = getRawText('emailCc');
@@ -296,7 +300,7 @@
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
                     const currentEmailHeadText = getRawText('emailHead');
-                    const currentEmailBodyText = getRawText('emailBody');
+                    const currentEmailBodyText = getRawText('closeEmailBody');
                     const currentEmailSubjectText = getRawText('emailSubject');
                     const currentReviewRequestText = getRawText('reviewRequest');
                     const currentEmailToText = getRawText('emailTo');

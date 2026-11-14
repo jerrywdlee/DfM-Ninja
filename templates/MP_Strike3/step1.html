@@ -24,14 +24,14 @@
                         placeholder="Copilot用のプロンプト..."></textarea>
                 </div>
 
-                <!-- SCR Prompt -->
-                <div class="flex flex-col flex-1 mt-4">
+                <!-- Close要請 -->
+                <div class="flex flex-col flex-1">
                     <div class="flex items-center justify-between mb-2 px-1">
-                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">S.C.R. Prompt <span class="text-[11px] font-normal text-emerald-700/70">(メールのCopilotにて)</span></h4>
+                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Close要請 <span class="text-[11px] font-normal text-emerald-700/70">(TLレビュー依頼)</span></h4>
                     </div>
-                    <textarea name="scrPrompt" data-doubleclick="copy"
-                        class="w-full h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                        placeholder="Symptom、Cause、Resolutionを生成するためのプロンプト..."></textarea>
+                    <textarea name="closeRequest" data-doubleclick="copy"
+                        class="w-full h-full min-h-[350px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="Close要請文..."></textarea>
                 </div>
             </div>
 
@@ -55,14 +55,26 @@
                     </div>
                 </div>
 
-                <!-- Close要請 -->
-                <div class="flex flex-col h-full">
+                <!-- Close案内 Prompt -->
+                <div class="flex flex-col">
                     <div class="flex items-center justify-between mb-2 px-1">
-                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Close要請:</h4>
+                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Close案内 Prompt <span class="text-[11px] font-normal text-emerald-700/70">(メールのCopilotにて)</span></h4>
+                        <span data-role="closeGuidePromptLabel" class="text-[11px] font-bold text-emerald-700/80 bg-white/60 border border-emerald-200/60 rounded-md px-2 py-0.5"></span>
                     </div>
-                    <textarea name="closeRequest" data-doubleclick="copy"
-                        class="w-full h-full min-h-[350px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
-                        placeholder="Close要請文..."></textarea>
+                    <textarea name="closeGuidePrompt" data-doubleclick="copy"
+                        class="w-full h-[140px] p-3 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="お客様向けClose案内文を生成するためのプロンプト..."></textarea>
+                    <input type="hidden" name="closeGuidePromptType" value="" />
+                </div>
+
+                <!-- Close案内 -->
+                <div class="flex flex-col flex-1">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h4 class="text-[14px] font-bold text-emerald-900 tracking-tight">Close案内 <span class="text-[11px] font-normal text-emerald-700/70">(生成結果を貼り付け → 確認メールに挿入)</span></h4>
+                    </div>
+                    <textarea name="closeGuide" data-doubleclick="copy"
+                        class="w-full h-full min-h-[240px] p-4 text-xs font-mono border border-emerald-200 rounded-xl bg-white shadow-sm focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all resize-none"
+                        placeholder="Copilotで生成したClose案内文をここに貼り付けてください。&#10;空欄の場合、確認メールには従来の定型文が使用されます。"></textarea>
                 </div>
             </div>
         </div>
@@ -98,30 +110,132 @@
             ```
         </noscript>
 
-        <noscript data-name="scrPrompt">
+        <noscript data-name="closeGuidePrompt_customerApprove">
             # 指示
-            提供されたメール文面を分析し、以下のフォーマットに従って「Symptom、Cause、Resolution」を作成してください。
+            あなたは {{CompanyName}} テクニカルサポート担当者のクローズメール作成を支援するアシスタントです。
+            本メールスレッドのやり取りと末尾の「# 入力情報」をもとに、お客様の状況に寄り添ったクローズ案内文を作成してください。
 
-            # 重要
-            - 各項目（Symptom、Cause、Resolution）ごとに、**それぞれ独立した単一のコードブロック（```text 〜 ```）で囲んだプレーンテキスト**として出力してください。
-            - 各項目の内容は、それぞれ **150〜200文字程度** に要約して記載してください。
+            # 目的
+            事務的な定型文を避け、「お客様がお問い合わせに費やしたお時間への配慮」と「状況に合った内容」が伝わる文面にします。
 
-            # フォーマット
-            Symptom（事象）：
-            ```text
-            (お客様からの申告をもとに、150〜200文字程度で簡潔に要約して記載)
-            ```
+            # クローズの経緯
+            お客様よりクローズのご了承をいただいたため、本メールをもって対応を終了する。
 
-            Cause（原因）：
-            ```text
-            (調査内容から判明した根本原因を、150〜200文字程度で簡潔に要約して記載)
-            ```
+            # 必ず入れる内容（順序は自然に調整）
+            1. クローズをご了承いただいたことへの御礼を含む冒頭の一文
+            2. お客様のお時間とご協力への謝意（検証、情報提供、ログ取得など、実際にご対応いただいた内容を具体的に挙げる）
+            3. 対応結果の説明（1〜2文）
+            4. クローズ後の案内（追加のご確認事項があれば、お問い合わせ番号を記載のうえ新規にお問い合わせいただくことで、スムーズにご案内が可能である旨）
+            5. 結びの挨拶
 
-            Resolution（解決策）：
-            ```text
-            (提供した解決策や回避策を、150〜200文字程度で簡潔に要約して記載)
-            ```
+            # 状況に応じて入れる内容
+            ・事象が解消済み：ご不便が解消されたことへの一言（解消をお客様に確認できていない場合は書かない）
+            ・お客様のご発言やご要望（特に最後のご返信）：必ず一言で反応する
+            ・特記事項：事実に当てはまる範囲でお詫びや説明を入れる
+            ・ご期待に沿えなかった場合（制限事項・仕様のため実現できなかった等）：お詫びと、ご意見を品質向上に活かす旨を入れる
+
+            # 文体
+            ・です・ます調で、丁寧かつ簡潔に（10〜16行程度）
+            ・お客様状況の具体例は含めつつ、寄り添い・フォローの言葉を重視する
+            ・同じ謝罪や御礼は繰り返さない
+            ・状況に合わない定型句は入れない
+            ・事実として確認できないこと（解消済み、原因の断定など）は書かない
+
+            # 出力形式
+            1. 本文のみを、単一のコードブロック（```text 〜 ```）で囲んだプレーンテキストとして出力する
+            　・宛名、名乗り、冒頭の挨拶（「いつもお世話になっております」等）、お問い合わせ番号、タイトル、アンケートのご案内、署名は別途メールテンプレートで付与するため含めない
+            2. コードブロックの後に、担当者向けメモを 3〜5 行で出力する（入れた要素 / 入れなかった要素と理由 / 送信前に確認すべき事実）
+
+            # 入力情報
+            1. クローズの経緯：お客様よりクローズのご了承をいただいた
+            2. お問い合わせ番号 / タイトル：{{caseNum}} / {{caseTitle}}
+            3. 特記事項（何かあれば記載）：
+            4. やり取りの内容：本メールスレッドのやり取りを参照（スレッド外のやり取りがあれば以下に貼り付け）
         </noscript>
+
+        <noscript data-name="closeGuidePrompt_mistakenTicket">
+            # 指示
+            あなたは {{CompanyName}} テクニカルサポート担当者のクローズメール作成を支援するアシスタントです。
+            本メールスレッドのやり取りと末尾の「# 入力情報」をもとに、お客様の状況に寄り添ったクローズ案内文を作成してください。
+
+            # 目的
+            事務的な定型文を避け、「お客様がご連絡に費やしたお時間への配慮」と「状況に合った内容」が伝わる文面にします。
+
+            # クローズの経緯
+            お客様より誤起票（誤ってお問い合わせを登録した、重複起票、別窓口への問い合わせ等）とのご連絡をいただいたため、本メールをもって対応を終了する。
+
+            # 必ず入れる内容（順序は自然に調整）
+            1. 誤起票の旨をご連絡いただいたことへの御礼と、本メールをもって対応を終了する旨の冒頭の一文
+            2. ご連絡いただいたお手間・お時間への謝意（お客様を責める印象を与えない表現にする）
+            3. クローズ後の案内（改めてご質問やご不明点がある場合は、新規にお問い合わせいただければご支援可能である旨）
+            4. 結びの挨拶
+
+            # 状況に応じて入れる内容
+            ・正しい窓口や別のお問い合わせ番号がやり取りで判明している場合：その旨を一言添える（推測で窓口を案内しない）
+            ・お客様のご発言やご要望：必ず一言で反応する
+            ・特記事項：事実に当てはまる範囲でお詫びや説明を入れる
+
+            # 文体
+            ・です・ます調で、丁寧かつ簡潔に（6〜10行程度）
+            ・技術的な対応結果の説明は不要
+            ・同じ謝罪や御礼は繰り返さない
+            ・状況に合わない定型句は入れない
+
+            # 出力形式
+            1. 本文のみを、単一のコードブロック（```text 〜 ```）で囲んだプレーンテキストとして出力する
+            　・宛名、名乗り、冒頭の挨拶（「いつもお世話になっております」等）、お問い合わせ番号、タイトル、署名は別途メールテンプレートで付与するため含めない
+            2. コードブロックの後に、担当者向けメモを 3〜5 行で出力する（入れた要素 / 入れなかった要素と理由 / 送信前に確認すべき事実）
+
+            # 入力情報
+            1. クローズの経緯：お客様より誤起票とのご連絡をいただいた
+            2. お問い合わせ番号 / タイトル：{{caseNum}} / {{caseTitle}}
+            3. 特記事項（何かあれば記載）：
+            4. やり取りの内容：本メールスレッドのやり取りを参照（スレッド外のやり取りがあれば以下に貼り付け）
+        </noscript>
+
+        <noscript data-name="closeGuidePrompt_strike3">
+            # 指示
+            あなたは {{CompanyName}} テクニカルサポート担当者のクローズメール作成を支援するアシスタントです。
+            本メールスレッドのやり取りと末尾の「# 入力情報」をもとに、お客様の状況に寄り添ったクローズ案内文を作成してください。
+
+            # 目的
+            事務的な定型文を避け、「お客様がお問い合わせに費やしたお時間への配慮」と「状況に合った内容」が伝わる文面にします。
+
+            # クローズの経緯
+            複数回ご連絡を差し上げたものの、お客様からのご返信をいただけていないため（Strike 3）、本メールをもって弊社での対応を終了する。
+
+            # 必ず入れる内容（順序は自然に調整）
+            1. ご返信をいただけていないため、本メールをもって対応を終了とさせていただく旨の冒頭の一文（催促やお客様を責める印象を与えない表現にする）
+            2. これまでのお時間とご協力への謝意（情報提供や検証など、実際にご対応いただいた内容を具体的に挙げる）
+            3. 現時点までの対応状況の説明（1〜2文）
+            4. クローズ後の案内（今後ご不明な点があれば、お問い合わせ番号を記載のうえ新規にお問い合わせいただくことで、スムーズにご案内が可能である旨）
+            5. 結びの挨拶
+
+            # 状況に応じて入れる内容
+            ・ご多忙でご返信が難しい状況への配慮：一言添える（過度にならないように）
+            ・解決策や回避策を案内済みの場合：その内容でご不便が解消されていれば幸いである旨（解消を確認できていないため、解消したと断定しない）
+            ・お客様のご発言やご要望：必ず一言で反応する
+            ・特記事項：事実に当てはまる範囲でお詫びや説明を入れる
+            ・ご期待に沿えなかった場合：お詫びと、ご意見を品質向上に活かす旨を入れる
+
+            # 文体
+            ・です・ます調で、丁寧かつ簡潔に（10〜15行程度）
+            ・お客様状況の具体例は含めつつ、寄り添い・フォローの言葉を重視する
+            ・同じ謝罪や御礼は繰り返さない
+            ・状況に合わない定型句は入れない
+
+            # 出力形式
+            1. 本文のみを、単一のコードブロック（```text 〜 ```）で囲んだプレーンテキストとして出力する
+            　・宛名、名乗り、冒頭の挨拶（「いつもお世話になっております」等）、お問い合わせ番号、タイトル、フィードバックのご案内、署名は別途メールテンプレートで付与するため含めない
+            2. コードブロックの後に、担当者向けメモを 3〜5 行で出力する（入れた要素 / 入れなかった要素と理由 / 送信前に確認すべき事実）
+
+            # 入力情報
+            1. クローズの経緯：お客様からのご返信がない（Strike 3）
+            2. お問い合わせ番号 / タイトル：{{caseNum}} / {{caseTitle}}
+            3. 特記事項（何かあれば記載）：
+            4. やり取りの内容：本メールスレッドのやり取りを参照（スレッド外のやり取りがあれば以下に貼り付け）
+        </noscript>
+
         <noscript data-name="closeRequest">
             @ さん
             お疲れ様です。ケースクローズの確認をお願いします。
@@ -146,9 +260,11 @@
                 const divId = '#MP_Strike3_step1-<%=uid%>';
                 const $scope = $(divId);
                 const $caseSummaryPrompt = $scope.find('textarea[name="caseSummaryPrompt"]');
-                const $scrPrompt = $scope.find('textarea[name="scrPrompt"]');
                 const $closeRequest = $scope.find('textarea[name="closeRequest"]');
-                const $closeTypeRadios = $scope.find('input[name="closeType"]');
+                const $closeGuidePrompt = $scope.find('textarea[name="closeGuidePrompt"]');
+                const $closeGuidePromptType = $scope.find('input[name="closeGuidePromptType"]');
+                const $closeGuidePromptLabel = $scope.find('[data-role="closeGuidePromptLabel"]');
+                const $closeGuide = $scope.find('textarea[name="closeGuide"]');
 
                 const templateId = 'MP_Strike3';
                 const getRawText = (name) => {
@@ -156,67 +272,109 @@
                     return window.getTemplateText ? window.getTemplateText(templateId, name, defaultText) : defaultText;
                 };
 
-                const caseSummaryPromptText = getRawText('caseSummaryPrompt');
-                const scrPromptText = getRawText('scrPrompt');
-                const closeRequestText = getRawText('closeRequest');
+                const closeTypeLabels = {
+                    customerApprove: 'お客様承認',
+                    mistakenTicket: '誤起票',
+                    strike3: 'Strike 3'
+                };
+                const normalizeCloseType = (type) => (closeTypeLabels[type] ? type : 'strike3');
+                const getCheckedCloseType = () => normalizeCloseType($scope.find('input[name="closeType"]:checked').val());
+                const getCloseGuidePromptText = (type) => getRawText(`closeGuidePrompt_${normalizeCloseType(type)}`);
+
+                const setCloseGuidePromptType = (type) => {
+                    $closeGuidePromptType.val(type);
+                    $closeGuidePromptLabel.text(closeTypeLabels[type] || '');
+                };
+
+                const syncToModel = () => {
+                    const step = window.currentCase?.activeStep;
+                    if (!step) return;
+                    step.caseSummaryPrompt = $caseSummaryPrompt.val();
+                    step.closeRequest = $closeRequest.val();
+                    step.closeGuidePrompt = $closeGuidePrompt.val();
+                    step.closeGuidePromptType = $closeGuidePromptType.val();
+                    step.closeGuide = $closeGuide.val();
+                    step.closeType = getCheckedCloseType();
+                };
 
                 const caseDataInitial = window.currentCase;
                 const activeStepInitial = caseDataInitial?.activeStep;
 
-                // Load initial values (Auto-save)
+                if (activeStepInitial && activeStepInitial.closeType) {
+                    $scope.find(`input[name="closeType"][value="${activeStepInitial.closeType}"]`).prop('checked', true);
+                }
+                const initialCloseType = getCheckedCloseType();
+
+                // Load initial values
                 if (activeStepInitial && activeStepInitial.caseSummaryPrompt) {
                     $caseSummaryPrompt.val(activeStepInitial.caseSummaryPrompt);
                 } else if (caseDataInitial) {
-                    $caseSummaryPrompt.val(caseDataInitial.render(caseSummaryPromptText));
-                }
-                
-                if (activeStepInitial && activeStepInitial.scrPrompt) {
-                    $scrPrompt.val(activeStepInitial.scrPrompt);
-                } else if (caseDataInitial) {
-                    $scrPrompt.val(caseDataInitial.render(scrPromptText));
+                    $caseSummaryPrompt.val(caseDataInitial.render(getRawText('caseSummaryPrompt')));
                 }
 
                 if (activeStepInitial && activeStepInitial.closeRequest) {
                     $closeRequest.val(activeStepInitial.closeRequest);
                 } else if (caseDataInitial) {
-                    $closeRequest.val(closeRequestText); // このエリアだけ、最初はレンダリングしない（レンダリングボタンを押すとレンダリングされる）
+                    $closeRequest.val(getRawText('closeRequest')); // このエリアだけ、最初はレンダリングしない（レンダリングボタンを押すとレンダリングされる）
                 }
 
-                if (activeStepInitial && activeStepInitial.closeType) {
-                    $scope.find(`input[name="closeType"][value="${activeStepInitial.closeType}"]`).prop('checked', true);
+                if (activeStepInitial && activeStepInitial.closeGuidePrompt) {
+                    $closeGuidePrompt.val(activeStepInitial.closeGuidePrompt);
+                    setCloseGuidePromptType(normalizeCloseType(activeStepInitial.closeGuidePromptType || initialCloseType));
+                } else if (caseDataInitial) {
+                    $closeGuidePrompt.val(caseDataInitial.render(getCloseGuidePromptText(initialCloseType)));
+                    setCloseGuidePromptType(initialCloseType);
                 }
+
+                if (activeStepInitial && activeStepInitial.closeGuide) {
+                    $closeGuide.val(activeStepInitial.closeGuide);
+                }
+
+                $scope.find('input[name="closeType"]').off('change').on('change', function () {
+                    if (getCheckedCloseType() !== $closeGuidePromptType.val()) {
+                        window.showToast && window.showToast('⚡️ で Close案内 Prompt / Close要請 に反映されます', 'info');
+                    }
+                });
 
                 $scope.find('button[title="レンダリング"]').off('click').on('click', function () {
                     const caseData = window.currentCase;
                     if (!caseData) return;
-                    
+
                     // 次のレンダリングに現在のラジオ状態を反映させる
-                    const currentCloseType = $scope.find('input[name="closeType"]:checked').val();
+                    const currentCloseType = getCheckedCloseType();
                     if (caseData.activeStep) {
                         caseData.activeStep.closeType = currentCloseType;
                     }
 
-                    const promptVal = $caseSummaryPrompt.val();
-                    const scrPromptVal = $scrPrompt.val();
-                    const closeVal = $closeRequest.val();
+                    $caseSummaryPrompt.val(caseData.render($caseSummaryPrompt.val()));
+                    $closeRequest.val(caseData.render($closeRequest.val()));
 
-                    $caseSummaryPrompt.val(caseData.render(promptVal));
-                    $scrPrompt.val(caseData.render(scrPromptVal));
-                    $closeRequest.val(caseData.render(closeVal));
+                    // パターンが変わった場合のみテンプレートから再生成し、同じパターンなら手動編集を保持する
+                    if ($closeGuidePromptType.val() !== currentCloseType) {
+                        $closeGuidePrompt.val(caseData.render(getCloseGuidePromptText(currentCloseType)));
+                        setCloseGuidePromptType(currentCloseType);
+                    } else {
+                        $closeGuidePrompt.val(caseData.render($closeGuidePrompt.val()));
+                    }
+
+                    syncToModel();
                 });
 
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
-                    const currentCaseSummaryPromptText = getRawText('caseSummaryPrompt');
-                    const currentScrPromptText = getRawText('scrPrompt');
-                    const currentCloseRequestText = getRawText('closeRequest');
-
-                    $caseSummaryPrompt.val(currentCaseSummaryPromptText);
-                    $scrPrompt.val(currentScrPromptText);
-                    $closeRequest.val(currentCloseRequestText);
 
                     $scope.find('input[name="closeType"][value="strike3"]').prop('checked', true);
+                    $caseSummaryPrompt.val(getRawText('caseSummaryPrompt'));
+                    $closeRequest.val(getRawText('closeRequest'));
+                    $closeGuidePrompt.val(getCloseGuidePromptText('strike3'));
+                    setCloseGuidePromptType('strike3');
+                    $closeGuide.val('');
+
+                    syncToModel();
                 });
+
+                // Auto-save sync
+                $scope.find('textarea, input').on('input change blur', syncToModel);
             })();
         </script>
     </div>
