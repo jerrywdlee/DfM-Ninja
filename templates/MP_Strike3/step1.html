@@ -363,11 +363,12 @@
                 $scope.find('button[title="リセット"]').off('click').on('click', function () {
                     if (!confirm('リセットしますか？')) return;
 
-                    $scope.find('input[name="closeType"][value="strike3"]').prop('checked', true);
+                    // closeType（ラジオ）は保持し、選択中のパターンでプロンプトを戻す
+                    const currentCloseType = getCheckedCloseType();
                     $caseSummaryPrompt.val(getRawText('caseSummaryPrompt'));
                     $closeRequest.val(getRawText('closeRequest'));
-                    $closeGuidePrompt.val(getCloseGuidePromptText('strike3'));
-                    setCloseGuidePromptType('strike3');
+                    $closeGuidePrompt.val(getCloseGuidePromptText(currentCloseType));
+                    setCloseGuidePromptType(currentCloseType);
                     $closeGuide.val('');
 
                     syncToModel();
